@@ -337,7 +337,8 @@ flowchart TD
     S1["1. Empty repo<br/>README, role-only hygiene and role-trailer checks, CI, verify/spin/"] --> S2
     S2["2. Map checker<br/>planted-drift self-test, recorded time limit"] --> S3
     S3["3. Pointer writer<br/>atomic CAS, complete SHAs, computed staleness"] --> S4
-    S4["4. Forest prose<br/>queued after the pointer write"]
+    S4["4. Forest prose<br/>queued after the pointer write"] --> S5
+    S5["5. rco update and rco pack<br/>end to end on this repo and the mill"]
 ```
 
 | Slice | Done when |
@@ -346,8 +347,9 @@ flowchart TD
 | 2. Map checker | It lists every mismatch (missing, extra, changed) with its path and exits nonzero on any; output is byte-identical for the same inputs; the planted-drift self-test fails if any drift is missed; a time limit is recorded with the RCO SHA. |
 | 3. Pointer writer | The SPIN model is committed beside the code and passes all seven properties; a crash between store write and pointer write never publishes a partial SHA. |
 | 4. Forest prose | A test shows no prose is ever written for a SHA the pointer has not published. |
+| 5. Update and pack | `tw rco update` runs after each merge on this repo and the mill and publishes the merge SHA; `rco pack --for FILES` returns a pack within `--budget`; this is where dogfooding starts. |
 
-Until slice 3 lands, the pipeline ends at merge and the map checker reports drift.
+Until slice 5 lands, the pipeline ends at merge; from slice 2 on, the map checker reports drift read-only on this repo and the mill.
 
 - **Phase 0.** Baseline, using the mill's cold-test kit and an existing baseline: tokens and reads before the first useful action, plus wrong guesses, from cold-agent logs. Also measure extract cost and how many modules a typical merge touches.
 - **Phase 1.** Trees, hashes, and `rco diff` for Python, the CLI, SQL, and routes. Zero LLM. Deterministic tests: same SHA in, same bytes out. Redaction pass and the output contract (stdout/`--out`, format flags, exit codes). The map checker (see [Verification](#verification)) ships with the first Tree builder, so the first map anyone reads comes with a measured accuracy.
