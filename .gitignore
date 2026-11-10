@@ -1,0 +1,4 @@
+verify/spin/results/**
+!verify/spin/results/*/
+!verify/spin/results/summary.txt
+!verify/spin/results/*/trail-events.txt
