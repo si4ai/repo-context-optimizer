@@ -135,8 +135,14 @@ sequenceDiagram
     Note over U,S: rule 2: complete SHAs only
     U->>P: compare-and-swap OLD to NEW
     Note over U,P: rule 1: one atomic pointer write
-    U->>Q: queue prose rewrites
-    Note over U,Q: rule 4: prose after the pointer
+    alt pointer still reads OLD
+        P-->>U: swapped to NEW
+        U->>Q: queue prose rewrites
+        Note over U,Q: rule 4: prose after the pointer
+    else pointer already moved past OLD (late finisher)
+        P-->>U: swap refused
+        Note over U,P: write nothing; the newer update already covers NEW or later
+    end
     Note over P,Q: rule 3: packs compute staleness from TreeHashes
 ```
 
