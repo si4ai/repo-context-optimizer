@@ -4,7 +4,7 @@ Deterministic repo context for coding agents: contract Trees, an architecture Fo
 
 **Status:** design only. Nothing is implemented yet. This README is the v0 design to dogfood against.
 
-**Team:** Builder implements, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
+**Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
 ### If you are an agent
 
@@ -120,6 +120,32 @@ flowchart TD
     J --> L[contract diff, rco triage hints,<br/>contract-change notices]
 ```
 
+The same update in order, showing where the four SPIN rules sit:
+
+```mermaid
+sequenceDiagram
+    participant M as merge
+    participant U as rco update
+    participant S as store
+    participant P as pointer
+    participant Q as prose queue
+    M->>U: OLD to NEW
+    U->>S: write Trees for changed modules
+    U->>S: check every module of NEW is present
+    Note over U,S: rule 2: complete SHAs only
+    U->>P: compare-and-swap OLD to NEW
+    Note over U,P: rule 1: one atomic pointer write
+    alt pointer still reads OLD
+        P-->>U: swapped to NEW
+        U->>Q: queue prose rewrites
+        Note over U,Q: rule 4: prose after the pointer
+    else pointer already moved past OLD (late finisher)
+        P-->>U: swap refused
+        Note over U,P: write nothing, the newer update already covers NEW or later
+    end
+    Note over P,Q: rule 3: packs compute staleness from TreeHashes
+```
+
 Staleness is never stored: a pack sees a stale Forest because its TreeHash no longer matches the current Tree's. Several merges in a short window share one prose rewrite per module.
 
 Properties, checked by the SPIN model in `verify/spin/` (see [Verification](#verification)):
@@ -144,6 +170,21 @@ Nothing below is implemented yet. Defaults match the [quick start](#just-works).
 - `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 8000.
 
 The pack is the map; raw files are fetched on demand.
+
+Which command reads and writes what:
+
+```mermaid
+flowchart LR
+    G[git history] --> UP[rco update]
+    UP -->|Trees, Forest, pointer| ST[(store)]
+    ST --> PK[rco pack]
+    ST --> DF[rco diff]
+    G --> DF
+    DF -->|contract changes| TR[rco triage]
+    B[open branches] --> TR
+    PK --> A[agent]
+    TR -->|clean or structural brief| A
+```
 
 #### Pack output (example)
 
@@ -293,20 +334,22 @@ Each slice lands before the next starts, and each has a done-when that a check c
 
 ```mermaid
 flowchart TD
-    S1["1. Empty repo<br/>README, role-only hygiene check, CI, verify/spin/"] --> S2
+    S1["1. Empty repo<br/>README, role-only hygiene and role-trailer checks, CI, verify/spin/"] --> S2
     S2["2. Map checker<br/>planted-drift self-test, recorded time limit"] --> S3
     S3["3. Pointer writer<br/>atomic CAS, complete SHAs, computed staleness"] --> S4
-    S4["4. Forest prose<br/>queued after the pointer write"]
+    S4["4. Forest prose<br/>queued after the pointer write"] --> S5
+    S5["5. rco update and rco pack<br/>end to end on this repo and the mill"]
 ```
 
 | Slice | Done when |
 |---|---|
-| 1. Empty repo | CI is green on `main`; the hygiene check fails a planted personal name in a test PR; a desk can take a card from worktree to PR. |
+| 1. Empty repo | CI is green on `main`; the hygiene check fails a planted personal name in a test PR; the role-trailer check fails a commit with no known role, so the self-merge check works from the first PR; a desk can take a card from worktree to PR. |
 | 2. Map checker | It lists every mismatch (missing, extra, changed) with its path and exits nonzero on any; output is byte-identical for the same inputs; the planted-drift self-test fails if any drift is missed; a time limit is recorded with the RCO SHA. |
 | 3. Pointer writer | The SPIN model is committed beside the code and passes all seven properties; a crash between store write and pointer write never publishes a partial SHA. |
 | 4. Forest prose | A test shows no prose is ever written for a SHA the pointer has not published. |
+| 5. Update and pack | `tw rco update` runs after each merge on this repo and the mill and publishes the merge SHA; `rco pack --for FILES` returns a pack within `--budget`; this is where dogfooding starts. |
 
-Until slice 3 lands, the pipeline ends at merge and the map checker reports drift.
+Until slice 5 lands, the pipeline ends at merge; from slice 2 on, the map checker reports drift read-only on this repo and the mill.
 
 - **Phase 0.** Baseline, using the mill's cold-test kit and an existing baseline: tokens and reads before the first useful action, plus wrong guesses, from cold-agent logs. Also measure extract cost and how many modules a typical merge touches.
 - **Phase 1.** Trees, hashes, and `rco diff` for Python, the CLI, SQL, and routes. Zero LLM. Deterministic tests: same SHA in, same bytes out. Redaction pass and the output contract (stdout/`--out`, format flags, exit codes). The map checker (see [Verification](#verification)) ships with the first Tree builder, so the first map anyone reads comes with a measured accuracy.
