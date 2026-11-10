@@ -141,7 +141,7 @@ sequenceDiagram
         Note over U,Q: rule 4: prose after the pointer
     else pointer already moved past OLD (late finisher)
         P-->>U: swap refused
-        Note over U,P: write nothing; the newer update already covers NEW or later
+        Note over U,P: write nothing, the newer update already covers NEW or later
     end
     Note over P,Q: rule 3: packs compute staleness from TreeHashes
 ```
