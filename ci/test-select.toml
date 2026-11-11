@@ -1,0 +1,41 @@
+# Test-selection map.
+# List a path pattern here to have matching files tested.
+# A file that matches no rule runs no tests.
+#
+# Schema:
+#   [[rule]]
+#   paths = ["git-path glob", ...]
+#   jobs  = ["job-name", ...]
+#
+# Globs are matched against repo-relative paths from
+#   git diff --name-only --no-renames -z BASE...HEAD
+# "**" matches zero or more directories. A changed file runs the
+# union of jobs from every rule whose paths it matches.
+# Unknown job names are an error (enforced by ci/test_select.py).
+
+[[rule]]
+paths = [
+  "verify/spin/*.pml",
+  "verify/spin/run.sh",
+]
+jobs = ["spin"]
+
+[[rule]]
+paths = [
+  "src/**/*.py",
+  "tests/**/*.py",
+]
+jobs = ["pytest"]
+
+[[rule]]
+paths = [
+  "ci/test_select.py",
+  "ci/test-select.toml",
+]
+jobs = ["pytest"]
+
+[[rule]]
+paths = [
+  ".github/workflows/ci.yml",
+]
+jobs = ["pytest", "spin"]

@@ -334,7 +334,7 @@ Each slice lands before the next starts, and each has a done-when that a check c
 
 ```mermaid
 flowchart TD
-    S1["1. Empty repo<br/>README, role-only hygiene and role-trailer checks, CI, verify/spin/"] --> S2
+    S1["1. Empty repo<br/>README, role-only hygiene and role-trailer checks, CI, test selection (ci/test-select.toml), verify/spin/"] --> S2
     S2["2. Map checker<br/>planted-drift self-test, recorded time limit"] --> S3
     S3["3. Pointer writer<br/>atomic CAS, complete SHAs, computed staleness"] --> S4
     S4["4. Forest prose<br/>queued after the pointer write"] --> S5
@@ -343,7 +343,7 @@ flowchart TD
 
 | Slice | Done when |
 |---|---|
-| 1. Empty repo | CI is green on `main`; the hygiene check fails a planted personal name in a test PR; the role-trailer check fails a commit with no known role, so the self-merge check works from the first PR; a desk can take a card from worktree to PR. |
+| 1. Empty repo | CI is green on `main` and selects jobs from [`ci/test-select.toml`](ci/test-select.toml); the hygiene check fails a planted personal name in a test PR; the role-trailer check fails a commit with no known role, so the self-merge check works from the first PR; a desk can take a card from worktree to PR. |
 | 2. Map checker | It lists every mismatch (missing, extra, changed) with its path and exits nonzero on any; output is byte-identical for the same inputs; the planted-drift self-test fails if any drift is missed; a time limit is recorded with the RCO SHA. |
 | 3. Pointer writer | The SPIN model is committed beside the code and passes all seven properties; a crash between store write and pointer write never publishes a partial SHA. |
 | 4. Forest prose | A test shows no prose is ever written for a SHA the pointer has not published. |
