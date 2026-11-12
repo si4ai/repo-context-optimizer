@@ -230,17 +230,20 @@ def test_pypi_and_sk_key_shapes_are_findings() -> None:
 
 _UTF8_BOM = b"\xef\xbb\xbf"
 _UTF16LE_BOM = b"\xff\xfe"
+_UTF16BE_BOM = b"\xfe\xff"
 
 
 def test_planted_utf8_and_utf16_bom_are_findings(tmp_path: Path) -> None:
     repo, base = _base_repo(tmp_path)
     (repo / "docs" / "utf8.md").write_bytes(_UTF8_BOM + b"hello example user\n")
     (repo / "docs" / "utf16.md").write_bytes(_UTF16LE_BOM + b"h\x00i\x00\n\x00")
+    (repo / "docs" / "utf16be.md").write_bytes(_UTF16BE_BOM + b"\x00h\x00i\x00\n")
     _commit(repo, "add notes\n\nRole: builder\n")
     _code, findings = _scan(repo, base)
     kinds_by_where = {(item["kind"], item["where"]) for item in findings}
     assert ("byte-order mark", "docs/utf8.md") in kinds_by_where
     assert ("byte-order mark", "docs/utf16.md") in kinds_by_where
+    assert ("byte-order mark", "docs/utf16be.md") in kinds_by_where
 
 
 def test_planted_typographic_mark_is_a_finding(tmp_path: Path) -> None:
@@ -303,3 +306,73 @@ def test_gitlink_in_range_and_staged_does_not_crash(tmp_path: Path) -> None:
     staged, _base = _base_repo(tmp_path / "staged")
     _git(staged, "update-index", "--add", "--cacheinfo", f"160000,{gitlink_sha},sub")
     assert ch.main(["--root", str(staged), "--staged", "--strict", "--json"]) in (0, 1)
+
+
+def test_junk_symlink_and_gitlink_are_findings(tmp_path: Path) -> None:
+    gitlink_sha = "1234567890123456789012345678901234567890"
+    repo, base = _base_repo(tmp_path)
+    # symlink target starts with a UTF-8 BOM; that must not be read as a blob.
+    os.symlink("\ufeff-target", repo / "x.orig")
+    _git(repo, "add", "x.orig")
+    _git(repo, "update-index", "--add", "--cacheinfo", f"160000,{gitlink_sha},.DS_Store")
+    _git(repo, "commit", "-qm", "add junk names\n\nRole: builder\n")
+    code, findings = _scan(repo, base, strict=True)
+    assert code == 1
+    kinds_by_where = {(item["kind"], item["where"]) for item in findings}
+    assert ("junk file (backup)", "x.orig") in kinds_by_where
+    assert ("junk file (os-junk)", ".DS_Store") in kinds_by_where
+    assert ("byte-order mark", "x.orig") not in kinds_by_where
+
+    staged, _base = _base_repo(tmp_path / "staged")
+    os.symlink("\ufeff-target", staged / "x.orig")
+    _git(staged, "add", "x.orig")
+    _git(staged, "update-index", "--add", "--cacheinfo", f"160000,{gitlink_sha},.DS_Store")
+    assert ch.main(["--root", str(staged), "--staged", "--strict", "--json"]) == 1
+    staged_findings = ch.scan_staged(staged, ch.load_hygiene_config(staged, None))
+    staged_kinds = {(item.kind, item.where) for item in staged_findings}
+    assert ("junk file (backup)", "x.orig") in staged_kinds
+    assert ("junk file (os-junk)", ".DS_Store") in staged_kinds
+    assert ("byte-order mark", "x.orig") not in staged_kinds
+
+
+def test_non_utf8_path_blob_is_read_by_oid(tmp_path: Path, capsys) -> None:
+    repo, base = _base_repo(tmp_path)
+    rel = b"caf\xe9.txt"
+    dest = os.fsencode(repo) + b"/" + rel
+    with open(dest, "wb") as fh:
+        fh.write(_UTF8_BOM + b"hello example user\n")
+    env = os.environ.copy()
+    env.update(_GIT_ENV)
+    subprocess.run(
+        [b"git", b"add", b"--", rel],
+        cwd=os.fsencode(repo),
+        check=True,
+        capture_output=True,
+        env=env,
+    )
+    _git(repo, "commit", "-qm", "add latin1 name\n\nRole: builder\n")
+    code = ch.main(
+        ["--root", str(repo), "--base", base, "--head", "HEAD", "--strict", "--json"]
+    )
+    captured = capsys.readouterr()
+    assert code == 1, captured.err
+    payload = json.loads(captured.out)
+    assert any(item["kind"] == "byte-order mark" for item in payload["findings"])
+
+    staged, _base = _base_repo(tmp_path / "staged")
+    dest = os.fsencode(staged) + b"/" + rel
+    with open(dest, "wb") as fh:
+        fh.write(_UTF8_BOM + b"hello example user\n")
+    subprocess.run(
+        [b"git", b"add", b"--", rel],
+        cwd=os.fsencode(staged),
+        check=True,
+        capture_output=True,
+        env=env,
+    )
+    capsys.readouterr()
+    staged_code = ch.main(["--root", str(staged), "--staged", "--strict", "--json"])
+    staged_captured = capsys.readouterr()
+    assert staged_code == 1, staged_captured.err
+    staged_payload = json.loads(staged_captured.out)
+    assert any(item["kind"] == "byte-order mark" for item in staged_payload["findings"])

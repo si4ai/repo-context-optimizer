@@ -2,7 +2,8 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** Phase 0 (baseline) is on `main`. Phase 1 step 1 ships the Tree contract (`docs/design/tree-contract.md`), the Python Tree builder, and the map checker (planted-drift self-test, recorded time limit). Steps 2–6 add the SQL, routes, and CLI extractors, the redaction pass and output contract, and `rco diff`. Later phases remain design.
+**Status:**
+Phase 0 (baseline) is on `main`. Phase 1 step 1 ships the Tree contract (`docs/design/tree-contract.md`), the Python Tree builder, and the map checker (planted-drift self-test, recorded time limit). Steps 2-6 add the SQL, routes, and CLI extractors, the redaction pass and output contract, and `rco diff`. Later phases remain design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 

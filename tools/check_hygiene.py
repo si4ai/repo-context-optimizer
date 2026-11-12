@@ -500,9 +500,16 @@ def _commit_meta(root: Path, rev: str) -> tuple[str, str, str]:
     return name, email, body
 
 
-def _blob_paths_from_raw_z(raw: bytes) -> list[str]:
-    """New-side blob paths from `git diff-tree` / `git diff` `--raw -z` output."""
-    paths: list[str] = []
+@dataclass(frozen=True)
+class _RawEntry:
+    path: str
+    mode: str
+    oid: str
+
+
+def _entries_from_raw_z(raw: bytes) -> list[_RawEntry]:
+    """New-side paths from `git diff-tree` / `git diff` `--raw -z` output."""
+    entries: list[_RawEntry] = []
     parts = raw.split(b"\0")
     i = 0
     n = len(parts)
@@ -515,6 +522,7 @@ def _blob_paths_from_raw_z(raw: bytes) -> list[str]:
         if len(fields) < 5:
             continue
         new_mode = fields[1]
+        new_oid = fields[3]
         status = fields[4]
         if i >= n:
             break
@@ -525,12 +533,12 @@ def _blob_paths_from_raw_z(raw: bytes) -> list[str]:
                 break
             path = parts[i].decode("utf-8", "replace")
             i += 1
-        if new_mode.startswith("100") and path:
-            paths.append(path)
-    return paths
+        if path:
+            entries.append(_RawEntry(path=path, mode=new_mode, oid=new_oid))
+    return entries
 
 
-def _commit_added(root: Path, rev: str) -> tuple[list[str], str]:
+def _commit_added(root: Path, rev: str) -> tuple[list[_RawEntry], str]:
     names = _git(
         root,
         "diff-tree",
@@ -542,7 +550,7 @@ def _commit_added(root: Path, rev: str) -> tuple[list[str], str]:
         "-z",
         rev,
     )
-    paths = _blob_paths_from_raw_z(names)
+    paths = _entries_from_raw_z(names)
     raw = _git(root, "show", "--format=", "--unified=0", "--no-renames", rev)
     added_lines = [
         ln[1:]
@@ -571,23 +579,25 @@ def scan_range(root: Path, base: str, head: str, cfg: HygieneConfig) -> list[Fin
         _name, _email, body = _commit_meta(root, rev)
         findings.extend(_scan_text(f"git commit {short}", body, allow, vocab))
         paths, added = _commit_added(root, rev)
-        for path in paths:
-            kind = junk_kind(path)
+        for entry in paths:
+            kind = junk_kind(entry.path)
             if kind:
-                findings.append(Finding(kind=f"junk file ({kind})", where=path))
+                findings.append(Finding(kind=f"junk file ({kind})", where=entry.path))
+            if not entry.mode.startswith("100"):
+                continue
             try:
-                blob = _git(root, "show", f"{rev}:{path}")
+                blob = _git(root, "cat-file", "blob", entry.oid)
             except OSError as exc:
-                raise OSError(f"cannot read {rev}:{path}: {exc}") from exc
+                raise OSError(f"cannot read blob {entry.oid}: {exc}") from exc
             if blob_has_bom(blob):
-                findings.append(Finding(kind="byte-order mark", where=path))
+                findings.append(Finding(kind="byte-order mark", where=entry.path))
         findings.extend(_scan_text(f"git commit {short} diff", added, allow, vocab))
     return findings
 
 
-def _staged_paths(root: Path) -> list[str]:
+def _staged_paths(root: Path) -> list[_RawEntry]:
     raw = _git(root, "diff", "--cached", "--diff-filter=ACM", "--raw", "-z")
-    return _blob_paths_from_raw_z(raw)
+    return _entries_from_raw_z(raw)
 
 
 def _staged_added_text(root: Path) -> str:
@@ -610,21 +620,23 @@ def scan_staged(root: Path, cfg: HygieneConfig) -> list[Finding]:
     """
     allow, vocab = _word_sets(root, cfg)
     findings: list[Finding] = []
-    for path in _staged_paths(root):
-        kind = junk_kind(path)
+    for entry in _staged_paths(root):
+        kind = junk_kind(entry.path)
         if kind:
-            findings.append(Finding(kind=f"junk file ({kind})", where=path))
+            findings.append(Finding(kind=f"junk file ({kind})", where=entry.path))
+        if not entry.mode.startswith("100"):
+            continue
         try:
-            blob = _git(root, "show", f":{path}")
+            blob = _git(root, "cat-file", "blob", entry.oid)
         except OSError as exc:
-            raise OSError(f"cannot read staged blob {path}: {exc}") from exc
+            raise OSError(f"cannot read staged blob {entry.oid}: {exc}") from exc
         if blob_has_bom(blob):
-            findings.append(Finding(kind="byte-order mark", where=path))
+            findings.append(Finding(kind="byte-order mark", where=entry.path))
         if b"\0" in blob[:8000]:
             continue
         mark = text_mark(blob.decode("utf-8", "replace"))
         if mark is not None:
-            findings.append(Finding(kind=f"typographic mark U+{mark:04X}", where=path))
+            findings.append(Finding(kind=f"typographic mark U+{mark:04X}", where=entry.path))
     added = _staged_added_text(root)
     for kind in kinds_in_text(added, allow, vocab):
         if kind.startswith("typographic mark"):
