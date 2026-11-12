@@ -295,10 +295,19 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map
 | COMMAND | cli | full command path, e.g. `rco diff` | `""` | `dynamic`=`1` when names are not literal |
 | FLAG | cli | `--out` or the positional `dest` | sorted `k=v;...` over the literal kwargs action, choices, metavar, nargs, required, type | `default` |
 | TABLE / VIEW | sql | table name, lower-cased unless quoted | `""` | none |
-| COLUMN | sql | column name | normalized type plus constraints, upper-case keywords, single spaces | `default` |
-| INDEX | sql | index name | `UNIQUE (a,b)` or `(a,b)` | none |
-| PROCEDURE | sql | name | `(IN a INT, OUT b TEXT)` normalized | none |
-| ROUTE | routes | `METHOD /path` (method upper-case; one node per method) | `""` | none |
+| COLUMN | sql | column name, lower-cased unless quoted | normalized type plus constraints, upper-case keywords, unquoted identifiers inside CHECK lower-cased, single spaces | `default` |
+| INDEX | sql | index name; a table-level PRIMARY KEY is `PRIMARY`; an unnamed UNIQUE takes its first column's name | `UNIQUE (a,b)`, `(a,b)`, `PRIMARY (a,b)`, `FULLTEXT (a)` or `SPATIAL (a)` | none |
+| PROCEDURE | sql | name, lower-cased unless quoted | `(IN a INT, OUT b TEXT)` normalized; a function appends ` RETURNS <type>` | none |
+| ROUTE | routes | `METHOD /path` (method upper-case; one node per method; `WS` for a websocket, `ANY` when the methods cannot be resolved or are aiohttp `*`) | `""` | none |
+
+SQL names: every unquoted identifier (table, view, column, index,
+procedure, parameter, and a name inside a CHECK clause) is lower-cased.
+A quoted name keeps its case and loses its quotes.
+
+Routes quick-skip: `routes.extract` returns `[]` without parsing a file in
+which no quote is directly followed by `/`, since no route literal is
+possible there. Rule 2 still holds: the python extractor emits the
+parse-error FILE node for such a file.
 
 Public filter (python): Phase 0's `_is_public` rule, with private
 classes, functions and members dropped. Only public classes get methods.
@@ -317,8 +326,9 @@ runs and on a reordered input, not across Python versions.
 VERSION: str            # "0" in the step-1 stub; feeds ModuleHash via versions()
 PLACEHOLDER = "<redacted>"
 def redact_text(s: str) -> str          # pure, idempotent
-def redact_node(n: Node) -> Node        # recursive; touches only doc, sig of CONSTANT/FIELD,
-                                        # and attrs keys "value" and "default"
+def redact_node(n: Node) -> Node        # recursive; touches doc, sig of CONSTANT/FIELD/
+                                        # FUNCTION/METHOD/CLASS/FLAG/COLUMN/PROCEDURE,
+                                        # and attrs keys "value", "default", and "decorators"
 ```
 
 Redaction never touches `kind`, `name`, `path`, route paths, flag names, or
@@ -326,6 +336,10 @@ table and column names (README Secrets). Step 5 adds the README list (PEM
 blocks, bearer and API tokens, high-entropy strings, credential URLs,
 credential-like assignments). Test secrets are assembled at runtime from
 fragments so the repo's hygiene report does not flag the fixtures.
+
+From redact VERSION 2 (step 5), `redact_text` also runs over FUNCTION and METHOD sigs, so a short secret literal kept as a parameter default never reaches a Tree; only secret-shaped substrings change.
+
+From redact VERSION 3, `redact_text` also runs over CLASS, FLAG, COLUMN and PROCEDURE sigs and the `decorators` attr, so a secret-shaped literal in a class keyword, a decorator call, a flag choices or metavar, a CHECK clause, or a routine parameter DEFAULT never reaches a Tree.
 
 ## 8. Output contract (`rco/output.py`, `rco/cli.py`)
 
@@ -359,7 +373,7 @@ Phase 1 commands:
 |---|---|---|
 | `rco tree [SHA] [--for PATHS...]` | the Map (`rco.map/1`) | never |
 | `rco check MAP [SHA]` | `rco.check/1` | any finding |
-| `rco check --selftest` | planted-drift result | any planted drift missed |
+| `rco check --selftest` | planted-drift result (`rco.selftest/2`) | any planted drift missed |
 | `rco diff [BASE] [HEAD]` | `rco.diff/1` | any added, removed or changed shape |
 
 `SHA` defaults to `HEAD`. `rco diff` defaults follow the README:
@@ -385,7 +399,9 @@ the module hash or the SHA does not match. Findings are sorted by
 `(path, key, status)`. The self-test builds the map from
 `fixture.DRIFT_FILES` (a wheel-safe in-memory fixture in `src/rco/fixture.py`) and plants these errors: remove a flag, rename a
 column, change a sig, add a function, drop a module, and alter a
-module_hash. It fails if any planted error goes unflagged. Elapsed time
+module_hash. Every plant lands on a real node from the python, cli and
+sql extractors; there are no stand-in nodes (`rco.selftest/2` dropped the
+`standin` field). It fails if any planted error goes unflagged. Elapsed time
 goes to stderr only. The time limit is recorded, with the RCO SHA, in
 `docs/baseline/phase1-checker.md`. Comparing against real outputs (`--help`,
 the live schema, the route table) is a later step of the checker.
@@ -439,3 +455,28 @@ the PR says why.
   TreeHash and ModuleHash.
 - Check that no key or value in a Map holds a line number. The test pattern
   `"line"` must not appear in any node key.
+
+## Amendments after the freeze
+
+Applied in the steps 2 to 6 fold (card 1167):
+
+- Applied: TreeHash leaves out `module_hash` (section 3).
+- Applied: SQL INDEX sig forms `PRIMARY (a,b)`, `FULLTEXT (a)`,
+  `SPATIAL (a)`; an unnamed UNIQUE takes its first column's name (section 6).
+- Applied: a SQL function's PROCEDURE sig appends ` RETURNS <type>`
+  (section 6).
+- Applied: every unquoted SQL name is lower-cased (section 6).
+- Applied: ROUTE methods `WS` and `ANY` (section 6).
+- Applied: routes quick-skip for files with no route literal (section 6).
+- Applied: redact VERSION 2 runs `redact_text` over FUNCTION and METHOD
+  sigs (section 7).
+- Applied: redact VERSION 3 runs `redact_text` over CLASS, FLAG, COLUMN
+  and PROCEDURE sigs and the `decorators` attr (section 7).
+- Applied: unquoted identifiers inside a COLUMN CHECK clause are
+  lower-cased (section 6).
+- Applied: the self-test plants every drift on a real node and its report
+  is `rco.selftest/2` (section 8).
+- Deferred: an optional `aliases` attr on FLAG and COMMAND (short option
+  strings, subparser aliases). It changes cli output, the cli golden and
+  the parity check against the mill's parser, so it is not a trivial fold
+  change; it goes to a later step.

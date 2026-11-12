@@ -161,7 +161,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Planned commands
 
-Nothing below is implemented yet. Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco pack`, `rco triage`, and `rco update` are not implemented yet. Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
