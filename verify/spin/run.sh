@@ -74,8 +74,9 @@ for v in $VARS; do for p in $PROPS; do
       ./pan -m100000 > pan.log 2>&1
       if ! grep -q 'errors: 0' pan.log; then
         # shortest counterexample for the write-up (-i needs -DREACH)
-        gcc -O2 -w -DSAFETY -DREACH -o pan_i pan.c
-        ./pan_i -i -m100000 > pan-shortest.log 2>&1
+        gcc -O2 -w -DSAFETY -DREACH -o pan_i pan.c 2> gcc-reach.log || { echo "$v P$p ERROR gcc -DREACH (see $d/gcc-reach.log)" >&2; exit 7; }
+        ./pan_i -i -m100000 > pan-shortest.log 2>&1 || { echo "$v P$p ERROR pan_i -i failed (see $d/pan-shortest.log)" >&2; exit 8; }
+        grep -q 'errors: [1-9]' pan-shortest.log || { echo "$v P$p ERROR pan_i -i found no counterexample (see $d/pan-shortest.log)" >&2; exit 8; }
       fi
     else
       # Liveness: acceptance cycles. No -f: every process here does finite work, so
@@ -98,8 +99,9 @@ for v in $VARS; do for p in $PROPS; do
     st=$(grep -E '^ +[0-9]+ states, stored' pan.log | tail -1 | awk '{print $1}')
     if [ "${err:-1}" = "0" ]; then res=PASS; det=""; else
       res=FAIL
-      spin ${V[$v]} ${B[$p]} -DPROP=$p -t rco_update.pml > trail.txt 2>&1 || true
+      spin ${V[$v]} ${B[$p]} -DPROP=$p -t rco_update.pml > trail.txt 2>&1 || { echo "$v P$p ERROR spin -t replay failed (see $d/trail.txt)" >&2; exit 9; }
       grep 'EV ' trail.txt | sed 's/^ *//' > trail-events.txt
+      [ -s trail-events.txt ] || { echo "$v P$p ERROR spin -t replay gave no events (see $d/trail.txt)" >&2; exit 9; }
       det="trail: $d/trail-events.txt ($(wc -l < trail-events.txt | tr -d ' ') events)"
     fi
     rm -f pan pan_i pan.c pan.h pan.b pan.m pan.p pan.t   # keep logs and trails only

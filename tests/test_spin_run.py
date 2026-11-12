@@ -8,6 +8,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
@@ -21,8 +23,8 @@ fi
 # Replay a trail (stdout is captured as trail.txt).
 for a in "$@"; do
   if [ "$a" = "-t" ]; then
-    echo "EV stub"
-    exit 0
+    [ "${SPIN_T_EMPTY:-0}" = "1" ] || echo "EV stub"
+    exit ${SPIN_T_RC:-0}
   fi
 done
 # Generate (spin -a ...).
@@ -39,6 +41,14 @@ for a in "$@"; do
   fi
   prev=$a
 done
+reach=0
+for a in "$@"; do
+  [ "$a" = "-DREACH" ] && reach=1
+done
+if [ "$reach" = "1" ] && [ "${GCC_REACH_RC:-0}" != "0" ]; then
+  echo "gcc stub -DREACH failed" >&2
+  exit "$GCC_REACH_RC"
+fi
 if [ "${GCC_RC:-0}" != "0" ]; then
   echo "gcc stub failed" >&2
   exit "$GCC_RC"
@@ -47,6 +57,9 @@ fi
 cat > "$out" << 'END'
 #!/bin/sh
 echo "      ${PAN_STATES:-10} states, stored"
+case "$0" in
+  *pan_i) [ "${PAN_I_RC:-0}" = "0" ] || exit "$PAN_I_RC";;
+esac
 echo "errors: ${PAN_ERRORS:-1}"
 END
 chmod +x "$out"
@@ -55,7 +68,9 @@ exit 0
 
 
 def _harness(tmp_path: Path, *, spin_rc: int = 0, gcc_rc: int = 0,
-             pan_errors: int = 1, pan_states: int = 10) -> tuple[Path, dict[str, str]]:
+             pan_errors: int = 1, pan_states: int = 10, gcc_reach_rc: int = 0,
+             pan_i_rc: int = 0, spin_t_rc: int = 0,
+             spin_t_empty: bool = False) -> tuple[Path, dict[str, str]]:
     dest = tmp_path / "spin"
     dest.mkdir()
     src = ROOT / "verify" / "spin" / "run.sh"
@@ -76,6 +91,10 @@ def _harness(tmp_path: Path, *, spin_rc: int = 0, gcc_rc: int = 0,
     env["GCC_RC"] = str(gcc_rc)
     env["PAN_ERRORS"] = str(pan_errors)
     env["PAN_STATES"] = str(pan_states)
+    env["GCC_REACH_RC"] = str(gcc_reach_rc)
+    env["PAN_I_RC"] = str(pan_i_rc)
+    env["SPIN_T_RC"] = str(spin_t_rc)
+    env["SPIN_T_EMPTY"] = "1" if spin_t_empty else "0"
     return dest, env
 
 
@@ -119,6 +138,22 @@ def test_spin_failure_exits_nonzero(tmp_path: Path):
     assert proc.returncode != 0, proc.stdout
     assert "ERROR" in proc.stdout
     assert "spin or compiler failed" in proc.stdout
+
+
+@pytest.mark.parametrize("kwargs", [
+    {"gcc_reach_rc": 1},
+    {"pan_i_rc": 1},
+    {"spin_t_rc": 1},
+    {"spin_t_empty": True},
+], ids=["reach-gcc", "pan_i", "spin-t-rc", "spin-t-empty"])
+def test_counterexample_step_failure_exits_nonzero(tmp_path: Path, kwargs):
+    # a / P1 is expected FAIL, so the FAIL path builds pan_i and replays the trail.
+    # A failure in either step is an ERROR, not a matching FAIL.
+    dest, env = _harness(tmp_path, pan_errors=1, **kwargs)
+    proc = _run(dest, env, "a", "1")
+    assert proc.returncode != 0, proc.stdout
+    assert "ERROR" in proc.stdout
+    assert "every check matches" not in proc.stdout
 
 
 def test_pipefail_is_set():
