@@ -20,6 +20,11 @@ the `rco` command.
   docstrings, module headers, and READMEs. The LLM path ships off.
 - a name-in-tree check: names cited in prose that are not in the Tree are
   shown in the pack and counted by `rco check` when a store is present.
+- `rco check` accepts an `rco.forest/1` file and reports `edge` findings
+  against the same Forest graph `rco forest` shows.
+- `rco pack` cuts empty Forest lines (layer 0, no edges, nothing owned, no
+  prose) before Tree nodes, from the deepest level up, and keeps a parent
+  line until all of its children are cut.
 - history replay: incremental `rco update` equals a full rebuild at every
   SHA of a fixture history and of this repository.
 - zero-config acceptance smokes for a small Python repo, a polyglot repo,

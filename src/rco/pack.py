@@ -4,8 +4,11 @@ The pack is the map: the repo Forest, full Trees for the modules that own
 the --for files, and one import hop out as name and one line. Raw files are
 fetched on demand. The budget is estimated tokens (characters / 4) of the
 rendered markdown, footer included. Over budget, cuts go in this order:
-hop lines from the end, then top-level Tree nodes from the end of each full
-Tree, then Forest entries from the end. Every cut is named in `trimmed`.
+hop lines from the end, then empty Forest lines (layer 0, no edges, nothing
+owned, no prose) from the deepest level up, then top-level Tree nodes from
+the end of each full Tree, then the remaining Forest entries. A parent
+Forest line is kept until all of its children are cut. Every cut is named
+in `trimmed`.
 """
 from __future__ import annotations
 
@@ -23,6 +26,53 @@ from rco.store import NodeKind, Store
 
 MIN_BUDGET = 64  # header and footer alone need about this much
 LINE_CAP = 100
+
+
+def _is_empty_forest_entry(e: ForestEntry) -> bool:
+    """layer 0, no edges, nothing owned, and no prose to show."""
+    if e.prose is not None and e.prose.text.strip():
+        return False
+    return (e.layer == 0 and not e.depends_on and not e.used_by
+            and not e.owns.commands and not e.owns.tables and not e.owns.routes)
+
+
+def _parent_id(mid: str, ids: set[str]) -> str | None:
+    """closest ancestor module id, or None at the root."""
+    if mid == ".":
+        return None
+    head = mid
+    while "/" in head:
+        head = head.rsplit("/", 1)[0]
+        if head in ids:
+            return head
+    if "." in ids:
+        return "."
+    return None
+
+
+def _forest_depth(mid: str) -> int:
+    return 0 if mid == "." else mid.count("/") + 1
+
+
+def _next_forest_cut(entries: list[ForestEntry], all_ids: set[str],
+                     empty_only: bool) -> int | None:
+    """index of the next Forest line to cut: deepest eligible, then by id.
+
+    A line is eligible only when none of its descendants are still shown.
+    """
+    shown = {e.id for e in entries}
+    blocked: set[str] = set()
+    for mid in shown:
+        p = _parent_id(mid, all_ids)
+        while p is not None:
+            if p in shown:
+                blocked.add(p)
+            p = _parent_id(p, all_ids)
+    candidates = [i for i, e in enumerate(entries)
+                  if e.id not in blocked and (not empty_only or _is_empty_forest_entry(e))]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda i: (_forest_depth(entries[i].id), entries[i].id))
 
 
 def _one_line(e: ForestEntry) -> str:
@@ -167,9 +217,14 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         return Pack(sha, budget, 0, tuple(entries), tuple(trees), tuple(hop), tuple(trimmed),
                     stale, tuple(sorted(notes)))
 
+    all_ids = {e.id for e in entries}
     while _measure(current(), label) > budget:
         if hop:
             trimmed.append(f"hop:{hop.pop().id}")
+            continue
+        idx = _next_forest_cut(entries, all_ids, empty_only=True)
+        if idx is not None:
+            trimmed.append(f"forest:{entries.pop(idx).id}")
             continue
         cut = len(trees) - 1 if trees else None
         if cut is not None:
@@ -185,8 +240,9 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
             else:
                 del trees[cut]  # every node is named in trimmed; drop the empty heading
             continue
-        if entries:
-            trimmed.append(f"forest:{entries.pop().id}")
+        idx = _next_forest_cut(entries, all_ids, empty_only=False)
+        if idx is not None:
+            trimmed.append(f"forest:{entries.pop(idx).id}")
             continue
         raise UsageError(f"--budget {budget} is too small for this pack's header and footer")
     p = current()

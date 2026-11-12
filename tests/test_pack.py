@@ -146,3 +146,69 @@ def test_long_for_label_still_within_budget(tmp_path):
     paths = ["src/app/cli.py"] * 100
     p = pack(repo, sha, paths, MIN_BUDGET)
     assert estimate_tokens(pack_markdown(p, " ".join(paths))) <= MIN_BUDGET
+
+
+def _empty_forest_repo(tmp_path):
+    """nested empty modules plus an app that owns a command and imports lib."""
+    files = {
+        "empty/__init__.py": "",
+        "empty/a/__init__.py": "",
+        "empty/a/b/__init__.py": "",
+        "empty/a/b/c/leaf.py": "x = 1\n",
+        "empty/a/b/d/leaf.py": "x = 1\n",
+        "app/cli.py": (
+            "import argparse\n"
+            "from lib import helpers\n"
+            "\n"
+            "def main() -> int:\n"
+            "    p = argparse.ArgumentParser(prog=\"app\")\n"
+            "    p.add_argument(\"--fast\", action=\"store_true\")\n"
+            "    p.parse_args()\n"
+            "    return helpers.run()\n"
+        ),
+        "lib/helpers.py": "def run() -> int:\n    return 0\n",
+    }
+    return fixture.make_repo(tmp_path / "cut_empty", files)
+
+
+def _is_empty_forest_entry(e):
+    return (e.layer == 0 and not e.depends_on and not e.used_by
+            and not e.owns.commands and not e.owns.tables and not e.owns.routes)
+
+
+def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
+    from rco.forest import build_forest
+
+    repo, sha = _empty_forest_repo(tmp_path)
+    entries = {e.id: e for e in build_forest(repo, sha).entries}
+    empty_ids = ["empty/a/b/d", "empty/a/b/c", "empty/a/b", "empty/a", "empty"]
+    for mid in empty_ids:
+        assert mid in entries and _is_empty_forest_entry(entries[mid]), mid
+    assert not _is_empty_forest_entry(entries["app"])
+    assert not _is_empty_forest_entry(entries["lib"])
+
+    full = pack(repo, sha, ["app/cli.py"], 10 ** 6)
+    hits = []
+    for budget in range(MIN_BUDGET, full.used + 1, 4):
+        p = pack(repo, sha, ["app/cli.py"], budget)
+        empty_cut = [t[7:] for t in p.trimmed
+                     if t.startswith("forest:") and t[7:] in set(empty_ids)]
+        nodes_kept = sum(len(t.nodes) for t in p.trees)
+        if empty_cut and nodes_kept:
+            hits.append((p, empty_cut))
+    assert hits, "some budget must cut empty Forest lines and still keep Tree nodes"
+
+    for p, empty_cut in hits:
+        kinds = [t.split(":", 1)[0] for t in p.trimmed]
+        if "node" in kinds:
+            assert kinds.index("forest") < kinds.index("node")
+        assert empty_cut == empty_ids[:len(empty_cut)]
+        # a parent is not cut while a child is still shown
+        shown = {e.id for e in p.forest}
+        for mid in shown:
+            parent = mid.rsplit("/", 1)[0] if "/" in mid else None
+            if parent in set(empty_ids) | {"app", "lib"}:
+                # if a child is shown, its existing parent must still be shown
+                if parent in entries:
+                    assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
+

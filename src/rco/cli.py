@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import Sequence
 
 from rco import __version__, build, canon, check, diff, gitread
+from rco.forest_model import Forest
 from rco.model import Map
 from rco.output import Exit, UsageError, emit
 
@@ -37,8 +38,9 @@ def make_parser() -> argparse.ArgumentParser:
                    help="only the modules that own these paths")
     _common(t)
 
-    c = sub.add_parser("check", help="check a map against the code at a commit")
-    c.add_argument("map", nargs="?", default=None, help="map JSON file (rco tree --format json)")
+    c = sub.add_parser("check", help="check a map or forest against the code at a commit")
+    c.add_argument("map", nargs="?", default=None,
+                   help="map JSON (rco tree --format json) or forest JSON (rco forest --format json)")
     c.add_argument("sha", nargs="?", default=None, help="commit (default: the map's sha)")
     c.add_argument("--selftest", action="store_true", help="run the planted-drift self-test")
     _common(c)
@@ -91,11 +93,23 @@ class MapReport:
         return Exit.OK
 
 
-def _read_map(path: str) -> Map:
+def _read_claim(path: str) -> Map | Forest:
+    """A claimed rco.map/1 or rco.forest/1 file."""
     try:
-        return canon.map_from_obj(json.loads(Path(path).read_text(encoding="utf-8")))
-    except (OSError, ValueError, KeyError, TypeError) as e:
+        obj = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError) as e:
         raise UsageError(f"unreadable map {path}: {e}") from None
+    schema = obj.get("schema") if isinstance(obj, dict) else None
+    try:
+        if schema == "rco.map/1":
+            return canon.map_from_obj(obj)
+        if schema == "rco.forest/1":
+            from rco.forest_model import forest_from_obj
+            return forest_from_obj(obj)
+    except (ValueError, KeyError, TypeError) as e:
+        kind = "map" if schema == "rco.map/1" else "forest"
+        raise UsageError(f"unreadable {kind} {path}: {e}") from None
+    raise UsageError(f"unreadable map {path}: schema must be rco.map/1 or rco.forest/1")
 
 
 def run(args: argparse.Namespace) -> Exit:
@@ -107,8 +121,12 @@ def run(args: argparse.Namespace) -> Exit:
         if args.selftest:
             return emit(check.selftest(), args.format, args.out)
         if args.map is None:
-            raise UsageError("check needs MAP or --selftest")
-        m = _read_map(args.map)
+            raise UsageError("check needs MAP or FOREST or --selftest")
+        claim = _read_claim(args.map)
+        if isinstance(claim, Forest):
+            sha = gitread.resolve(repo, args.sha or claim.sha)
+            return emit(check.check(repo, sha, claimed_forest=claim), args.format, args.out)
+        m = claim
         sha = gitread.resolve(repo, args.sha or m.sha)
         store = None
         db = repo / ".rco" / "rco.db"

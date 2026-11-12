@@ -372,20 +372,20 @@ Phase 1 commands:
 | Command | Report | Exit 1 when |
 |---|---|---|
 | `rco tree [SHA] [--for PATHS...]` | the Map (`rco.map/1`) | never |
-| `rco check MAP [SHA]` | `rco.check/1` | any finding |
+| `rco check MAP or FOREST [SHA]` | `rco.check/1` | any finding |
 | `rco check --selftest` | planted-drift result (`rco.selftest/2`) | any planted drift missed |
 | `rco diff [BASE] [HEAD]` | `rco.diff/1` | any added, removed or changed shape |
 
 `SHA` defaults to `HEAD`. `rco diff` defaults follow the README:
 `BASE = merge-base(default branch, HEAD)` and `HEAD = HEAD`. For `rco
-check`, `SHA` defaults to the map's own `sha`.
+check`, `SHA` defaults to the map's or forest's own `sha`.
 
 ### `rco.check/1` (step 1)
 
 ```python
 @dataclass(frozen=True, slots=True)
 class Finding:
-    status: Literal["missing", "extra", "changed", "stale"]
+    status: Literal["missing", "extra", "changed", "stale", "edge"]
     key: str        # node key, or "module:<id>" for stale
     path: str
     detail: str     # "sig: '(a)' -> '(a, b)'", "module_hash", "map sha != SHA"
@@ -395,7 +395,9 @@ The checker re-extracts at SHA, rebuilding the map with `build_map`, and
 compares the result with the given map. `extra` means the map claims a node
 the code does not have. `missing` means the code has a node the map lacks.
 `changed` means the key is the same but the shape differs. `stale` means
-the module hash or the SHA does not match. Findings are sorted by
+the module hash or the SHA does not match. When the file is an
+`rco.forest/1`, `rco check` compares that Forest's edges with the Forest
+computed from the code (`rco forest`) and reports `edge` findings. Findings are sorted by
 `(path, key, status)`. The self-test builds the map from
 `fixture.DRIFT_FILES` (a wheel-safe in-memory fixture in `src/rco/fixture.py`) and plants these errors: remove a flag, rename a
 column, change a sig, add a function, drop a module, and alter a

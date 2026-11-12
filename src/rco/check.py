@@ -19,7 +19,7 @@ from rco.output import Exit
 SCHEMA_CHECK = "rco.check/1"
 SCHEMA_SELFTEST = "rco.selftest/2"
 
-Status = Literal["missing", "extra", "changed", "stale"]
+Status = Literal["missing", "extra", "changed", "stale", "edge"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -81,7 +81,7 @@ class CheckReport:
     findings: tuple[Finding, ...]
 
     def to_obj(self) -> dict:
-        counts = {s: 0 for s in ("changed", "extra", "missing", "stale")}
+        counts = {s: 0 for s in ("changed", "extra", "missing", "stale", "edge")}
         for f in self.findings:
             counts[f.status] += 1
         return {
@@ -114,13 +114,24 @@ def prose_name_findings(store, actual: Map) -> tuple[Finding, ...]:
     return tuple(sorted(found, key=lambda f: (f.path, f.key, f.status)))
 
 
-def check(repo: Path, sha: str, claimed: Map, store=None) -> CheckReport:
+def check(repo: Path, sha: str, claimed: Map | None = None, store=None,
+         claimed_forest=None) -> CheckReport:
     t0 = time.perf_counter()
-    actual = build.build_map(repo, sha)
-    findings = compare(claimed, actual)
-    if store is not None:
-        findings = findings + prose_name_findings(store, actual)
-    rep = CheckReport(sha=sha, map_sha=claimed.sha, findings=findings)
+    findings: tuple[Finding, ...] = ()
+    map_sha = ""
+    if claimed is not None:
+        actual = build.build_map(repo, sha)
+        findings = compare(claimed, actual)
+        map_sha = claimed.sha
+        if store is not None:
+            findings = findings + prose_name_findings(store, actual)
+    if claimed_forest is not None:
+        from rco.forest import build_forest, compare_edges
+        findings = findings + compare_edges(claimed_forest, build_forest(repo, sha))
+        findings = tuple(sorted(findings, key=lambda f: (f.path, f.key, f.status)))
+        if not map_sha:
+            map_sha = claimed_forest.sha
+    rep = CheckReport(sha=sha, map_sha=map_sha, findings=findings)
     print(f"rco check: {len(rep.findings)} findings in {time.perf_counter() - t0:.3f}s",
           file=sys.stderr)
     return rep

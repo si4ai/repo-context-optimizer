@@ -210,6 +210,7 @@ letters
 like
 linux
 list
+literal
 literature
 lite
 load
@@ -223,6 +224,7 @@ mail
 main
 make
 march
+map
 mark
 markdown
 marketo

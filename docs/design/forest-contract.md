@@ -110,8 +110,10 @@ Markdown follows the README example, plus a trimmed line:
 ```
 
 Without `--for` the pack is the Forest only. Cut order when over budget: one
-hop lines first, then Tree nodes from the end of each full Tree, then Forest
-entries; nothing is cut silently. Exit 1 when the pack shows a stale entry,
+hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
+no prose) from the deepest level up, then Tree nodes from the end of each
+full Tree, then the remaining Forest entries. A parent Forest line is kept
+until all of its children are cut. Nothing is cut silently. Exit 1 when the pack shows a stale entry,
 else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:
@@ -198,7 +200,11 @@ step-0 follow-up PR, sent to every open step first.
   whose nodes are all cut loses its heading; its nodes are named in
   `trimmed` (step 5).
 - Applied: the update/pack/forest placeholders are gone; all three are built.
-- Open: `rco check` does not read a Forest yet. `forest.compare_edges` gives
-  the `edge` finding (step 2).
+- Applied: `rco check` accepts an `rco.forest/1` file and reports `edge`
+  findings from `forest.compare_edges` against the Forest computed from the
+  code, the same graph `rco forest` shows (the #20 call).
+- Applied: empty Forest lines are cut before Tree nodes, from the deepest
+  level up; a parent line is kept until all of its children are cut (the
+  #22 call).
 - Open: name-in-Tree flags (`prose.flags`) are not shown in the pack or
   counted in `rco check` yet (step 7).
