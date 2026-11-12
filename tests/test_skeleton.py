@@ -35,4 +35,6 @@ def test_readme_names_landed_diff_and_output_contract():
     planned = text.split("## Planned commands", 1)[1].split("\n## ", 1)[0]
     assert "rco diff" in planned and "have landed" in planned
     assert "output contract" in planned.lower()
-    assert "rco pack" in planned and "not implemented yet" in planned
+    assert "rco pack" in planned and "rco update" in planned and "have landed" in planned
+    assert "rco triage" in planned and "rco notice" in planned and "have landed" in planned
+    assert "not implemented yet" not in planned

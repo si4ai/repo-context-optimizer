@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.0 is the first installable release (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, no triage, and no A/B claim. Later phases remain design.
+**Status:** 0.1.0 is the first installable release (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, no triage, and no A/B claim. The phase 3 cold-agent A/B harness is `tools/phase3_ab.py`; the A/B that counts waits until this install is the one under test. Later phases remain design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -161,7 +161,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Planned commands
 
-`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. `rco pack` and `rco update` are not implemented yet. Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see `docs/design/pin-contract.md`). Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see `docs/design/pin-contract.md`). Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
@@ -357,6 +357,7 @@ Until slice 5 lands, the pipeline ends at merge; from slice 2 on, the map checke
 - **Phase 1.** Trees, hashes, and `rco diff` for Python, the CLI, SQL, and routes. Zero LLM. Deterministic tests: same SHA in, same bytes out. Redaction pass and the output contract (stdout/`--out`, format flags, exit codes). The map checker (see [Verification](#verification)) ships with the first Tree builder, so the first map anyone reads comes with a measured accuracy.
 - **Phase 2.** The Forest, computed first, with optional prose, plus staleness and name-in-Tree checks. When prose is on, it is generated lazily from the Tree (not raw source), the first time an agent asks for it in a pack; mined first from existing docstrings, module headers, and READMEs, with the model called only when nothing useful exists; written to a fixed template with a hard length cap, using a cheap model; rewritten only when that module's contract hash changes, never on internal edits, and debounced across merges; and checked by code: any name the prose cites must exist in the Tree, or the entry is flagged.
 - **Phase 3.** `rco pack`, A/B tested on cold agents.
+  The harness (`tools/phase3_ab.py`, method in [`docs/baseline/phase3-ab.md`](docs/baseline/phase3-ab.md)) prepares control and treatment briefs and scores mill cold-test kit logs against the phase 0 metrics (reads and tokens before the first useful action, wrong guesses). It never launches agents. The counting run, and any savings claim, waits until the forest is in a released install; a claim requires platform token counts (see [`docs/baseline/phase0.md`](docs/baseline/phase0.md)).
 - **Phase 4.** Pinned contracts: a developer reviews a Tree and commits it as the intended contract; every PR re-extracts and reports drift from the pin as a visible check, not a block. The map then works both ways: it describes the code, and the code is checked against it.
 - **Phase 5.** `rco triage` as a hint (never rebases or pushes), plus a cross-PR contract notice in CI (a visible hint, not a block), subject to the identity constraint above. Rebase and merge tools come only after the map is reliable.
 - Then the mill backend and the MCP adapter.
