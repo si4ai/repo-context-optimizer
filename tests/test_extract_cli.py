@@ -206,10 +206,12 @@ def test_pure_and_position_free():
     assert shifted == a
 
 
-def test_selftest_plants_real_flag_drift_not_a_stand_in():
-    r = check.selftest()
-    assert "flag" not in r.standin
-    assert r.exit_code() == 0
+def test_selftest_plants_flag_drift_on_a_real_flag():
+    with fixture.drift_repo() as (repo, sha):
+        m = build.build_map(repo, sha)
+    flags = [n for t in m.trees for _, n in walk(t) if n.kind is Kind.FLAG]
+    assert any(n.name == "--out" for n in flags), "drift fixture needs a real CLI flag"
+    assert check.selftest_on(m).exit_code() == 0
 
 
 def test_golden(tmp_path):

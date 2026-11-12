@@ -17,7 +17,7 @@ from rco.model import Kind, Map, Node, Tree, walk
 from rco.output import Exit
 
 SCHEMA_CHECK = "rco.check/1"
-SCHEMA_SELFTEST = "rco.selftest/1"
+SCHEMA_SELFTEST = "rco.selftest/2"
 
 Status = Literal["missing", "extra", "changed", "stale"]
 
@@ -165,34 +165,12 @@ def plants(m: Map) -> tuple[tuple[str, Status, Map], ...]:
     )
 
 
-# Stand-ins used only when the fixture's code yields no node of that kind
-# (the SQL and CLI extractors are stubs until steps 2 and 4 land). The
-# checker compares structure, so a planted error in a stand-in tests the
-# same code path as one in a real node.
-_STANDIN = Tree(
-    module="(selftest stand-in)",
-    module_hash="sha256:" + "f" * 64,
-    extractors=(),
-    nodes=(
-        Node(Kind.COMMAND, "tool", "standin/cli.py",
-             children=(Node(Kind.FLAG, "--out", "", "metavar=FILE"),)),
-        Node(Kind.TABLE, "users", "standin/schema.sql",
-             children=(Node(Kind.COLUMN, "email", "", "TEXT NOT NULL"),)),
-    ),
-)
-
-
-def _has(m: Map, kind: Kind) -> bool:
-    return any(n.kind is kind for t in m.trees for _, n in walk(t))
-
-
 @dataclass(frozen=True, slots=True)
 class SelftestReport:
     rows: tuple[tuple[str, str, int, bool], ...]  # name, expected status, findings, caught
-    standin: tuple[str, ...] = ()                 # kinds that came from the stand-in
 
     def to_obj(self) -> dict:
-        return {"schema": SCHEMA_SELFTEST, "standin": list(self.standin),
+        return {"schema": SCHEMA_SELFTEST,
                 "plants": [{"name": n, "expect": s, "findings": c, "caught": ok}
                            for n, s, c, ok in self.rows]}
 
@@ -200,8 +178,6 @@ class SelftestReport:
         lines = ["# rco check --selftest", ""]
         for n, s, c, ok in self.rows:
             lines.append(f"- {'caught' if ok else 'MISSED'}: {n} (expect {s}, {c} findings)")
-        if self.standin:
-            lines += ["", "stand-in nodes used for: " + ", ".join(self.standin)]
         return "\n".join(lines) + "\n"
 
     def exit_code(self) -> Exit:
@@ -209,16 +185,13 @@ class SelftestReport:
 
 
 def selftest_on(m: Map) -> SelftestReport:
-    standin = tuple(k.value for k in (Kind.FLAG, Kind.COLUMN) if not _has(m, k))
-    if standin:
-        m = replace(m, trees=m.trees + (_STANDIN,))
     if compare(m, m):
         raise AssertionError("an unchanged map must have no findings")
     rows = []
     for name, status, planted in plants(m):
         found = compare(planted, m)
         rows.append((name, status, len(found), any(f.status == status for f in found)))
-    return SelftestReport(tuple(rows), standin)
+    return SelftestReport(tuple(rows))
 
 
 def selftest() -> SelftestReport:

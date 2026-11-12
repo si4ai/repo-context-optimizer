@@ -7,7 +7,7 @@ import pytest
 
 from rco import build, canon, check, fixture
 from rco.extract.sql import SqlExtractor
-from rco.model import Kind, Node, SourceFile
+from rco.model import Kind, Node, SourceFile, walk
 
 EX = SqlExtractor()
 HERE = Path(__file__).parent
@@ -174,9 +174,12 @@ def test_pure_same_input_same_output():
     assert EX.extract(src) == EX.extract(src)
 
 
-def test_selftest_uses_a_real_column_now():
-    rep = check.selftest()
-    assert "column" not in rep.standin
+def test_selftest_plants_column_drift_on_a_real_column():
+    with fixture.drift_repo() as (repo, sha):
+        m = build.build_map(repo, sha)
+    cols = [n for t in m.trees for _, n in walk(t) if n.kind is Kind.COLUMN]
+    assert any(n.name == "email" for n in cols), "drift fixture needs a real SQL column"
+    rep = check.selftest_on(m)
     assert all(r[3] for r in rep.rows)
 
 
