@@ -226,3 +226,41 @@ def test_pypi_and_sk_key_shapes_are_findings() -> None:
     assert "sk-api-key" in ch.credential_kinds("sk" + "-proj-" + body)
     for text in ("pypi-AgE", "sk" + "-abc123", "pypi" + "-" + "a" * 40):
         assert ch.credential_kinds(text) == [], text
+
+
+_UTF8_BOM = b"\xef\xbb\xbf"
+_UTF16LE_BOM = b"\xff\xfe"
+
+
+def test_planted_utf8_and_utf16_bom_are_findings(tmp_path: Path) -> None:
+    repo, base = _base_repo(tmp_path)
+    (repo / "docs" / "utf8.md").write_bytes(_UTF8_BOM + b"hello example user\n")
+    (repo / "docs" / "utf16.md").write_bytes(_UTF16LE_BOM + b"h\x00i\x00\n\x00")
+    _commit(repo, "add notes\n\nRole: builder\n")
+    _code, findings = _scan(repo, base)
+    kinds_by_where = {(item["kind"], item["where"]) for item in findings}
+    assert ("byte-order mark", "docs/utf8.md") in kinds_by_where
+    assert ("byte-order mark", "docs/utf16.md") in kinds_by_where
+
+
+def test_planted_typographic_mark_is_a_finding(tmp_path: Path) -> None:
+    repo, base = _base_repo(tmp_path)
+    _write(repo, "docs/note.md", "see this " + "\u2192" + " there\n")
+    _commit(repo, "add notes\n\nRole: builder\n")
+    _code, findings = _scan(repo, base)
+    kinds = {item["kind"] for item in findings}
+    assert "typographic mark U+2192" in kinds
+
+
+def test_staged_bom_fails_under_strict(tmp_path: Path) -> None:
+    repo, _base = _base_repo(tmp_path)
+    planted = repo / "docs" / "planted.md"
+    planted.write_bytes(_UTF8_BOM + b"hello example user\n")
+    _git(repo, "add", "docs/planted.md")
+    code = ch.main(
+        ["--root", str(repo), "--staged", "--strict", "--json"]
+    )
+    assert code == 1
+    planted.write_bytes(b"hello example user\n")
+    _git(repo, "add", "docs/planted.md")
+    assert ch.main(["--root", str(repo), "--staged", "--strict", "--json"]) == 0

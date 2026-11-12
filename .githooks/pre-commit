@@ -1,0 +1,15 @@
+#!/bin/sh
+# Hygiene on staged files (index blobs). Setup: git config core.hooksPath .githooks
+# The repo is the one this hook lives in, so it gives a verdict from any cwd.
+root=$(cd "$(dirname "$0")/.." && pwd) || { echo "pre-commit: cannot find the repo; failing closed" >&2; exit 1; }
+if [ ! -f "$root/tools/check_hygiene.py" ]; then
+  echo "pre-commit: tools/check_hygiene.py not found beside this hook; failing closed" >&2
+  exit 1
+fi
+for py in python3 python py; do
+  if command -v "$py" >/dev/null 2>&1 && "$py" -c "import sys; sys.exit(sys.version_info < (3, 8))" >/dev/null 2>&1; then
+    exec "$py" "$root/tools/check_hygiene.py" --root "$root" --staged --strict
+  fi
+done
+echo "pre-commit: no python found (tried python3, python, py)" >&2
+exit 1

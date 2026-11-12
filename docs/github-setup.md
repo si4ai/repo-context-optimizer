@@ -85,7 +85,9 @@ Flags `--map` and `--control-plane` override the same fields. Defaults match the
 
 ## Hygiene and PR text
 
-`hygiene_report` runs `tools/check_hygiene.py` on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. It is report-only (no `--strict` in CI). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, and junk files, in the commit range and in the PR title and body. the report names the kind and the path or commit, never the matched text; a crash fails the job. flags or `ci/hygiene.toml` tune the words file and options.
+`hygiene_report` runs `tools/check_hygiene.py` on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. It is report-only (no `--strict` in CI). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, byte-order marks, and junk files, in the commit range and in the PR title and body. the report names the kind and the path or commit, never the matched text; a crash fails the job. flags or `ci/hygiene.toml` tune the words file and options.
+
+Once per checkout, turn on the repo hooks with `git config core.hooksPath .githooks`. `pre-commit` runs `tools/check_hygiene.py --staged --strict` on staged blobs (byte-order marks and typographic marks on the whole blob; the other rules on added lines).
 
 `role_trailer_report` runs `tools/check_role_trailer.py` on the same events. each commit in the range must carry a `Role: <desk>` trailer whose value is in the configured role list. a missing or unknown role is a finding; bot-authored commits may omit the trailer. the job is report-only in CI, and a crash fails it. whether either job becomes a required check, or whether the trailer feeds a self-merge gate, is a later settings decision.
 

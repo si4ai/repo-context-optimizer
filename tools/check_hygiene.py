@@ -3,9 +3,11 @@
 
 flags personal identifiers, secrets, home paths, non-documentation
 addresses, emails outside placeholder domains, title-case name tokens
-that are not ordinary words, typographic marks, and junk files. It
-scans added diff lines, added paths, each commit message in the range,
-and, when an event file is given, the pull-request title and body.
+that are not ordinary words, typographic marks, byte-order marks, and
+junk files. It scans added diff lines, added paths (including a
+byte-order-mark prefix check on those blobs), each commit message in
+the range, and, when an event file is given, the pull-request title
+and body. --staged scans index blobs the same way.
 
 Findings name the kind and the path or commit, never the matched text.
 This is a visible report, not a merge gate.
@@ -17,6 +19,7 @@ git only, no network. standard library only.
 
   python3 tools/check_hygiene.py --base REV [--head REV] [--root DIR]
       [--event PATH] [--config PATH] [--words-file PATH] [--json] [--strict]
+  python3 tools/check_hygiene.py --staged [--root DIR] [--strict]
 
 exits 0 by default even with findings; --strict exits 1 when any are found.
 a git failure or bad config exits 2.
@@ -75,6 +78,7 @@ _TEXT_MARKS = frozenset(
         0xFEFF,
     }
 )
+_BOM_PREFIXES = (b"\xef\xbb\xbf", b"\xff\xfe", b"\xfe\xff")
 _HOME_PLACEHOLDERS = frozenset(
     {"", "*", "...", "\u2026", "example", "user", "username", "you", "name"}
 )
@@ -259,6 +263,10 @@ def text_mark(text: str) -> int | None:
         if point in _TEXT_MARKS:
             return point
     return None
+
+
+def blob_has_bom(data: bytes) -> bool:
+    return bool(data) and data.startswith(_BOM_PREFIXES)
 
 
 def _is_bak(name: str) -> bool:
@@ -536,7 +544,61 @@ def scan_range(root: Path, base: str, head: str, cfg: HygieneConfig) -> list[Fin
             kind = junk_kind(path)
             if kind:
                 findings.append(Finding(kind=f"junk file ({kind})", where=path))
+            try:
+                blob = _git(root, "show", f"{rev}:{path}")
+            except OSError as exc:
+                raise OSError(f"cannot read {rev}:{path}: {exc}") from exc
+            if blob_has_bom(blob):
+                findings.append(Finding(kind="byte-order mark", where=path))
         findings.extend(_scan_text(f"git commit {short} diff", added, allow, vocab))
+    return findings
+
+
+def _staged_paths(root: Path) -> list[str]:
+    raw = _git(root, "diff", "--cached", "--name-only", "--diff-filter=ACM", "-z")
+    return [item for item in raw.decode("utf-8", "replace").split("\0") if item]
+
+
+def _staged_added_text(root: Path) -> str:
+    raw = _git(root, "diff", "--cached", "--unified=0", "--no-renames")
+    added = [
+        ln[1:]
+        for ln in raw.decode("utf-8", "replace").splitlines()
+        if ln.startswith("+") and not ln.startswith("+++")
+    ]
+    return "\n".join(added)
+
+
+def scan_staged(root: Path, cfg: HygieneConfig) -> list[Finding]:
+    """BOM and typographic marks on each staged blob; other rules on added lines.
+
+    Name-token and identifier rules follow the range scan: they look at
+    added diff lines, not unchanged prose already on the branch. A
+    byte-order mark or typographic mark on an unchanged line of a
+    staged file still fails, because those are read from the blob.
+    """
+    allow, vocab = _word_sets(root, cfg)
+    findings: list[Finding] = []
+    for path in _staged_paths(root):
+        kind = junk_kind(path)
+        if kind:
+            findings.append(Finding(kind=f"junk file ({kind})", where=path))
+        try:
+            blob = _git(root, "show", f":{path}")
+        except OSError as exc:
+            raise OSError(f"cannot read staged blob {path}: {exc}") from exc
+        if blob_has_bom(blob):
+            findings.append(Finding(kind="byte-order mark", where=path))
+        if b"\0" in blob[:8000]:
+            continue
+        mark = text_mark(blob.decode("utf-8", "replace"))
+        if mark is not None:
+            findings.append(Finding(kind=f"typographic mark U+{mark:04X}", where=path))
+    added = _staged_added_text(root)
+    for kind in kinds_in_text(added, allow, vocab):
+        if kind.startswith("typographic mark"):
+            continue
+        findings.append(Finding(kind=kind, where="staged diff"))
     return findings
 
 
@@ -573,7 +635,11 @@ def to_markdown(findings: list[Finding], base: str, head: str) -> str:
 
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="report hygiene findings in a PR or push range")
-    ap.add_argument("--base", required=True, help="diff base revision")
+    ap.add_argument(
+        "--base",
+        default=None,
+        help="diff base revision (required unless --staged)",
+    )
     ap.add_argument("--head", default="HEAD", help="diff head revision")
     ap.add_argument("--root", type=Path, default=Path.cwd(), help="git work tree to scan")
     ap.add_argument(
@@ -591,13 +657,24 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--words-file", default=None, help="ordinary-words file, default tools/hygiene_words.txt")
     ap.add_argument("--json", action="store_true", help="print JSON instead of markdown")
     ap.add_argument("--strict", action="store_true", help="exit 1 when there are findings")
+    ap.add_argument(
+        "--staged",
+        action="store_true",
+        help="scan staged index blobs instead of a commit range",
+    )
     args = ap.parse_args(argv)
+    if not args.staged and not args.base:
+        ap.error("--base is required unless --staged")
     try:
         root = args.root
         cfg = load_hygiene_config(root, args.config, words_file=args.words_file)
-        base = _git(root, "rev-parse", "--verify", f"{args.base}^{{commit}}").decode().strip()
-        head = _git(root, "rev-parse", "--verify", f"{args.head}^{{commit}}").decode().strip()
-        findings = scan_range(root, base, head, cfg)
+        if args.staged:
+            base, head = "staged", "index"
+            findings = scan_staged(root, cfg)
+        else:
+            base = _git(root, "rev-parse", "--verify", f"{args.base}^{{commit}}").decode().strip()
+            head = _git(root, "rev-parse", "--verify", f"{args.head}^{{commit}}").decode().strip()
+            findings = scan_range(root, base, head, cfg)
         if args.event is not None:
             allow, vocab = _word_sets(root, cfg)
             findings.extend(scan_event(args.event, allow, vocab))
