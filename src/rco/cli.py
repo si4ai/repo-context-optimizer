@@ -59,6 +59,17 @@ def make_parser() -> argparse.ArgumentParser:
     k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
     _common(k)
 
+    r = sub.add_parser("triage", help="hint per branch: clean or a structural brief (never rebases)")
+    r.add_argument("branches", nargs="*", metavar="BRANCH")
+    r.add_argument("--onto", default=None, help="target ref (default: the default branch)")
+    _common(r)
+
+    n = sub.add_parser("notice", help="cross-PR contract notice: other branches using this PR's changes")
+    n.add_argument("others", nargs="*", metavar="BRANCH")
+    n.add_argument("--base", default=None, help="this PR's base (default: merge-base)")
+    n.add_argument("--head", default=None, help="this PR's head (default: HEAD)")
+    _common(n)
+
     f = sub.add_parser("forest", help="print the computed Forest of a commit")
     f.add_argument("sha", nargs="?", default="HEAD")
     _common(f)
@@ -115,6 +126,12 @@ def run(args: argparse.Namespace) -> Exit:
         res = update.update(repo, store, args.new, args.name)
         drain_queue(repo, store, args.name)  # mined prose: queue is not a separate CLI step
         return emit(update.UpdateReport(res), args.format, args.out)
+    if args.cmd == "triage":
+        from rco import triage
+        return emit(triage.triage(repo, args.branches, args.onto), args.format, args.out)
+    if args.cmd == "notice":
+        from rco import triage
+        return emit(triage.notice(repo, args.base, args.head, args.others), args.format, args.out)
     if args.cmd == "forest":
         from rco import forest
         sha = gitread.resolve(repo, args.sha)
