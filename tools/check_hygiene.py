@@ -500,18 +500,49 @@ def _commit_meta(root: Path, rev: str) -> tuple[str, str, str]:
     return name, email, body
 
 
+def _blob_paths_from_raw_z(raw: bytes) -> list[str]:
+    """New-side blob paths from `git diff-tree` / `git diff` `--raw -z` output."""
+    paths: list[str] = []
+    parts = raw.split(b"\0")
+    i = 0
+    n = len(parts)
+    while i < n:
+        meta = parts[i]
+        i += 1
+        if not meta.startswith(b":"):
+            continue
+        fields = meta.decode("ascii", "replace").split()
+        if len(fields) < 5:
+            continue
+        new_mode = fields[1]
+        status = fields[4]
+        if i >= n:
+            break
+        path = parts[i].decode("utf-8", "replace")
+        i += 1
+        if status[:1] in ("R", "C"):
+            if i >= n:
+                break
+            path = parts[i].decode("utf-8", "replace")
+            i += 1
+        if new_mode.startswith("100") and path:
+            paths.append(path)
+    return paths
+
+
 def _commit_added(root: Path, rev: str) -> tuple[list[str], str]:
     names = _git(
         root,
         "diff-tree",
         "--no-commit-id",
-        "--name-only",
         "--no-renames",
         "-r",
         "--diff-filter=ACM",
+        "--raw",
+        "-z",
         rev,
     )
-    paths = [ln for ln in names.decode("utf-8", "replace").splitlines() if ln.strip()]
+    paths = _blob_paths_from_raw_z(names)
     raw = _git(root, "show", "--format=", "--unified=0", "--no-renames", rev)
     added_lines = [
         ln[1:]
@@ -555,8 +586,8 @@ def scan_range(root: Path, base: str, head: str, cfg: HygieneConfig) -> list[Fin
 
 
 def _staged_paths(root: Path) -> list[str]:
-    raw = _git(root, "diff", "--cached", "--name-only", "--diff-filter=ACM", "-z")
-    return [item for item in raw.decode("utf-8", "replace").split("\0") if item]
+    raw = _git(root, "diff", "--cached", "--diff-filter=ACM", "--raw", "-z")
+    return _blob_paths_from_raw_z(raw)
 
 
 def _staged_added_text(root: Path) -> str:

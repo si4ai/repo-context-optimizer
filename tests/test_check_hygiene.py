@@ -264,3 +264,42 @@ def test_staged_bom_fails_under_strict(tmp_path: Path) -> None:
     planted.write_bytes(b"hello example user\n")
     _git(repo, "add", "docs/planted.md")
     assert ch.main(["--root", str(repo), "--staged", "--strict", "--json"]) == 0
+
+
+def test_non_ascii_path_in_range_is_readable(tmp_path: Path) -> None:
+    repo, base = _base_repo(tmp_path)
+    planted = "caf" + "\u00e9" + ".txt"
+    (repo / planted).write_bytes(_UTF8_BOM + b"hello example user\n")
+    _commit(repo, "add cafe\n\nRole: builder\n")
+    saved = {k: os.environ.get(k) for k in list(os.environ) if k.startswith("GIT_CONFIG_")}
+    try:
+        for k in saved:
+            del os.environ[k]
+        os.environ["GIT_CONFIG_COUNT"] = "1"
+        os.environ["GIT_CONFIG_KEY_0"] = "core.quotePath"
+        os.environ["GIT_CONFIG_VALUE_0"] = "true"
+        code, findings = _scan(repo, base, strict=True)
+    finally:
+        for k in list(os.environ):
+            if k.startswith("GIT_CONFIG_"):
+                del os.environ[k]
+        for k, v in saved.items():
+            if v is not None:
+                os.environ[k] = v
+    assert code == 1
+    kinds_by_where = {(item["kind"], item["where"]) for item in findings}
+    assert ("byte-order mark", planted) in kinds_by_where
+
+
+def test_gitlink_in_range_and_staged_does_not_crash(tmp_path: Path) -> None:
+    gitlink_sha = "1234567890123456789012345678901234567890"
+    repo, base = _base_repo(tmp_path)
+    _git(repo, "update-index", "--add", "--cacheinfo", f"160000,{gitlink_sha},sub")
+    _git(repo, "commit", "-qm", "add gitlink\n\nRole: builder\n")
+    code, findings = _scan(repo, base, strict=True)
+    assert code in (0, 1)
+    assert all(item.get("where") != "sub" for item in findings)
+
+    staged, _base = _base_repo(tmp_path / "staged")
+    _git(staged, "update-index", "--add", "--cacheinfo", f"160000,{gitlink_sha},sub")
+    assert ch.main(["--root", str(staged), "--staged", "--strict", "--json"]) in (0, 1)
