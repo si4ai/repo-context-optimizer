@@ -47,7 +47,26 @@ def make_parser() -> argparse.ArgumentParser:
     d.add_argument("base", nargs="?", default=None)
     d.add_argument("head", nargs="?", default=None)
     _common(d)
+
+    u = sub.add_parser("update", help="publish a commit to the store (not implemented yet)")
+    u.add_argument("new", nargs="?", default="HEAD")
+    u.add_argument("--name", default="main", help="pointer name (default: main)")
+    _common(u)
+
+    k = sub.add_parser("pack", help="Forest plus Trees for an agent (not implemented yet)")
+    k.add_argument("sha", nargs="?", default="HEAD")
+    k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE")
+    k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
+    _common(k)
+
+    f = sub.add_parser("forest", help="print the computed Forest (not implemented yet)")
+    f.add_argument("sha", nargs="?", default="HEAD")
+    _common(f)
     return p
+
+
+# Phase 2 commands that exist but are not built yet: exit 2 (usage), one line.
+_NOT_YET = {"update": "step 3", "pack": "step 5", "forest": "step 2"}
 
 
 @dataclass(frozen=True)
@@ -87,6 +106,8 @@ def run(args: argparse.Namespace) -> Exit:
         return emit(check.check(repo, sha, m), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+    if args.cmd in _NOT_YET:
+        raise UsageError(f"{args.cmd}: not implemented (Phase 2 {_NOT_YET[args.cmd]})")
     raise UsageError(f"unknown command {args.cmd}")
 
 
