@@ -85,14 +85,15 @@ jobs:
           python -m pip install build==1.6.1 twine==7.0.0
           python -m build --outdir dist .
           python -m twine check --strict dist/*
+      - name: Check the sdist file list and the wheel contents
+        run: python ci/check_dist.py dist
       - name: Smoke test the wheel
         run: |
           set -eu
           python -m venv /tmp/rco-smoke
           /tmp/rco-smoke/bin/pip install dist/*.whl
           cd /tmp
-          /tmp/rco-smoke/bin/rco --version
-          /tmp/rco-smoke/bin/rco check --selftest
+          "$GITHUB_WORKSPACE/ci/wheel_smoke.sh" /tmp/rco-smoke/bin/rco
 
   spin:
     needs: select

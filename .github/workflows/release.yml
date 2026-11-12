@@ -53,6 +53,8 @@ jobs:
              "dist/repo_context_optimizer-${want}.tar.gz"
           test "$(find dist -maxdepth 1 -type f | wc -l)" = 2
       - run: python -m twine check --strict dist/*
+      - name: Check the sdist file list and the wheel contents
+        run: python ci/check_dist.py dist
       # The installed wheel must run with no checkout on the path.
       - name: Smoke test the wheel
         run: |
@@ -60,8 +62,7 @@ jobs:
           python -m venv /tmp/rco-smoke
           /tmp/rco-smoke/bin/pip install dist/*.whl
           cd /tmp
-          /tmp/rco-smoke/bin/rco --version
-          /tmp/rco-smoke/bin/rco check --selftest
+          "$GITHUB_WORKSPACE/ci/wheel_smoke.sh" /tmp/rco-smoke/bin/rco
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: dist

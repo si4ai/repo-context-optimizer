@@ -43,6 +43,9 @@ jobs = ["pytest"]
 paths = [
   "ci/test_select.py",
   "ci/test-select.toml",
+  "ci/check_dist.py",
+  "ci/wheel_smoke.sh",
+  ".github/workflows/release.yml",
 ]
 jobs = ["pytest"]
 
