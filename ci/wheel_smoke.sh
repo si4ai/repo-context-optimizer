@@ -41,5 +41,11 @@ if "$rco" pack --help > /dev/null 2>&1; then
   expect 0 "$rco" pack
   expect 0 "$rco" pack --for pkg/core.py --budget 200
 fi
+# Phase 4 commands, once the wheel has them; the pin lives outside the repo
+if "$rco" drift --help > /dev/null 2>&1; then
+  expect 0 "$rco" pin HEAD~1 --for pkg/core.py --format json --out "$work/core.pin.json"
+  expect 1 "$rco" drift "$work/core.pin.json"            # run() gained a parameter
+  expect 0 "$rco" drift "$work/core.pin.json" --at HEAD~1
+fi
 test -z "$(git status --porcelain --untracked-files=all -- . ':!out.txt' ':!err.txt')"
 echo "smoke: passed"

@@ -161,7 +161,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Planned commands
 
-`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. `rco pack` and `rco update` are not implemented yet. Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. `rco pack` and `rco update` are not implemented yet. Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see `docs/design/pin-contract.md`). Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
