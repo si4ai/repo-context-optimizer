@@ -20,7 +20,9 @@ PROPS = [f"P{i}" for i in range(1, 8)]
 COL = {"a": "a", "b": "b", "b-cas": "bcas", "fixed": "fixed"}
 ABL = {"check every module": "bcas_touch", "derived staleness": "bcas_derived",
        "queue the rewrite after the pointer": "bcas_qafter"}
-ROW = re.compile(r"^(\S+)\s+(P\d)\s+(PASS|FAIL)\s+(\S+)")
+# summary.txt columns: variant prop expect got states detail; group 3 is run.sh's own expectation,
+# group 4 the measured result the gate uses, group 5 the state count
+ROW = re.compile(r"^(\S+)\s+(P\d)\s+(PASS|FAIL)\s+(PASS|FAIL|ERROR)\s+(\S+)")
 
 
 def expected_from_doc(doc: str) -> tuple[dict, dict]:
@@ -57,7 +59,7 @@ def gate(summary: str, doc: str) -> tuple[list[str], list[str]]:
             k = (m.group(1), m.group(2))
             if k in got:
                 bad.append(f"duplicate row {k}")
-            got[k] = m.group(3); seen_st[k] = m.group(4)
+            got[k] = m.group(4); seen_st[k] = m.group(5)
     for k, v in sorted(exp.items()):
         if k not in got:
             bad.append(f"missing result {k[0]} {k[1]} (documented {v})")
@@ -85,10 +87,12 @@ def gate(summary: str, doc: str) -> tuple[list[str], list[str]]:
 def selftest(summary: str, doc: str) -> list[str]:
     """Each tampered summary must turn the gate red."""
     fails = []
-    def flip(text, v, p, to):
-        return re.sub(rf"^({re.escape(v)}\s+{p}\s+)(PASS|FAIL)", lambda m: m.group(1) + to.ljust(len(m.group(2))), text, count=1, flags=re.M)
+    def flip(text, v, p, to):  # change the got column (4th), leave expect alone
+        return re.sub(rf"^({re.escape(v)}\s+{p}\s+(?:PASS|FAIL)\s+)(PASS|FAIL)", lambda m: m.group(1) + to.ljust(len(m.group(2))), text, count=1, flags=re.M)
     cases = {
         "fixed P1 -> FAIL": flip(summary, "fixed", "P1", "FAIL"),
+        "fixed P1 got -> FAIL, expect stays PASS, run.sh marker": re.sub(
+            r"^(fixed\s+P1\s+PASS\s+)PASS(\s+\S+)\s*$", r"\1FAIL\2   <-- differs from expectation", summary, count=1, flags=re.M),
         "a P1 -> PASS": flip(summary, "a", "P1", "PASS"),
         "bcas_touch P3 -> PASS": flip(summary, "bcas_touch", "P3", "PASS"),
         "drop fixed P7 row": re.sub(r"^fixed\s+P7 .*\n", "", summary, flags=re.M),
@@ -101,6 +105,11 @@ def selftest(summary: str, doc: str) -> list[str]:
         elif not gate(text, doc)[0]:
             fails.append(f"self-test case '{name}' stayed GREEN")
     return fails
+
+
+def exit_code(bad: list, st: list, run_rc) -> int:
+    """1 = red (gate, self-test, or run.sh exited nonzero); a nonzero run.sh is never green."""
+    return 1 if bad or st or (run_rc is not None and run_rc != 0) else 0
 
 
 def main() -> int:
@@ -140,11 +149,11 @@ def main() -> int:
     for b in bad: print("  MISMATCH:", b)
     for n in notes: print("  note:", n)
     st = selftest(summary, doc) if not bad else ["skipped: gate already red on the real summary"]
-    print("  self-test (tampered summaries must go red):", "PASS (6/6 red)" if not st else "FAIL")
+    print("  self-test (tampered summaries must go red):", "PASS (all tampered summaries red)" if not st else "FAIL")
     for s in st: print("   ", s)
     if run_rc is not None and (run_rc == 0) == bool(bad):
-        print(f"  note: run.sh exit {run_rc} disagrees with the gate ({'RED' if bad else 'GREEN'})")
-    return 1 if bad or st else 0
+        print(f"  MISMATCH: run.sh exit {run_rc} disagrees with the gate ({'RED' if bad else 'GREEN'})")
+    return exit_code(bad, st, run_rc)
 
 
 if __name__ == "__main__":
