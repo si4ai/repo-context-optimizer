@@ -76,9 +76,11 @@ def test_node_scope_never_touches_identity():
     assert r.children[0].sig == f"'{P}'"       # FIELD sig is
 
 
-def test_function_sig_and_names_untouched():
-    n = Node(Kind.FUNCTION, "login", "a.py", sig=f"(token: str = '{GH[:10]}') -> None")
-    assert redact.redact_node(n) == n
+def test_ordinary_sigs_and_names_untouched():
+    for sig in ("(token: str, other: str='x') -> None", "(password=None)",
+                "(x: dict={'a': 1}, *, verbose: bool=False) -> int", "(self) -> str"):
+        n = Node(Kind.FUNCTION, "login", "a.py", sig=sig)
+        assert redact.redact_node(n) == n
     route = Node(Kind.ROUTE, "GET /api/v1/token/{id}", "r.py")
     flag = Node(Kind.FLAG, "--api-key")
     assert redact.redact_node(route) == route and redact.redact_node(flag) == flag
@@ -93,6 +95,17 @@ def test_credential_named_value(value, redacted):
         n = Node(kind, "DB_PASSWORD" if kind is not Kind.FLAG else "--password", attrs=((key, value),))
         got = dict(redact.redact_node(n).attrs)[key]
         assert (got == P) is redacted, (kind, value, got)
+
+
+SHORT = "k9" + "Xq" + "2w"   # a short secret: kept in the sig by the 40-char default rule
+
+
+@pytest.mark.parametrize("kind", [Kind.FUNCTION, Kind.METHOD])
+def test_secret_default_in_sig_is_redacted(kind):
+    n = Node(kind, "login", sig=f"(user: str, api_key: str='{SHORT}', n: int=3) -> None")
+    assert redact.redact_node(n).sig == f"(user: str, api_key: str='{P}', n: int=3) -> None"
+    tok = Node(kind, "send", sig=f"(self, auth='Bearer {TOK[:16]}') -> None")
+    assert SHORT not in redact.redact_node(n).sig and TOK[:16] not in redact.redact_node(tok).sig
 
 
 def test_other_attrs_untouched():
@@ -112,6 +125,19 @@ def test_version_bump_moves_module_hash(monkeypatch):
     after = build.build_tree(mod, files)
     assert before.module_hash != after.module_hash
     assert canon.tree_hash(before) != canon.tree_hash(after)   # extractors list is in the tree
+
+
+def test_secret_default_never_reaches_map_bytes_or_stdout(tmp_path, capsysbinary):
+    from rco import cli
+    src = (f"def login(user: str, api_key: str = '{SHORT}') -> None:\n    pass\n\n\n"
+           f"class Client:\n    def connect(self, password='{SHORT}x') -> None:\n        pass\n")
+    repo, sha = fixture.make_repo(tmp_path / "r", {"pkg/__init__.py": "", "pkg/a.py": src})
+    m = canon.canonical_json(canon.map_to_obj(build.build_map(repo, sha)))
+    assert SHORT.encode() not in m and b"api_key: str=" in m
+    for fmt in ("json", "markdown"):
+        assert cli.main(["tree", sha, "--repo", str(repo), "--format", fmt]) == 0
+        out = capsysbinary.readouterr().out
+        assert SHORT.encode() not in out and P.encode() in out
 
 
 def test_secret_never_reaches_map_bytes(tmp_path):

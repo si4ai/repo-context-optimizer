@@ -327,6 +327,8 @@ blocks, bearer and API tokens, high-entropy strings, credential URLs,
 credential-like assignments). Test secrets are assembled at runtime from
 fragments so the repo's hygiene report does not flag the fixtures.
 
+From redact VERSION 2 (step 5), `redact_text` also runs over FUNCTION and METHOD sigs, so a short secret literal kept as a parameter default never reaches a Tree; only secret-shaped substrings change.
+
 ## 8. Output contract (`rco/output.py`, `rco/cli.py`)
 
 ```python

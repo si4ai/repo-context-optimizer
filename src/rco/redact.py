@@ -12,6 +12,8 @@ What is replaced with PLACEHOLDER:
   Slack, sk- API keys, AWS access key ids)
 - the user:password part of URLs that embed credentials
 - credential-like assignments in text (``password = "..."``, ``api_key=...``)
+- secret-shaped parts of FUNCTION and METHOD sigs (literal parameter
+  defaults), from VERSION 2
 - the value or default of a CONSTANT, FIELD or FLAG whose name is
   credential-like (``API_KEY = "..."``), unless the value is empty, None,
   a bool, a number or ``...``
@@ -33,10 +35,12 @@ from dataclasses import replace
 
 from rco.model import Kind, Node
 
-VERSION = "1"
+VERSION = "2"
 PLACEHOLDER = "<redacted>"
 
-_SIG_KINDS = frozenset({Kind.CONSTANT, Kind.FIELD})
+# Kinds whose sig is redacted: CONSTANT/FIELD (the annotation), and
+# FUNCTION/METHOD (VERSION 2: literal parameter defaults are kept in the sig).
+_SIG_KINDS = frozenset({Kind.CONSTANT, Kind.FIELD, Kind.FUNCTION, Kind.METHOD})
 _ATTR_KEYS = frozenset({"value", "default"})
 # Kinds whose credential-like name redacts the whole value or default.
 _NAMED_VALUE_KINDS = frozenset({Kind.CONSTANT, Kind.FIELD, Kind.FLAG})
@@ -70,7 +74,9 @@ _CRED_WORD = (r"(?:passw(?:or)?d|passwd|pwd|secret|token|api[_-]?key|apikey|acce
 _CRED_NAME_RE = re.compile(r"(?i)" + _CRED_WORD)
 # name = "value" / name: 'value'  (quoted, = or :)
 _ASSIGN_Q_RE = re.compile(
-    r"(?i)(\b[A-Za-z0-9_-]*" + _CRED_WORD + r"[\"']?\s*[=:]\s*)([\"'])(?!" + _P + r"\2)[^\"'\n]+\2"
+    r"(?i)(\b[A-Za-z0-9_-]*" + _CRED_WORD + r"[\"']?"
+    r"(?:\s*:\s*[A-Za-z_][\w.\[\] |]{0,60}?(?=\s*=))?"   # optional annotation: `token: str = '...'`
+    r"\s*[=:]\s*)([\"'])(?!" + _P + r"\2)[^\"'\n]+\2"
 )
 # name=value  (unquoted, = only, 6 or more characters)
 _ASSIGN_U_RE = re.compile(
@@ -175,7 +181,7 @@ def _attr(n: Node, k: str, v: str) -> str:
 
 
 def redact_node(n: Node) -> Node:
-    """Redact doc, the sig of CONSTANT/FIELD, and attrs value/default; recursive."""
+    """Redact doc, the sig of CONSTANT/FIELD/FUNCTION/METHOD, and attrs value/default; recursive."""
     return replace(
         n,
         doc=redact_text(n.doc),
