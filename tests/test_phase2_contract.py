@@ -132,8 +132,7 @@ def test_stubs_import(mod):
     importlib.import_module(mod)
 
 
-@pytest.mark.parametrize("argv", [["pack"], ["pack", "--for", "a.py", "--budget", "10"],
-                                  ["forest"]])
-def test_phase2_commands_exist_and_exit_2(argv, capsys):
-    assert cli.main(argv) == Exit.USAGE
-    assert "not implemented" in capsys.readouterr().err
+def test_phase2_commands_are_wired(capsys):
+    for cmd in ("update", "pack", "forest"):
+        assert cli.main([cmd, "--help"]) == Exit.OK
+        assert "not implemented" not in capsys.readouterr().out
