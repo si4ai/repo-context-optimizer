@@ -382,8 +382,8 @@ compares the result with the given map. `extra` means the map claims a node
 the code does not have. `missing` means the code has a node the map lacks.
 `changed` means the key is the same but the shape differs. `stale` means
 the module hash or the SHA does not match. Findings are sorted by
-`(path, key, status)`. The self-test builds the map of
-`tests/fixtures/drift/` and plants these errors: remove a flag, rename a
+`(path, key, status)`. The self-test builds the map from
+`fixture.DRIFT_FILES` (a wheel-safe in-memory fixture in `src/rco/fixture.py`) and plants these errors: remove a flag, rename a
 column, change a sig, add a function, drop a module, and alter a
 module_hash. It fails if any planted error goes unflagged. Elapsed time
 goes to stderr only. The time limit is recorded, with the RCO SHA, in
