@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "repo-context-optimizer"
+dynamic = ["version"]
+description = "Deterministic repo context for coding agents: contract Trees, contract diffs, and a map checker."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.12"
+dependencies = []
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Operating System :: OS Independent",
+  "Development Status :: 2 - Pre-Alpha",
+]
+
+[project.urls]
+Homepage = "https://github.com/si4ai/repo-context-optimizer"
+
+[project.scripts]
+rco = "rco.cli:main"
+
+[tool.setuptools.dynamic]
+version = { attr = "rco.__version__" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
