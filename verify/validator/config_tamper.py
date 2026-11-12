@@ -28,7 +28,7 @@ def git(repo: Path, *a: str, ok: bool = False) -> str | None:
     if p.returncode:
         if ok:
             return None
-        raise SystemExit(f"config_tamper: git {' '.join(a)}: {p.stderr.strip()}")
+        raise RuntimeError(f"config_tamper: git {' '.join(a)}: {p.stderr.strip()}")
     return p.stdout
 
 
@@ -36,7 +36,7 @@ def scan(repo: Path, scanner: Path, base: str, head: str, cfg: Path) -> list[dic
     p = subprocess.run([sys.executable, str(scanner), "--root", str(repo), "--base", base,
                         "--head", head, "--config", str(cfg), "--json"], capture_output=True, text=True)
     if p.returncode:
-        raise SystemExit(f"config_tamper: scanner exit {p.returncode}: {p.stderr.strip()}")
+        raise RuntimeError(f"config_tamper: scanner exit {p.returncode}: {p.stderr.strip()}")
     return json.loads(p.stdout)["findings"]
 
 
@@ -107,17 +107,26 @@ def selftest(rco: Path) -> int:
     return 0 if ok else 1
 
 
-if __name__ == "__main__":
+def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--repo", type=Path, default=Path(__file__).resolve().parents[2])
     ap.add_argument("--base"); ap.add_argument("--head", default="HEAD")
     ap.add_argument("--json", action="store_true"); ap.add_argument("--selftest", action="store_true")
     a = ap.parse_args()
-    if a.selftest:
-        sys.exit(selftest(a.repo.resolve()))
-    if not a.base:
+    if not a.selftest and not a.base:
         ap.error("--base is required")
-    res = check(a.repo, a.base, a.head)
-    if a.json:
-        print(json.dumps(res, indent=2)); sys.exit(1 if res["dropped"] or res["watched_touched"] else 0)
-    sys.exit(report(res))
+    try:
+        if a.selftest:
+            return selftest(a.repo.resolve())
+        res = check(a.repo, a.base, a.head)
+        if a.json:
+            print(json.dumps(res, indent=2))
+            return 1 if res["dropped"] or res["watched_touched"] else 0
+        return report(res)
+    except Exception as e:
+        print(e, file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -19,6 +19,7 @@ REPO = HERE.parents[1]  # repo root; --repo overrides
 OUT = Path(tempfile.gettempdir()) / "rco-validator"  # --out overrides; nothing is written in the repo
 STATUSES = ("PASS", "FAIL", "UNTESTABLE", "STALE")
 sys.path.insert(0, str(HERE))
+sys.dont_write_bytecode = True
 import spin_gate  # noqa: E402
 
 CTX: dict = {}
@@ -214,6 +215,15 @@ def main() -> int:
     red = {s.strip().upper() for s in a.red_on.split(",") if s.strip()}
     if not red <= set(STATUSES) - {"PASS"}:
         ap.error(f"--red-on takes FAIL, UNTESTABLE, STALE; got {a.red_on}")
+    try:
+        return _run(a, red)
+    except Exception as e:
+        print(f"readme_ledger: ERROR: {type(e).__name__}: {e}", file=sys.stderr)
+        return 2
+
+
+def _run(a, red) -> int:
+    global REPO, OUT
     REPO, OUT = a.repo.resolve(), a.out.resolve()
     sha = git("rev-parse", a.ref).strip(); short = sha[:8]
     log = git("rev-list", "--reverse", sha).split()
