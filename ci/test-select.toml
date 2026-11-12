@@ -20,6 +20,8 @@ paths = [
 ]
 jobs = ["spin"]
 
+# tests/test_check_hygiene.py and tests/test_check_role_trailer.py
+# are included by tests/**/*.py below.
 [[rule]]
 paths = [
   "src/**/*.py",
