@@ -188,7 +188,7 @@ flowchart LR
 
 #### Pack output (example)
 
-This sample is about 200 estimated tokens (characters / 4; the estimator is approximate).
+This sample is about 120 estimated tokens (characters / 4; the estimator is approximate).
 
 ```markdown
 # rco pack  (SHA=abc1234, budget=8000 estimated tokens)
@@ -208,7 +208,7 @@ CLI: tw run, tw stop
 - proc: process supervision for tw runs
 - client: shared client library
 
-# budget used: ~200 / 8000 estimated tokens
+# budget used: ~120 / 8000 estimated tokens
 ```
 
 ### `rco diff [BASE] [HEAD]`
