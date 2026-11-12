@@ -184,3 +184,21 @@ step-0 follow-up PR, sent to every open step first.
 5. TestPyPI rehearsal first, or one shot to PyPI?
 6. Release gate: Validator Pass plus the human's GO on the SHA, or build-room consensus?
 7. Sign-off on the SQLite schema above.
+
+## Amendments in the steps 1 to 6 fold
+
+- Applied: `rco update` re-reads the pointer at swap time and compares against
+  that value, not against the value read at start. This is the `fixed`
+  variant of the SPIN model (`n >= pointer` inside the atomic step). A lost
+  race retries when NEW still descends from the new pointer (step 3).
+- Applied: the prose queue worker drops a queued row whose TreeHash the
+  published pointer does not show. `rco update` queues only after its swap,
+  so such a row was superseded (step 4).
+- Applied: `rco pack` refuses `--budget` under 64 (exit 2). An owner Tree
+  whose nodes are all cut loses its heading; its nodes are named in
+  `trimmed` (step 5).
+- Applied: the update/pack/forest placeholders are gone; all three are built.
+- Open: `rco check` does not read a Forest yet. `forest.compare_edges` gives
+  the `edge` finding (step 2).
+- Open: name-in-Tree flags (`prose.flags`) are not shown in the pack or
+  counted in `rco check` yet (step 7).
