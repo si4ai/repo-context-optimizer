@@ -152,8 +152,9 @@ class PythonExtractor:
         text = src.data.decode("utf-8-sig", errors="replace")
         try:
             tree = ast.parse(text, filename=src.path)
+            return [Node(Kind.PYMODULE, module_name(src.path), src.path,
+                         doc=first_doc_line(tree),
+                         children=tuple(_members(tree.body, in_class=False)))]
         except (SyntaxError, ValueError, RecursionError, MemoryError):
             return [Node(Kind.FILE, PurePosixPath(src.path).name, src.path,
                          attrs=(("error", "parse"),))]
-        return [Node(Kind.PYMODULE, module_name(src.path), src.path,
-                     doc=first_doc_line(tree), children=tuple(_members(tree.body, in_class=False)))]

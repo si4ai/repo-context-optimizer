@@ -105,3 +105,14 @@ def test_module_of_package_grain():
     assert modules.module_of("a/b/c.py") == "a/b"
     assert modules.module_of("README.md") == "."
     assert [m.id for m in modules.group(["b/x", "a/y", "z"])] == [".", "a", "b"]
+
+
+def test_cli_tree_survives_a_deeply_nested_file(tmp_path, capsys):
+    from rco import cli
+    from rco.output import Exit
+    repo, sha = fixture.make_repo(tmp_path / "r", {
+        **FILES, "pkg/deep.py": "X: " + "a." * 1000 + "b = 1\n",
+    })
+    assert cli.main(["tree", sha, "--repo", str(repo)]) == Exit.OK
+    out = capsys.readouterr().out
+    assert "deep.py" in out and "error" in out

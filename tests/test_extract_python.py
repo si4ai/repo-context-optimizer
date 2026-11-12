@@ -73,3 +73,29 @@ def test_no_line_numbers_in_nodes():
     n = _one("def f():\n    pass\n\n\n\nclass C: pass\n")
     shifted = _one("\n\n\n\ndef f():\n    pass\n\n\n\nclass C: pass\n")
     assert n == shifted
+
+
+def test_literal_default_over_forty_chars_becomes_ellipsis():
+    short = "'" + "a" * 38 + "'"          # 40 chars: kept
+    long_ = "'" + "a" * 39 + "'"           # 41 chars: elided
+    assert len(short) == 40 and len(long_) == 41
+    f = _child(_one(f"def f(a={short}, b={long_}, c=1):\n    pass\n"), "f")
+    assert f.sig == f"(a={short}, b=..., c=1)"
+
+
+def _deep_file_is_parse_node(src: str):
+    (n,) = EX.extract(SourceFile("pkg/deep.py", "0" * 40, src.encode()))
+    assert n == Node(Kind.FILE, "deep.py", "pkg/deep.py", attrs=(("error", "parse"),))
+
+
+def test_deep_annotation_is_a_file_node_not_recursion_error():
+    _deep_file_is_parse_node("X: " + "a." * 1000 + "b = 1\n")
+
+
+def test_deep_unary_in_signature_is_a_file_node():
+    _deep_file_is_parse_node("def f(a: " + "-" * 500 + "1): pass\n")
+
+
+def test_deep_decorator_and_base_are_file_nodes():
+    _deep_file_is_parse_node("@" + "a." * 1000 + "b\ndef f(): pass\n")
+    _deep_file_is_parse_node("class C(" + "a." * 1000 + "b): pass\n")
