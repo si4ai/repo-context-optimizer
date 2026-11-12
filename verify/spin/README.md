@@ -3,7 +3,7 @@
 This is a model of the update protocol described in `../../README.md`, in the sections "Fingerprints", "Incremental update after each merge" and "Verification". There is no rco code yet, so this checks the design, not an implementation.
 
 - `rco_update.pml`: the model. Variants are chosen with `-D` switches (`GUARD`, `TOUCH`, `STALE`, `QAFTER`), and the property with `-DPROP=n`.
-- `run.sh`: runs every property against every variant. Safety properties use `spin -a`, `gcc -DSAFETY`, `./pan`, and then `-DREACH ./pan -i` to get the shortest trail. Liveness properties use `gcc` and `./pan -a`. It writes `results/summary.txt` and `results/<variant>-P<n>/` (`pan.log` plus `trail-events.txt` for each failure).
+- `run.sh`: runs every property against every variant. Safety properties use `spin -a`, `gcc -DSAFETY`, `./pan`, and then `-DREACH ./pan -i` to get the shortest trail. Liveness properties use `gcc` and `./pan -a`. It writes `results/summary.txt` and `results/<variant>-P<n>/` (`pan.log` plus `trail-events.txt` for each failure). Each cell is compared to the results table below; the script exits nonzero when any cell differs, or when spin or the C compiler fails.
 - Tool: Spin Version 6.5.1 (20 December 2019).
 
 ## What is modeled

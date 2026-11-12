@@ -1,0 +1,53 @@
+variant      prop expect got     states  detail
+a            P1   FAIL   FAIL      2067  trail: results/a-P1/trail-events.txt (11 events)
+a            P2   FAIL   FAIL    146110  trail: results/a-P2/trail-events.txt (7 events)
+a            P3   FAIL   FAIL       244  trail: results/a-P3/trail-events.txt (7 events)
+a            P4   FAIL   FAIL      2142  trail: results/a-P4/trail-events.txt (20 events)
+a            P5   FAIL   FAIL        87  trail: results/a-P5/trail-events.txt (16 events)
+a            P6   FAIL   FAIL      3268  trail: results/a-P6/trail-events.txt (27 events)
+a            P7   FAIL   FAIL       385  trail: results/a-P7/trail-events.txt (32 events)
+b            P1   FAIL   FAIL      2385  trail: results/b-P1/trail-events.txt (13 events)
+b            P2   FAIL   FAIL    176314  trail: results/b-P2/trail-events.txt (8 events)
+b            P3   FAIL   FAIL       250  trail: results/b-P3/trail-events.txt (8 events)
+b            P4   FAIL   FAIL      2462  trail: results/b-P4/trail-events.txt (23 events)
+b            P5   FAIL   FAIL        91  trail: results/b-P5/trail-events.txt (16 events)
+b            P6   FAIL   FAIL      3898  trail: results/b-P6/trail-events.txt (30 events)
+b            P7   FAIL   FAIL       393  trail: results/b-P7/trail-events.txt (36 events)
+bcas         P1   PASS   PASS  11741702  
+bcas         P2   FAIL   FAIL    122070  trail: results/bcas-P2/trail-events.txt (7 events)
+bcas         P3   FAIL   FAIL       244  trail: results/bcas-P3/trail-events.txt (7 events)
+bcas         P4   PASS   PASS   3292270  
+bcas         P5   FAIL   FAIL        87  trail: results/bcas-P5/trail-events.txt (16 events)
+bcas         P6   PASS   PASS  16483486  
+bcas         P7   FAIL   FAIL       385  trail: results/bcas-P7/trail-events.txt (32 events)
+fixed        P1   PASS   PASS   6317937  
+fixed        P2   PASS   PASS   6614060  
+fixed        P3   PASS   PASS   6348880  
+fixed        P4   PASS   PASS   2425936  
+fixed        P5   PASS   PASS    361769  
+fixed        P6   PASS   PASS   8498083  
+fixed        P7   PASS   PASS   4477255  
+bcas_touch   P1   PASS   PASS  13173113  
+bcas_touch   P2   PASS   PASS  14537229  
+bcas_touch   P3   FAIL   FAIL       256  trail: results/bcas_touch-P3/trail-events.txt (8 events)
+bcas_touch   P4   PASS   PASS   3905213  
+bcas_touch   P5   PASS   PASS    792847  
+bcas_touch   P6   PASS   PASS  18610406  
+bcas_touch   P7   FAIL   FAIL       401  trail: results/bcas_touch-P7/trail-events.txt (32 events)
+bcas_derived P1   PASS   PASS  11239349  
+bcas_derived P2   FAIL   FAIL    116780  trail: results/bcas_derived-P2/trail-events.txt (7 events)
+bcas_derived P3   PASS   PASS  12347439  
+bcas_derived P4   PASS   PASS   3136240  
+bcas_derived P5   FAIL   FAIL        85  trail: results/bcas_derived-P5/trail-events.txt (15 events)
+bcas_derived P6   PASS   PASS  15726223  
+bcas_derived P7   FAIL   FAIL       379  trail: results/bcas_derived-P7/trail-events.txt (29 events)
+bcas_qafter  P1   PASS   PASS   6602120  
+bcas_qafter  P2   FAIL   FAIL     95317  trail: results/bcas_qafter-P2/trail-events.txt (7 events)
+bcas_qafter  P3   FAIL   FAIL     93445  trail: results/bcas_qafter-P3/trail-events.txt (7 events)
+bcas_qafter  P4   PASS   PASS   2386770  
+bcas_qafter  P5   FAIL   FAIL       101  trail: results/bcas_qafter-P5/trail-events.txt (16 events)
+bcas_qafter  P6   PASS   PASS   8820746  
+bcas_qafter  P7   PASS   PASS   4401995  
+spin: Spin Version 6.5.1 -- 20 December 2019
+checks: 49, seconds: 251; exit 0
+every check matches its expectation: 23 PASS, 26 FAIL

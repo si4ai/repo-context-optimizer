@@ -1,0 +1,7 @@
+EV merge sha1, job 0->1 queued
+EV updater 3 starts update 0->1
+EV merge sha2, job 1->2 queued
+EV updater 4 starts update 1->2
+EV updater 4 stored Tree m1/c1 (update 1->2)
+EV updater 4 wrote index for sha2
+EV updater 4 CAS pointer sha2 (was sha0)

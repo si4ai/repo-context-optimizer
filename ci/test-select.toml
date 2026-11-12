@@ -22,6 +22,12 @@ jobs = ["spin"]
 
 [[rule]]
 paths = [
+  "verify/spin/run.sh",
+]
+jobs = ["pytest"]
+
+[[rule]]
+paths = [
   "src/**/*.py",
   "tests/**/*.py",
   "tools/**/*.py",

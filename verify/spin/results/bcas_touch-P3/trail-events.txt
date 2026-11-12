@@ -1,0 +1,8 @@
+EV merge sha1, job 0->1 queued
+EV updater 3 starts update 0->1
+EV updater 3 stored Tree m0/c1 (update 0->1)
+EV updater 3 marked Forest m0 stale
+EV updater 3 wrote index for sha1
+EV rewriter starts prose for m0 at pointer sha0
+EV updater 3 CAS pointer sha1 (was sha0)
+EV rewriter wrote Forest m0 for TreeHash 0 (fresh)
