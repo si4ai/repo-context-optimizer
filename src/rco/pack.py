@@ -38,12 +38,26 @@ def _one_line(e: ForestEntry) -> str:
     return ", ".join(bits)
 
 
-def forest_line(e: ForestEntry) -> str:
+def _name_flags(notes: Sequence[str]) -> dict[str, str]:
+    """Turn `name-in-tree: <id>: <names>` notes written by pack() into a dict."""
+    out: dict[str, str] = {}
+    prefix = "name-in-tree: "
+    for n in notes:
+        if n.startswith(prefix):
+            mid, sep, names = n[len(prefix):].partition(": ")
+            if sep:
+                out[mid] = names
+    return out
+
+
+def forest_line(e: ForestEntry, name_flags: str = "") -> str:
     s = f"- {e.id}: {_one_line(e)}"
     if e.depends_on:
         s += f" (depends on: {', '.join(e.depends_on)})"
     if e.used_by:
         s += f" (used by: {', '.join(e.used_by)})"
+    if name_flags:
+        s += f" [name flags: {name_flags}]"
     return s
 
 
@@ -72,8 +86,9 @@ def _trimmed_summary(trimmed: Sequence[str]) -> str:
 
 
 def pack_markdown(p: Pack, for_label: str = "") -> str:
+    flagged = _name_flags(p.notes)
     out = [f"# rco pack  (SHA={p.sha[:7]}, budget={p.budget} estimated tokens)", "", "## Forest"]
-    out += [forest_line(e) for e in p.forest]
+    out += [forest_line(e, flagged.get(e.id, "")) for e in p.forest]
     if p.trees:
         out += ["", f"## Trees (full, for --for {for_label})" if for_label else "## Trees (full)"]
         for t in p.trees:
@@ -127,6 +142,13 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         entries = [replace(e, prose=store.get_prose(e.id)) for e in entries]
     by_id = {e.id: e for e in entries}
     trees_by = {t.module: t for t in m.trees}
+    if store is not None:
+        from rco.prose import flags as prose_flags
+        for e in entries:
+            t = trees_by.get(e.id)
+            bad = prose_flags(e.prose, t) if t is not None else ()
+            if bad:
+                notes.append(f"name-in-tree: {e.id}: {', '.join(bad)}")
 
     owners: list[str] = []
     if for_paths:

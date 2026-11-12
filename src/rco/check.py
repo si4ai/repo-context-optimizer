@@ -103,10 +103,24 @@ class CheckReport:
         return Exit.FINDINGS if self.findings else Exit.OK
 
 
-def check(repo: Path, sha: str, claimed: Map) -> CheckReport:
+def prose_name_findings(store, actual: Map) -> tuple[Finding, ...]:
+    """Names cited in stored prose that are not in the module's Tree."""
+    from rco.prose import flags as prose_flags
+    found: list[Finding] = []
+    for t in actual.trees:
+        for name in prose_flags(store.get_prose(t.module), t):
+            found.append(Finding("extra", f"prose:{t.module}:{name}", t.module,
+                                 "cited in prose, not in the Tree"))
+    return tuple(sorted(found, key=lambda f: (f.path, f.key, f.status)))
+
+
+def check(repo: Path, sha: str, claimed: Map, store=None) -> CheckReport:
     t0 = time.perf_counter()
     actual = build.build_map(repo, sha)
-    rep = CheckReport(sha=sha, map_sha=claimed.sha, findings=compare(claimed, actual))
+    findings = compare(claimed, actual)
+    if store is not None:
+        findings = findings + prose_name_findings(store, actual)
+    rep = CheckReport(sha=sha, map_sha=claimed.sha, findings=findings)
     print(f"rco check: {len(rep.findings)} findings in {time.perf_counter() - t0:.3f}s",
           file=sys.stderr)
     return rep
