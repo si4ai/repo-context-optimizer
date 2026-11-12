@@ -295,14 +295,14 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map
 | COMMAND | cli | full command path, e.g. `rco diff` | `""` | `dynamic`=`1` when names are not literal |
 | FLAG | cli | `--out` or the positional `dest` | sorted `k=v;...` over the literal kwargs action, choices, metavar, nargs, required, type | `default` |
 | TABLE / VIEW | sql | table name, lower-cased unless quoted | `""` | none |
-| COLUMN | sql | column name, lower-cased unless quoted | normalized type plus constraints, upper-case keywords, single spaces | `default` |
+| COLUMN | sql | column name, lower-cased unless quoted | normalized type plus constraints, upper-case keywords, unquoted identifiers inside CHECK lower-cased, single spaces | `default` |
 | INDEX | sql | index name; a table-level PRIMARY KEY is `PRIMARY`; an unnamed UNIQUE takes its first column's name | `UNIQUE (a,b)`, `(a,b)`, `PRIMARY (a,b)`, `FULLTEXT (a)` or `SPATIAL (a)` | none |
 | PROCEDURE | sql | name, lower-cased unless quoted | `(IN a INT, OUT b TEXT)` normalized; a function appends ` RETURNS <type>` | none |
 | ROUTE | routes | `METHOD /path` (method upper-case; one node per method; `WS` for a websocket, `ANY` when the methods cannot be resolved or are aiohttp `*`) | `""` | none |
 
 SQL names: every unquoted identifier (table, view, column, index,
-procedure, parameter) is lower-cased. A quoted name keeps its case and
-loses its quotes.
+procedure, parameter, and a name inside a CHECK clause) is lower-cased.
+A quoted name keeps its case and loses its quotes.
 
 Routes quick-skip: `routes.extract` returns `[]` without parsing a file in
 which no quote is directly followed by `/`, since no route literal is
@@ -326,8 +326,9 @@ runs and on a reordered input, not across Python versions.
 VERSION: str            # "0" in the step-1 stub; feeds ModuleHash via versions()
 PLACEHOLDER = "<redacted>"
 def redact_text(s: str) -> str          # pure, idempotent
-def redact_node(n: Node) -> Node        # recursive; touches only doc, sig of CONSTANT/FIELD/
-                                        # FUNCTION/METHOD, and attrs keys "value" and "default"
+def redact_node(n: Node) -> Node        # recursive; touches doc, sig of CONSTANT/FIELD/
+                                        # FUNCTION/METHOD/CLASS/FLAG/COLUMN/PROCEDURE,
+                                        # and attrs keys "value", "default", and "decorators"
 ```
 
 Redaction never touches `kind`, `name`, `path`, route paths, flag names, or
@@ -337,6 +338,8 @@ credential-like assignments). Test secrets are assembled at runtime from
 fragments so the repo's hygiene report does not flag the fixtures.
 
 From redact VERSION 2 (step 5), `redact_text` also runs over FUNCTION and METHOD sigs, so a short secret literal kept as a parameter default never reaches a Tree; only secret-shaped substrings change.
+
+From redact VERSION 3, `redact_text` also runs over CLASS, FLAG, COLUMN and PROCEDURE sigs and the `decorators` attr, so a secret-shaped literal in a class keyword, a decorator call, a flag choices or metavar, a CHECK clause, or a routine parameter DEFAULT never reaches a Tree.
 
 ## 8. Output contract (`rco/output.py`, `rco/cli.py`)
 
@@ -467,6 +470,10 @@ Applied in the steps 2 to 6 fold (card 1167):
 - Applied: routes quick-skip for files with no route literal (section 6).
 - Applied: redact VERSION 2 runs `redact_text` over FUNCTION and METHOD
   sigs (section 7).
+- Applied: redact VERSION 3 runs `redact_text` over CLASS, FLAG, COLUMN
+  and PROCEDURE sigs and the `decorators` attr (section 7).
+- Applied: unquoted identifiers inside a COLUMN CHECK clause are
+  lower-cased (section 6).
 - Applied: the self-test plants every drift on a real node and its report
   is `rco.selftest/2` (section 8).
 - Deferred: an optional `aliases` attr on FLAG and COMMAND (short option

@@ -1,4 +1,6 @@
 """Step-1 skeleton: the package imports, the registry is sorted, the CLI dispatches."""
+from pathlib import Path
+
 from rco import canon, cli, extract
 from rco.model import Kind, Map, Node, Tree, walk
 from rco.output import Exit
@@ -25,3 +27,12 @@ def test_canonical_roundtrip():
 def test_cli_usage_exit_2(capsys):
     assert cli.main(["nope"]) == Exit.USAGE
     assert cli.main(["check"]) == Exit.USAGE
+
+def test_readme_names_landed_diff_and_output_contract():
+    """D3: Planned commands must not call rco diff or the output contract unimplemented."""
+    text = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
+    assert "Nothing below is implemented yet" not in text
+    planned = text.split("## Planned commands", 1)[1].split("\n## ", 1)[0]
+    assert "rco diff" in planned and "have landed" in planned
+    assert "output contract" in planned.lower()
+    assert "rco pack" in planned and "not implemented yet" in planned

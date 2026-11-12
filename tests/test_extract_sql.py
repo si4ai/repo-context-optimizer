@@ -197,3 +197,28 @@ def test_golden_sql_basic(tmp_path):
     if os.environ.get("RCO_REGEN") == "1":
         golden.write_bytes(got)
     assert got == golden.read_bytes()
+
+def test_check_identifiers_are_lower_cased():
+    """D2: unquoted names inside CHECK are lower-cased (contract s6)."""
+    t = _one(
+        "CREATE TABLE t (\n"
+        "  note TEXT CHECK (note <> 'x'),\n"
+        "  roster_kind VARCHAR(16) NOT NULL CHECK (ROSTER_KIND = 'roster'),\n"
+        "  score INT CHECK (score IS NOT NULL AND score >= -1)\n"
+        ");\n"
+    )
+    note = _child(t, "note")
+    assert "NOTE" not in note.sig
+    assert note.sig == "TEXT CHECK(note <> 'x')"
+    rk = _child(t, "roster_kind")
+    assert "ROSTER_KIND" not in rk.sig
+    assert rk.sig == "VARCHAR(16) NOT NULL CHECK(roster_kind = 'roster')"
+    score = _child(t, "score")
+    assert score.sig == "INT CHECK(score IS NOT NULL AND score >= -1)"
+    # keyword and identifier case in the source do not change the shape
+    a = _one("CREATE TABLE t (note TEXT check (Note <> 'x'));")
+    b = _one("CREATE TABLE t (note TEXT CHECK (NOTE <> 'x'));")
+    assert a == b
+    assert _child(a, "note").sig == "TEXT CHECK(note <> 'x')"
+    q = _one('CREATE TABLE t (x INT CHECK ("Mixed" <> \'x\'));')
+    assert "Mixed" in _child(q, "x").sig

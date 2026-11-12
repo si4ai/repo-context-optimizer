@@ -12,8 +12,10 @@ What is replaced with PLACEHOLDER:
   Slack, sk- API keys, AWS access key ids)
 - the user:password part of URLs that embed credentials
 - credential-like assignments in text (``password = "..."``, ``api_key=...``)
-- secret-shaped parts of FUNCTION and METHOD sigs (literal parameter
-  defaults), from VERSION 2
+- secret-shaped parts of FUNCTION, METHOD, CLASS, FLAG, COLUMN and
+  PROCEDURE sigs (literal defaults, keyword args, choices, metavar,
+  CHECK clauses), from VERSION 3
+- the decorators attr of FUNCTION, METHOD and CLASS, from VERSION 3
 - the value or default of a CONSTANT, FIELD or FLAG whose name is
   credential-like (``API_KEY = "..."``), unless the value is empty, None,
   a bool, a number or ``...``
@@ -35,13 +37,18 @@ from dataclasses import replace
 
 from rco.model import Kind, Node
 
-VERSION = "2"
+VERSION = "3"
 PLACEHOLDER = "<redacted>"
 
-# Kinds whose sig is redacted: CONSTANT/FIELD (the annotation), and
-# FUNCTION/METHOD (VERSION 2: literal parameter defaults are kept in the sig).
-_SIG_KINDS = frozenset({Kind.CONSTANT, Kind.FIELD, Kind.FUNCTION, Kind.METHOD})
-_ATTR_KEYS = frozenset({"value", "default"})
+# Kinds whose sig is redacted: CONSTANT/FIELD (the annotation);
+# FUNCTION/METHOD (VERSION 2: literal parameter defaults);
+# CLASS, FLAG, COLUMN, PROCEDURE (VERSION 3).
+_SIG_KINDS = frozenset({
+    Kind.CONSTANT, Kind.FIELD, Kind.FUNCTION, Kind.METHOD,
+    Kind.CLASS, Kind.FLAG, Kind.COLUMN, Kind.PROCEDURE,
+})
+_VALUE_KEYS = frozenset({"value", "default"})
+_TEXT_KEYS = frozenset({"value", "default", "decorators"})
 # Kinds whose credential-like name redacts the whole value or default.
 _NAMED_VALUE_KINDS = frozenset({Kind.CONSTANT, Kind.FIELD, Kind.FLAG})
 
@@ -173,15 +180,15 @@ def _secret_value(v: str) -> bool:
 
 
 def _attr(n: Node, k: str, v: str) -> str:
-    if k not in _ATTR_KEYS:
-        return v
-    if n.kind in _NAMED_VALUE_KINDS and credential_name(n.name) and _secret_value(v):
+    if k in _VALUE_KEYS and n.kind in _NAMED_VALUE_KINDS and credential_name(n.name) and _secret_value(v):
         return PLACEHOLDER
-    return redact_text(v)
+    if k in _TEXT_KEYS:
+        return redact_text(v)
+    return v
 
 
 def redact_node(n: Node) -> Node:
-    """Redact doc, the sig of CONSTANT/FIELD/FUNCTION/METHOD, and attrs value/default; recursive."""
+    """Redact doc, sig of literal-carrying kinds, and attrs value/default/decorators; recursive."""
     return replace(
         n,
         doc=redact_text(n.doc),

@@ -18,9 +18,10 @@ no dialect switch. It reads MySQL, PostgreSQL and SQLite DDL:
 
 Identifiers (table, view, column, index, procedure and parameter names)
 are lower-cased unless quoted; a quoted name keeps its case and loses its
-quotes. In a sig every bare word is upper-case, string literals and
-quoted names are kept as written, commas take no space, and the rest is
-single-spaced. DEFAULT goes to attrs `default`; COMMENT 'x' goes to doc,
+quotes. In a sig every bare word is upper-case, except unquoted
+identifiers inside a CHECK clause, which are lower-cased. String literals
+and quoted names are kept as written, commas take no space, and the rest
+is single-spaced. DEFAULT goes to attrs `default`; COMMENT 'x' goes to doc,
 else the first line of the `--` comment block right above the name, else
 a `--` comment that ends the same line.
 
@@ -187,26 +188,73 @@ def _tokenize(text: str) -> list[_Tok]:
 _TIGHT_BEFORE = {",", ")", ".", "::", "@", "[", "]"}
 _TIGHT_AFTER = {"(", ",", ".", "::", "@", "["}
 
+# Grammatical keywords, types and functions that stay upper-case inside
+# CHECK. Identifiers (including reserved words used as column names such
+# as user, value, name, key, type, date, id) are lower-cased.
+_CHECK_KEYWORDS = frozenset({
+    "AND", "OR", "NOT", "IN", "IS", "NULL", "LIKE", "ILIKE", "BETWEEN",
+    "EXISTS", "CASE", "WHEN", "THEN", "ELSE", "END", "TRUE", "FALSE",
+    "DISTINCT", "UNIQUE", "ANY", "ALL", "SOME", "ESCAPE", "COLLATE",
+    "SIMILAR", "TO", "FROM", "AS", "CAST", "COALESCE", "NULLIF",
+    "GREATEST", "LEAST", "EXTRACT", "INTERVAL", "CURRENT_DATE",
+    "CURRENT_TIME", "CURRENT_TIMESTAMP", "LOCALTIME", "LOCALTIMESTAMP",
+    "DEFAULT", "NEW", "OLD", "MATCH", "AGAINST", "REGEXP", "RLIKE",
+    "SOUNDS", "DIV", "MOD", "XOR", "ISNULL", "IF", "IFNULL", "CONCAT",
+    "SUBSTRING", "SUBSTR", "TRIM", "CHAR", "CHARACTER", "BINARY",
+    "UNSIGNED", "SIGNED", "INTEGER", "INT", "BIGINT", "SMALLINT",
+    "TINYINT", "DECIMAL", "NUMERIC", "FLOAT", "DOUBLE", "REAL",
+    "BOOLEAN", "BOOL", "TEXT", "TIMESTAMP", "TIMESTAMPTZ", "VARCHAR",
+    "NVARCHAR", "CLOB", "BLOB", "JSON", "JSONB", "UUID", "ARRAY", "ROW",
+    "YEAR", "MONTH", "DAY", "HOUR", "MINUTE", "SECOND", "ZONE", "AT",
+    "WITHOUT", "WITH", "PRECISION", "ASC", "DESC", "USING", "OVERLAPS",
+    "UNKNOWN", "SYMMETRIC", "ASYMMETRIC", "ONLY", "BOTH", "LEADING",
+    "TRAILING", "FOR", "OF", "BY", "ON", "LOWER", "UPPER", "LENGTH",
+    "LEN", "ABS", "MIN", "MAX", "AVG", "SUM", "COUNT", "ROUND", "FLOOR",
+    "CEIL", "CEILING", "POWER", "SQRT", "POSITION", "OVERLAY", "NOW",
+    "DATE_TRUNC", "DATE_PART", "AGE", "CURRENT_USER", "SESSION_USER",
+})
 
-def _render(toks: list[_Tok]) -> str:
+
+def _render(toks: list[_Tok], *, check_idents: bool = False) -> str:
     out: list[str] = []
     prev: _Tok | None = None
     unary = False       # the previous token was a sign with no operand before it
+    check_depth = 0     # paren depth inside a CHECK clause, when check_idents
+    await_check = False
     for t in toks:
-        s = t.text.upper() if t.kind == "w" else t.text
+        in_check = check_depth > 0
+        if t.kind == "w":
+            if check_idents and in_check and t.text.upper() not in _CHECK_KEYWORDS:
+                s = t.text.lower()
+            else:
+                s = t.text.upper()
+        else:
+            s = t.text
         if prev is not None:
-            tight = unary or (t.text in _TIGHT_BEFORE and t.kind == "p") \
-                or (prev.text in _TIGHT_AFTER and prev.kind == "p") \
-                or (t.text == "(" and t.kind == "p" and prev.kind in ("w", "q"))
+            tight = unary or (t.text in _TIGHT_BEFORE and t.kind == "p") or (
+                prev.text in _TIGHT_AFTER and prev.kind == "p") or (
+                t.text == "(" and t.kind == "p" and prev.kind in ("w", "q"))
             if not tight:
                 out.append(" ")
         out.append(s)
         unary = t.kind == "p" and t.text in ("-", "+") and (
             prev is None or (prev.kind == "p" and prev.text != ")")
             or _is_w(prev, "DEFAULT", "AND", "OR", "NOT", "THEN", "ELSE", "WHEN"))
+        if check_idents:
+            if _is_w(t, "CHECK"):
+                await_check = True
+            elif await_check and _is_p(t, "("):
+                check_depth = 1
+                await_check = False
+            elif check_depth:
+                if _is_p(t, "("):
+                    check_depth += 1
+                elif _is_p(t, ")"):
+                    check_depth -= 1
+            else:
+                await_check = False
         prev = t
     return "".join(out)
-
 
 def _ident(t: _Tok) -> str:
     if t.kind == "q":
@@ -428,7 +476,7 @@ def _column(item: list[_Tok], sep_after: _Tok | None) -> Node:
         j += 1
     trail = (sep_after.trail if sep_after is not None else "") or item[-1].trail
     doc = comment or name_tok.lead or trail
-    return Node(Kind.COLUMN, _ident(name_tok), sig=_render(sig_toks),
+    return Node(Kind.COLUMN, _ident(name_tok), sig=_render(sig_toks, check_idents=True),
                 doc=doc, attrs=(("default", default),) if default else ())
 
 
@@ -694,7 +742,7 @@ def parse(path: str, text: str) -> list[Node]:
 
 class SqlExtractor:
     name: ClassVar[str] = "sql"
-    version: ClassVar[str] = "1"
+    version: ClassVar[str] = "2"
 
     def claims(self, path: str) -> bool:
         return path.lower().endswith(".sql")

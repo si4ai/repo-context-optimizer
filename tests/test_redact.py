@@ -108,9 +108,23 @@ def test_secret_default_in_sig_is_redacted(kind):
     assert SHORT not in redact.redact_node(n).sig and TOK[:16] not in redact.redact_node(tok).sig
 
 
-def test_other_attrs_untouched():
-    n = Node(Kind.FUNCTION, "f", attrs=(("decorators", f"auth('{TOK}')"),))
-    assert redact.redact_node(n) == n
+def test_decorators_attr_is_redacted():
+    for kind in (Kind.FUNCTION, Kind.METHOD, Kind.CLASS):
+        n = Node(kind, "f", attrs=(("decorators", f"deco('Bearer {TOK}')"),))
+        got = dict(redact.redact_node(n).attrs)["decorators"]
+        assert TOK not in got and got == f"deco('Bearer {P}')"
+
+
+@pytest.mark.parametrize("kind,sig", [
+    (Kind.CLASS, f"(Base, token='{GH}')"),
+    (Kind.FLAG, f'choices=["{GH}","b"];metavar={GH}'),
+    (Kind.COLUMN, f"TEXT CHECK(note <> '{GH}')"),
+    (Kind.PROCEDURE, f"(IN a TEXT DEFAULT '{GH}')"),
+])
+def test_secret_in_class_flag_column_procedure_sig_is_redacted(kind, sig):
+    n = Node(kind, "n", sig=sig)
+    got = redact.redact_node(n).sig
+    assert GH not in got and P in got
 
 
 def test_version_is_in_registry_and_module_hash():
@@ -153,3 +167,59 @@ def test_secret_never_reaches_map_bytes(tmp_path):
     for leak in (TOK, TOK[:8], MAIL, "jdoe"):
         assert leak.encode() not in a, leak
     assert b"API_TOKEN" in a and P.encode() in a
+
+def test_secret_fields_never_reach_tree_or_diff(tmp_path, capsysbinary):
+    """D1: CLASS/FLAG/COLUMN/PROCEDURE sigs and decorators must not leak."""
+    from rco import cli, diff
+    deco = f"deco('Bearer {TOK}')"
+    py = (
+        "def deco(x):\n    return x\n\n\n"
+        f"@{deco}\n"
+        f"class Client(Base, token='{GH}'):\n"
+        "    def connect(self) -> None:\n        pass\n\n\n"
+        f"@{deco}\n"
+        "def handler(x: int = 3) -> str:\n    return ''\n"
+    )
+    cli_src = (
+        "import argparse\n"
+        "p = argparse.ArgumentParser(prog='tool')\n"
+        f"p.add_argument('--mode', choices=['{GH}', 'b'], metavar='{GH}')\n"
+    )
+    sql_a = (
+        "CREATE TABLE users (\n"
+        f"  note TEXT CHECK (note <> '{GH}')\n"
+        ");\n"
+        f"CREATE PROCEDURE p(IN a TEXT DEFAULT '{GH}')\n"
+        "BEGIN\n  SELECT a;\nEND;\n"
+    )
+    sql_b = (
+        "CREATE TABLE users (\n"
+        f"  notes TEXT CHECK (note <> '{GH}')\n"
+        ");\n"
+        f"CREATE PROCEDURE p(IN a TEXT DEFAULT '{GH}')\n"
+        "BEGIN\n  SELECT a;\nEND;\n"
+    )
+    py_b = py.replace("x: int = 3", "x: int = 4")
+    repo, a = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/mod.py": py,
+        "tool/cli.py": cli_src,
+        "db/schema.sql": sql_a,
+    })
+    b = fixture.commit(repo, {"pkg/mod.py": py_b, "db/schema.sql": sql_b})
+    tree_bytes = canon.canonical_json(canon.map_to_obj(build.build_map(repo, b)))
+    for leak in (TOK, GH):
+        assert leak.encode() not in tree_bytes, leak
+    assert P.encode() in tree_bytes
+    for fmt in ("json", "markdown"):
+        assert cli.main(["tree", b, "--repo", str(repo), "--format", fmt]) == 0
+        out = capsysbinary.readouterr().out
+        assert TOK.encode() not in out and GH.encode() not in out
+        assert P.encode() in out
+    for fmt in ("json", "markdown"):
+        assert cli.main(["diff", a, b, "--repo", str(repo), "--format", fmt]) == 1
+        out = capsysbinary.readouterr().out
+        assert TOK.encode() not in out and GH.encode() not in out, fmt
+    rep = diff.diff(repo, a, b)
+    blob = " ".join(c.before + c.after for c in rep.changes)
+    assert TOK not in blob and GH not in blob
