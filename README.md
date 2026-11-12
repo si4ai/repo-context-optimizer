@@ -417,6 +417,10 @@ When `--budget` trims a pack, the pack names what it trimmed.
 
 AST skeletonizers, ctags, tree-sitter, Aider's repo map, and various repo packers already extract structure or pack context. RCO's difference is content-addressed incremental Trees and Forest, a contract diff, rebase triage that reports a hint rather than touching branches, and pluggable storage.
 
+## Process and GitHub setup
+
+This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](docs/github-setup.md).
+
 ## License
 
 MIT. See [LICENSE](LICENSE).
