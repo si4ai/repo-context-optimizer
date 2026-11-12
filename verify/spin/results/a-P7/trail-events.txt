@@ -1,0 +1,32 @@
+EV merge sha1, job 0->1 queued
+EV updater 4 starts update 0->1
+EV updater 4 stored Tree m0/c1 (update 0->1)
+EV updater 4 marked Forest m0 stale
+EV updater 4 wrote index for sha1
+EV updater 4 writes pointer sha1 (was sha0)
+EV updater 4 finished update 0->1, pointer=sha1
+EV rewriter starts prose for m0 at pointer sha1
+EV rewriter wrote Forest m0 for TreeHash 1 (fresh)
+EV duplicate job 0->1 queued
+EV updater 4 starts update 0->1
+EV updater 4 marked Forest m0 stale
+EV updater 4 wrote index for sha1
+EV updater 4 writes pointer sha1 (was sha1)
+EV updater 4 finished update 0->1, pointer=sha1
+EV rewriter starts prose for m0 at pointer sha1
+EV rewriter wrote Forest m0 for TreeHash 1 (fresh)
+EV merge sha2, job 1->2 queued
+EV updater 4 starts update 1->2
+EV updater 4 stored Tree m1/c1 (update 1->2)
+EV updater 4 wrote index for sha2
+EV updater 4 writes pointer sha2 (was sha1)
+EV updater 4 finished update 1->2, pointer=sha2
+EV merge sha3, job 2->3 queued
+EV updater 4 starts update 2->3
+EV updater 4 stored Tree m1/c2 (update 2->3)
+EV updater 4 marked Forest m1 stale
+EV updater 4 wrote index for sha3
+EV rewriter starts prose for m1 at pointer sha2
+EV updater 4 writes pointer sha3 (was sha2)
+EV updater 4 finished update 2->3, pointer=sha3
+EV rewriter wrote Forest m1 for TreeHash 0 (fresh)
