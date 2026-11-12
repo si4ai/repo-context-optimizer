@@ -60,7 +60,7 @@ class Store(Protocol):
         """Write the whole index of sha at once. Same rows again: no-op; other rows: StoreConflict."""
 
     def put_prose(self, module: str, prose: Prose) -> None:
-        """Keyed by (module, prose.tree_hash); a rewrite for the same key replaces the text."""
+        """Keyed by (module, prose.tree_hash); a rewrite replaces it and becomes newest; the same prose again is a no-op."""
 
     def get_prose(self, module: str, tree_hash: str | None = None) -> Prose | None:
         """Exact TreeHash, or with None the most recently written prose for module."""
@@ -126,6 +126,9 @@ class MemoryStore:
     def put_prose(self, module: str, prose: Prose) -> None:
         prose_from_obj(prose_to_obj(prose))  # same validation as a backend round trip
         with self._lock:
+            have = self.prose.get((module, prose.tree_hash))
+            if have is not None and have[1] == prose:
+                return  # idempotent: the same prose again keeps its place
             self._seq += 1
             self.prose[(module, prose.tree_hash)] = (self._seq, prose)
 
