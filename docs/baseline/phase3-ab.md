@@ -94,3 +94,98 @@ Until that run exists, no savings figure belongs in the README.
 - No new CI job: the counting run needs seated tester desks, as phase 0
   did. The harness's pure functions and fixture-log scoring run in
   `tests/test_phase3_ab.py` on every PR that touches them.
+
+## decided (A/B plan)
+
+The counting run uses the design below. Hashes and the numeric pass
+line stay TBD until they are sealed before the first run.
+
+Two baselines are references, not scored arms:
+
+- a cold 256K-context trace at the mill commit 456921fa. It was
+  accurate on file:line facts, recalled about one third of callers,
+  and mapped neither tests nor wall JS.
+- a roughly 1M-context architecture review written against an earlier
+  main, with the agent allowed to ask the office human questions. It
+  gave why-level rationale, had no path:line anchors, and goes stale
+  silently.
+
+Round 1 is trees only: three "where" questions at the mill commit
+456921fa, at least one in hold or wake code. Round 2 is one "why"
+question, after the office human writes its answer.
+
+Gardener picks the questions (it leads agent UX). Before any run, only
+a SHA-256 hash of the question set goes in this document. The
+questions are published with the key after grading.
+
+Validator builds the answer key without opening any map: a full
+`git grep` caller list, plus what breaks when each function is broken
+on a scratch branch. The key stays off-repo. Only its hash goes in
+this document before the runs. The key is published after grading so
+anyone can check the hash.
+
+Validator's separate tree-quality check samples functions that do not
+overlap the A/B questions. Any overlap is held until grading.
+
+Arms: one model at 256K, three arms: no pack (task and repo only), a
+fresh `rco pack`, and a deliberately stale pack. The stale-pack
+commit is 9104fca37a3b0ef33331e5fe9740563cc7f10098 (20 first-parent
+commits before 456921fa). It is named here before any run.
+
+Arms are pinned to RCO 0.1.1 from the package index. Dogfooding may
+change the tool, but the arms do not move mid-test. Builder receives
+the questions only after 0.1.1 is tagged.
+
+At least three runs per arm per question. Log tokens, reads, and
+questions asked. Builder strips arm names and shuffles the logs
+before handoff.
+
+Questions to the office human are allowed but counted as cost. Each
+becomes an RCO card or a docs fix. It separates useful
+clarification from questions the repo should already answer. A
+confident wrong answer scores worse than asking.
+
+Validator grades blind: caller recall; file:line facts that do not
+exist at the commit (any one fails the run); tokens to the first
+useful answer; and questions asked. It reports median and spread.
+
+Pass line: a written number set by the office human and sealed by
+Validator before any run (example shape: same or better recall, zero
+wrong file:line facts, at least 25% fewer tokens). Placeholder: TBD.
+
+If the stale pack scores about the same as the fresh pack, fix the
+A/B before trusting any result.
+
+Auditor checks the design (questions frozen, key sealed, pass line a
+number) before the run, and the result against evidence after.
+
+Later: a real-handoff test after a code change, for long-running
+desks.
+
+Token savings are claimed only from platform token counts (see the
+rule in "what it measures" above).
+
+## pre-run record
+
+Values to seal before the first run. All TBD now.
+
+| field | value |
+| --- | --- |
+| question-set hash | TBD |
+| answer-key hash | TBD |
+| pass line | TBD |
+| stale-pack commit | TBD |
+| RCO version | TBD |
+| model and context size | TBD |
+
+## learnings
+
+- The cold 256K trace was precise on file:line facts but missed
+  callers (including rpc.py write-side callers and a floor.py call
+  site), tests, and wall JS.
+- The architecture review gave design rationale but no path:line
+  anchors, and it drifted as the code moved.
+- Questions to the office human helped the review, so questions are
+  measured, not banned.
+- Every desk notes in its handoff when it used an `rco pack` and
+  whether the pack helped or misled.
