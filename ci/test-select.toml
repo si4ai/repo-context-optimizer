@@ -33,6 +33,9 @@ paths = [
   "src/**/*.py",
   "tests/**/*.py",
   "tools/**/*.py",
+  "tests/fixtures/**",
+  "tests/golden/**",
+  "pyproject.toml",
 ]
 jobs = ["pytest"]
 
