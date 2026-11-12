@@ -24,7 +24,7 @@ def test_update_drain_pack(tmp_path, capsys):
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
     capsys.readouterr()
     store = open_repo_store(repo)
-    assert drain_queue(repo, store) == 2
+    assert drain_queue(repo, store) == 0  # CLI already mined the queued rows
     code, p = _pack(repo, capsys, "--for", "pkg/core.py")
     assert code == Exit.OK and p["stale"] == [] and not p["notes"]  # read from the store
     forest = {e["id"]: e for e in p["forest"]}
@@ -36,8 +36,6 @@ def test_update_drain_pack(tmp_path, capsys):
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
     capsys.readouterr()
     code, p = _pack(repo, capsys)
-    assert code == Exit.FINDINGS and p["stale"] == ["util"]  # contract moved, prose not yet
-    assert drain_queue(repo, store) == 1
-    code, p = _pack(repo, capsys)
-    assert code == Exit.OK and p["stale"] == [] and p["sha"] == b
+    assert code == 0 and p["stale"] == [] and p["sha"] == b  # already mined after update
+    assert drain_queue(repo, store) == 0
     assert fixture.git(repo, "status", "--porcelain", "--untracked-files=all") == ""

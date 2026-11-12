@@ -16,8 +16,8 @@ the `rco` command.
 - `rco update`, `rco pack`, and `rco forest`, with a local SQLite store
   under `.rco/` (phase 2). The store is per worktree. `.rco/` is added to
   `.git/info/exclude`, never to `.gitignore`.
-- mined prose on by default, from docstrings, module headers, and
-  READMEs. The LLM path ships off.
+- mined prose on by default: `rco update` drains the queue from
+  docstrings, module headers, and READMEs. The LLM path ships off.
 - a name-in-tree check: names cited in prose that are not in the Tree are
   shown in the pack and counted by `rco check` when a store is present.
 - history replay: incremental `rco update` equals a full rebuild at every
