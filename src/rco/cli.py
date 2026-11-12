@@ -59,14 +59,14 @@ def make_parser() -> argparse.ArgumentParser:
     k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
     _common(k)
 
-    f = sub.add_parser("forest", help="print the computed Forest (not implemented yet)")
+    f = sub.add_parser("forest", help="print the computed Forest of a commit")
     f.add_argument("sha", nargs="?", default="HEAD")
     _common(f)
     return p
 
 
 # Phase 2 commands that exist but are not built yet: exit 2 (usage), one line.
-_NOT_YET = {"update": "step 3", "pack": "step 5", "forest": "step 2"}
+_NOT_YET = {"update": "step 3", "pack": "step 5"}
 
 
 @dataclass(frozen=True)
@@ -106,6 +106,10 @@ def run(args: argparse.Namespace) -> Exit:
         return emit(check.check(repo, sha, m), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+    if args.cmd == "forest":
+        from rco import forest
+        sha = gitread.resolve(repo, args.sha)
+        return emit(forest.ForestReport(forest.build_forest(repo, sha)), args.format, args.out)
     if args.cmd in _NOT_YET:
         raise UsageError(f"{args.cmd}: not implemented (Phase 2 {_NOT_YET[args.cmd]})")
     raise UsageError(f"unknown command {args.cmd}")
