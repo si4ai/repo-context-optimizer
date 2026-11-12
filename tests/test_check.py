@@ -1,5 +1,6 @@
 """Map checker: findings, sorting, the six planted drifts, CLI exit codes."""
 import json
+from pathlib import Path
 from dataclasses import replace
 
 from rco import build, canon, check, cli, fixture
@@ -81,3 +82,29 @@ def test_selftest_time_limit():
     t0 = time.perf_counter()
     assert check.selftest().exit_code() is Exit.OK
     assert time.perf_counter() - t0 < SELFTEST_LIMIT_S
+
+
+def test_check_reads_forest_edges(tmp_path, capsys):
+    """rco check accepts rco.forest/1 and reports edge findings on that graph."""
+    from rco.forest import build_forest
+    from rco.forest_model import Forest, forest_to_obj
+
+    root = Path(__file__).parent / "fixtures" / "forest_basic"
+    files = {q.relative_to(root).as_posix(): q.read_bytes()
+             for q in sorted(root.rglob("*")) if q.is_file()}
+    repo, sha = fixture.make_repo(tmp_path / "forest_basic", files)
+    actual = build_forest(repo, sha)
+    planted = Forest(actual.sha, tuple(
+        replace(e, depends_on=()) if e.id == "src/app/core" else e for e in actual.entries),
+        actual.notes)
+    claimed = tmp_path / "forest.json"
+    claimed.write_bytes(canon.canonical_json(forest_to_obj(planted)))
+    assert cli.main(["check", str(claimed), "--repo", str(repo), "--format", "json"]) == Exit.FINDINGS
+    out = json.loads(capsys.readouterr().out)
+    assert out["counts"]["edge"] >= 1
+    assert any(f["status"] == "edge" and f["key"] == "edge:src/app/core->src/app/util"
+               and f["detail"] == "in code, not in forest" for f in out["findings"])
+    good = tmp_path / "good.json"
+    good.write_bytes(canon.canonical_json(forest_to_obj(actual)))
+    assert cli.main(["check", str(good), "--repo", str(repo)]) == Exit.OK
+
