@@ -47,6 +47,21 @@ def make_parser() -> argparse.ArgumentParser:
     d.add_argument("base", nargs="?", default=None)
     d.add_argument("head", nargs="?", default=None)
     _common(d)
+
+    u = sub.add_parser("update", help="publish a commit to the store (.rco/rco.db)")
+    u.add_argument("new", nargs="?", default="HEAD")
+    u.add_argument("--name", default="main", help="pointer name (default: main)")
+    _common(u)
+
+    k = sub.add_parser("pack", help="Forest plus Trees for an agent, within a token budget")
+    k.add_argument("sha", nargs="?", default="HEAD")
+    k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE")
+    k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
+    _common(k)
+
+    f = sub.add_parser("forest", help="print the computed Forest of a commit")
+    f.add_argument("sha", nargs="?", default="HEAD")
+    _common(f)
     return p
 
 
@@ -87,6 +102,26 @@ def run(args: argparse.Namespace) -> Exit:
         return emit(check.check(repo, sha, m), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+    if args.cmd == "update":
+        from rco import update
+        from rco.store.sqlite import open_repo_store
+        store = open_repo_store(repo)
+        res = update.update(repo, store, args.new, args.name)
+        return emit(update.UpdateReport(res), args.format, args.out)
+    if args.cmd == "forest":
+        from rco import forest
+        sha = gitread.resolve(repo, args.sha)
+        return emit(forest.ForestReport(forest.build_forest(repo, sha)), args.format, args.out)
+    if args.cmd == "pack":
+        from rco import pack
+        sha = gitread.resolve(repo, args.sha)
+        store = None
+        db = repo / ".rco" / "rco.db"
+        if db.exists():  # read only: pack never creates a store
+            from rco.store.sqlite import SqliteStore
+            store = SqliteStore(db)
+        p = pack.pack(repo, sha, args.for_paths, args.budget, store)
+        return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     raise UsageError(f"unknown command {args.cmd}")
 
 
