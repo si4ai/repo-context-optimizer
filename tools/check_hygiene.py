@@ -78,9 +78,14 @@ _TEXT_MARKS = frozenset(
 _HOME_PLACEHOLDERS = frozenset(
     {"", "*", "...", "\u2026", "example", "user", "username", "you", "name"}
 )
+# WSL forms: a wsl$ or wsl.localhost UNC share (backslash or forward-slash
+# form; the segment checked is the distro), and Windows user folders seen
+# from WSL as /mnt/<drive>/Users/<login>.
 _HOME_PATH_RE = re.compile(
     r"(?:(?<![A-Za-z0-9])[A-Za-z]:(?:\\\\|\\|/)+[Uu][Ss][Ee][Rr][Ss](?:\\\\|\\|/)+"
-    r"|(?<![\w.~-])/(?:home|Users)/)"
+    r"|(?<![\w.~-])/(?:home|Users)/"
+    r"|(?<![\w.~-])/mnt/[A-Za-z]/[Uu][Ss][Ee][Rr][Ss]/"
+    r"|(?<![\w$.~-])(?:\\\\|\\|/){2,}[Ww][Ss][Ll](?:\$|\.[Ll][Oo][Cc][Aa][Ll][Hh][Oo][Ss][Tt])(?:\\\\|\\|/)+)"
     r"([^\\/\s\"'`<>()\[\]{}:;,|]*)"
 )
 _PLACEHOLDER_EMAIL_DOMAINS = frozenset(
