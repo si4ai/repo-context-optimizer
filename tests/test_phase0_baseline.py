@@ -73,3 +73,20 @@ def test_parse_cold_log_table_and_summary():
 def test_parse_cold_log_without_join():
     r = p0.parse_cold_log("| ls | 0 | 5 | 01:02:03 |\n")
     assert r["first_useful_action"] is None and r["reads_before_first_useful"] is None
+
+
+def test_est_tokens_rounds_up():
+    # characters / 4, rounded up (not down): 1..3 chars -> 1, 4 -> 1, 5 -> 2
+    assert p0.CHARS_PER_TOKEN == 4
+    assert p0.est_tokens("") == 0
+    assert p0.est_tokens("a") == 1
+    assert p0.est_tokens("abc") == 1
+    assert p0.est_tokens("abcd") == 1
+    assert p0.est_tokens("abcde") == 2
+
+
+def test_histogram_counts_each_value_once():
+    assert p0.histogram([]) == {}
+    assert p0.histogram([3]) == {"3": 1}
+    assert p0.histogram([1, 2, 2, 5, 5, 5]) == {"1": 1, "2": 2, "5": 3}
+

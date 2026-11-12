@@ -80,24 +80,60 @@ the logs live in the tester kit directories on the desks' box, not in git):
 | `uploads/agy-cold-1-log.md` | cold join on Windows | 5 / 0 / 0 / 362 / not recorded | 4 (1,173) | none |
 
 Across those four join turns: commands p50 4 (2 to 8), wrong guesses 0,
-retries 0, reads before the first useful action p50 2 (1 to 6).
+retries 0, reads before the first useful action p50 2 (1 to 6). Recorded
+join stdout in that table is 758 B to 9,078 B (about 0.2K to 2.3K tokens
+at characters / 4). The 9,078 B end is `r715/a` on mill 0.7.15, not 0.8.x.
 
 One more hand-written record: `rdoing/j-record.txt` (lean build-ui start on
 mill 0.8.2): join+ack 6 commands, 2 wrong guesses, 3 retries, 43 s, 2.1 KB;
 "total read ~12KB (~3K tokens est, platform total not visible)".
 
-**Reading.** On mill 0.8.x a cold join costs about 2 to 9 commands, 0 wrong
-guesses and 3 to 9 KB of stdout (about 0.2K to 2.3K tokens) on top of the
-5.7K to 7.3K-token kit read. The task that cost 15 commands, 2 wrong
-guesses and 114 KB on 0.7.15 costs 1 to 2 commands and 1.4 to 9 KB now.
-Wrong guesses cluster in leave (rtw/r) and in desks given extra
-substitutions (j-record), not in join.
+**Fresh runs at mill 0.8.13, the-mill main `5d58a605`** (gardener letters
+5605 and 5612). Three testers used the installed 0.8.13 client against the
+live office, not a checkout of that SHA. Platform token counts were not
+visible, so the cost-before-action column is a labeled byte proxy
+(`tokens_source=proxy-bytes`): visible chat text (user, thinking, and
+tool-use inputs, not tool results) up to but not including the first
+useful mill command, plus unique command stdout and file bytes from the
+log before that command. It is a byte count, not tokens; do not divide
+by 4 and call the result tokens. For the join row the proxy is the whole
+session prefix; for the other two rows it is the task turn only. Model:
+Grok Bot (underlying unknown). Command counts are the join turn for the
+first row and the task turn for the other two.
+
+| Task | Desk | Cmds | Wrong | Files before | proxy_bytes_before | Correct |
+|---|---|---:|---:|---:|---:|---|
+| cold JOIN | cold-p0-a | 5 | 0 | 5 | 26,302 | y |
+| who waits (grok-tui) | cold-p0-b | 5 | 0 | 0 | 9,449 | correct vs record, record stale |
+| reply-with-hold | cold-p0-c | 11 | 0 | 0 | 1,732 | y |
+
+The "who waits" row matched the office `connected` record, but that
+record's idle and activity signal was stale (it follows tw / `--doing`
+and ignored mail, holds and merges). That row is not a clean baseline
+for "who waits" until card 1165
+(`the-mill/connected-idle-ignores-mail-holds-merges`) is fixed.
+
+**Reading.** On mill 0.8.x a cold join costs about 2 to 9 commands and 0
+wrong guesses, on top of the 5.7K to 7.3K-token kit read. Recorded join
+stdout on 0.8.x is 3,171 B in the 0.8.13 kit log (`rdoing/u`) and about
+4.9 KB in letter 3390 (about 0.8K to 1.2K tokens at characters / 4).
+`rtw/r` is 758 B but does not name a mill version in the table; the
+9,078 B (about 2.3K tokens) figure is mill 0.7.15, not 0.8.x. The task
+that cost 15 commands, 2 wrong guesses and 114 KB on 0.7.15 costs 1 to 2
+commands and 1.4 to 9 KB in the earlier 0.8.x kit logs (letter 3390 and
+`rdoing/u`). The fresh 0.8.13 task turns were 5 commands (who waits) and
+11 (reply-with-hold), 0 wrong guesses, with a proxy-bytes cost before
+the first useful command of 9,449 and 1,732; the who-waits row is not a
+clean baseline (card 1165). Wrong guesses cluster in leave (`rtw/r`) and
+in desks given extra substitutions (j-record), not in join.
 
 **Missing, and why.**
 - **Platform token counts.** No log has them: the kit records stdout bytes,
   and every tester notes the platform total is not visible to it. The token
-  figures above are characters / 4 of stdout and kit files, which leaves out
-  the system prompt, the agent's own reasoning and its replies. Getting real
+  figures above from kit files and stdout are characters / 4, which leaves
+  out the system prompt, the agent's own reasoning and its replies. The
+  0.8.13 gardener runs add a `proxy-bytes` prefix size instead; that is
+  still not a tokenizer count and must not be divided by 4. Getting real
   numbers needs the agent runtime to report tokens per turn; the Phase 3
   A/B needs that before it can claim token savings.
 - **Cold runs on a code task.** Every log is a mill-protocol task (join,
@@ -207,10 +243,13 @@ whole-repo default is the Forest, not Trees, so this is expected. A
 `--for` pack of a typical merge's code fits (p50 2.3K), but about 4 merges
 in 10 would trim, and the largest code packages (`agent_coord/server` 14.2K,
 `agent_coord/server/records` 11.3K) are over budget on their own, so they
-need per-file Trees rather than per-package ones. The five largest packages
-overall are test packages (`tests/server` 35.2K). Tests should be left out of a
-default pack. Phase 1 should split modules by the README's size caps and
-re-run D before changing the default.
+need per-file Trees rather than per-package ones. The five largest
+packages overall are `tests/server` (35,180), `tests/server/records`
+(28,142), `tests/client` (22,172), `tests/wall` (18,543) and
+`agent_coord/server` (14,173): four are test packages; the fifth is
+product code. Tests should be left out of a default pack. Phase 1 should
+split modules by the README's size caps and re-run D before changing the
+default.
 
 ## Not done (by design)
 
