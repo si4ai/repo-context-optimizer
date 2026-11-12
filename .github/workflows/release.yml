@@ -1,13 +1,15 @@
 # PyPI release. Trusted publishing (OIDC): no stored token.
-# The PyPI trusted publisher is bound to this file name (release.yml) and the
-# environment name (pypi); renaming either breaks publishing.
+# The publishers are bound to this file name (release.yml) and the environment
+# name (pypi or testpypi); renaming any of those breaks publishing.
+#   workflow_dispatch from main -> build and verify -> publish to
+#     test.pypi.org (environment: testpypi). This is the rehearsal.
 #   push of a v* tag -> build and verify -> publish to PyPI (environment: pypi)
-# Nothing else triggers this workflow.
 name: release
 
 "on":
   push:
     tags: ["v*"]
+  workflow_dispatch:
 
 permissions: {}
 
@@ -31,12 +33,20 @@ jobs:
           python-version: "3.12"
       # A v* tag off main must not publish.
       - name: Tagged commit is on main
+        if: github.event_name == 'push'
         env:
           TAG_SHA: ${{ github.sha }}
         run: |
           set -eu
           git fetch --no-tags origin main
           git merge-base --is-ancestor "$TAG_SHA" origin/main
+      # The rehearsal publishes 0.1.0 (or whatever is on main) to test.pypi.org.
+      # Only main may be dispatched, so a branch cannot overwrite a version.
+      - name: workflow dispatch is from main
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          set -eu
+          test "${GITHUB_REF}" = "refs/heads/main"
       - name: Install build tools
         run: python -m pip install build==1.6.1 twine==7.0.0 pytest==9.2.0
       - name: Tests
@@ -44,6 +54,7 @@ jobs:
       - name: Build sdist and wheel
         run: python -m build --outdir dist .
       - name: Tag matches the built version
+        if: github.event_name == 'push'
         env:
           REF_NAME: ${{ github.ref_name }}
         run: |
@@ -69,7 +80,45 @@ jobs:
           path: dist/
           if-no-files-found: error
 
+  publish_testpypi:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/project/repo-context-optimizer/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: dist
+          path: dist/
+      # The composite action pulls ghcr.io/pypa/gh-action-pypi-publish:<action-sha>,
+      # a mutable registry tag. Refuse unless its digest matches the pin on the
+      # uses line; bump ACTION_SHA, WANT_DIGEST and the uses pin together.
+      - name: Publish image digest matches pin
+        env:
+          ACTION_SHA: "7245906fb61fa33a13554f9d5fb856fe61758086"
+          WANT_DIGEST: "sha256:411241df99067c98b6d08fd8e26d14e86740a22460599c2af571e6dc26e27ffc"
+        run: |
+          set -eu
+          token=$(curl -fsS "https://ghcr.io/token?service=ghcr.io&scope=repository:pypa/gh-action-pypi-publish:pull" \
+            | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+          got=$(curl -fsSI \
+            -H "Authorization: Bearer ${token}" \
+            -H "Accept: application/vnd.oci.image.index.v1+json,application/vnd.docker.distribution.manifest.list.v2+json,application/vnd.docker.distribution.manifest.v2+json,application/vnd.oci.image.manifest.v1+json" \
+            "https://ghcr.io/v2/pypa/gh-action-pypi-publish/manifests/${ACTION_SHA}" \
+            | tr -d '\r' | awk -F': ' 'tolower($1)=="docker-content-digest"{print $2; exit}')
+          test -n "$got"
+          test "$got" = "$WANT_DIGEST"
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3 image sha256:411241df99067c98b6d08fd8e26d14e86740a22460599c2af571e6dc26e27ffc
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
   publish_pypi:
+    if: github.event_name == 'push'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10

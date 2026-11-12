@@ -99,7 +99,12 @@ def run(args: argparse.Namespace) -> Exit:
             raise UsageError("check needs MAP or --selftest")
         m = _read_map(args.map)
         sha = gitread.resolve(repo, args.sha or m.sha)
-        return emit(check.check(repo, sha, m), args.format, args.out)
+        store = None
+        db = repo / ".rco" / "rco.db"
+        if db.exists():  # read only: check never creates a store
+            from rco.store.sqlite import SqliteStore
+            store = SqliteStore(db)
+        return emit(check.check(repo, sha, m, store), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
     if args.cmd == "update":
