@@ -73,6 +73,16 @@ def make_parser() -> argparse.ArgumentParser:
     f = sub.add_parser("forest", help="print the computed Forest of a commit")
     f.add_argument("sha", nargs="?", default="HEAD")
     _common(f)
+
+    pn = sub.add_parser("pin", help="pin the contract of files (commit it as the intended contract)")
+    pn.add_argument("sha", nargs="?", default="HEAD")
+    pn.add_argument("--for", dest="for_paths", nargs="+", required=True, metavar="FILE")
+    _common(pn)
+
+    dr = sub.add_parser("drift", help="contract drift from committed pins (a report, not a block)")
+    dr.add_argument("pins", nargs="+", type=Path, metavar="PIN", help="pin file or directory of *.json pins")
+    dr.add_argument("--at", default="HEAD", help="commit to check (default: HEAD)")
+    _common(dr)
     return p
 
 
@@ -146,6 +156,15 @@ def run(args: argparse.Namespace) -> Exit:
             store = SqliteStore(db)
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
+    if args.cmd == "pin":
+        from rco import pin
+        sha = gitread.resolve(repo, args.sha)
+        return emit(pin.make_pin(repo, sha, args.for_paths), args.format, args.out)
+    if args.cmd == "drift":
+        from rco import pin
+        files = pin.pin_files(args.pins)
+        sha = gitread.resolve(repo, args.at)
+        return emit(pin.drift(repo, files, sha), args.format, args.out)
     raise UsageError(f"unknown command {args.cmd}")
 
 
