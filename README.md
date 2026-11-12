@@ -162,7 +162,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Planned commands
 
-`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco pack`, `rco triage`, and `rco update` are not implemented yet. Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, and `rco diff` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. `rco pack` and `rco update` are not implemented yet. Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
@@ -222,6 +222,8 @@ Lists added, removed, and changed signatures, flags, columns, and routes. For ea
 
 Triage never rebases, merges, or pushes anyone's branch. For each open branch it reports either `clean: no changed file, no changed contract used` or a structural brief, as a hint. The branch owner or a merge-main step acts on that hint.
 
+Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. Both see Python callers only; CLI, SQL, and route changes show up as files changed on both sides.
+
 An unchanged contract can still hide a behavior change, so tests still run. The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
 
 ### `rco update`
@@ -257,7 +259,7 @@ Exit codes, so agents can script the commands:
 | Code | Meaning |
 |---|---|
 | 0 | Ok (clean pack, no contract findings, triage all clean). |
-| 1 | Findings (contract changed, Forest stale, or triage emitted a structural brief). |
+| 1 | Findings (contract changed, Forest stale, or triage emitted a structural brief). `rco notice` never exits 1. |
 | 2 | Usage error. |
 | 3 | Internal error. |
 
