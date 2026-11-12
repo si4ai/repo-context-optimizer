@@ -113,8 +113,12 @@ and ignored mail, holds and merges). That row is not a clean baseline
 for "who waits" until card 1165
 (`the-mill/connected-idle-ignores-mail-holds-merges`) is fixed.
 
-**Reading.** On mill 0.8.x a cold join costs about 2 to 9 commands and 0
-wrong guesses, on top of the 5.7K to 7.3K-token kit read. Recorded join
+**Reading.** On mill 0.8.x a cold join costs about 4 to 11 commands and 0
+wrong guesses, on top of the 5.7K to 7.3K-token kit read. Known 0.8.x
+join counts are 4 (`rdoing/u`), 5, 5 and 11 (0.8.13 letters 5605 and
+5612: cold-p0-a, cold-p0-b, and cold-p0-c; cold-p0-c's score sheet is
+join / task / leave: 11 / 11 / 2), 6 (j-record), and 9 (letter 3390).
+Recorded join
 stdout on 0.8.x is 3,171 B in the 0.8.13 kit log (`rdoing/u`) and about
 4.9 KB in letter 3390 (about 0.8K to 1.2K tokens at characters / 4).
 `rtw/r` is 758 B but does not name a mill version in the table; the
