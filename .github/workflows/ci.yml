@@ -127,3 +127,103 @@ jobs:
             exit 0
           fi
           python3 tools/check_hidden_code.py --base "$base" --head "$head" --author "${PR_AUTHOR:-$GITHUB_ACTOR}"
+
+  # hygiene report: identifiers, secrets, home paths, addresses, emails,
+  # name tokens, typographic marks, and junk files in the commit range,
+  # plus the PR title and body when the event is a pull request. report
+  # only: no --strict here. a crash or git failure fails the job. kept
+  # out of ci/test-select.toml on purpose so it runs on every trigger.
+  hygiene_report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          MQ_BASE: ${{ github.event.merge_group.base_sha }}
+          MQ_HEAD: ${{ github.event.merge_group.head_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+          EVENT_PATH: ${{ github.event_path }}
+        run: |
+          set -euo pipefail
+          base=""
+          head="$PUSH_SHA"
+          case "$EVENT_NAME" in
+            pull_request)
+              head="$PR_HEAD"
+              base=$(git merge-base "$PR_BASE" "$PR_HEAD" 2>/dev/null || echo "$PR_BASE")
+              ;;
+            merge_group)
+              base="$MQ_BASE"
+              head="$MQ_HEAD"
+              ;;
+            push)
+              base="$PUSH_BEFORE"
+              ;;
+          esac
+          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
+            base=$(git rev-parse --verify --quiet "$head^1" || true)
+            echo "no usable base for this event; scanning the last commit against its first parent."
+          fi
+          if [ -z "$base" ]; then
+            echo "root commit, nothing to compare: no hygiene report."
+            exit 0
+          fi
+          event_args=()
+          if [ -n "${EVENT_PATH:-}" ] && [ -f "$EVENT_PATH" ]; then
+            event_args=(--event "$EVENT_PATH")
+          fi
+          python3 tools/check_hygiene.py --base "$base" --head "$head" "${event_args[@]}"
+
+  # role-trailer report: each commit in the range must carry a Role:
+  # trailer naming a configured desk. report only: no --strict here.
+  # a crash or git failure fails the job. kept out of the test-select
+  # map so it runs on every trigger.
+  role_trailer_report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          MQ_BASE: ${{ github.event.merge_group.base_sha }}
+          MQ_HEAD: ${{ github.event.merge_group.head_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          base=""
+          head="$PUSH_SHA"
+          case "$EVENT_NAME" in
+            pull_request)
+              head="$PR_HEAD"
+              base=$(git merge-base "$PR_BASE" "$PR_HEAD" 2>/dev/null || echo "$PR_BASE")
+              ;;
+            merge_group)
+              base="$MQ_BASE"
+              head="$MQ_HEAD"
+              ;;
+            push)
+              base="$PUSH_BEFORE"
+              ;;
+          esac
+          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
+            base=$(git rev-parse --verify --quiet "$head^1" || true)
+            echo "no usable base for this event; scanning the last commit against its first parent."
+          fi
+          if [ -z "$base" ]; then
+            echo "root commit, nothing to compare: no role-trailer report."
+            exit 0
+          fi
+          python3 tools/check_role_trailer.py --base "$base" --head "$head"

@@ -1,0 +1,4 @@
+# hygiene and role-trailer settings. optional; flags override these values.
+# roles are desk names that may appear in a commit's Role: trailer.
+roles = ["auditor", "builder", "validator", "desk", "grok-tui"]
+words_file = "tools/hygiene_words.txt"
