@@ -10,7 +10,7 @@ system temp dir), never into the checkout.
 | check | command | exit 0 | exit 1 (finding) | exit 2 |
 |---|---|---|---|---|
 | 1 README ledger | `python3 verify/validator/readme_ledger.py [--ref HEAD] [--offline] [--check-runs] [--red-on LIST]` | no claim has a red status | a claim has a status in `--red-on` | error |
-| 2 SPIN gate | `python3 verify/validator/spin_gate.py [--ref HEAD]` (about 5 min) or `--summary FILE` | results match the documented tables and the self-test is green | a mismatch, a missing row, a tool error, or a tampered summary that stays green | spin or gcc missing, or no summary written |
+| 2 SPIN gate | `python3 verify/validator/spin_gate.py [--ref HEAD]` (about 5 min) or `--summary FILE` | results match the documented tables and the self-test is green | a mismatch, a missing row, a tool error, a tampered summary that stays green, or a nonzero run.sh | spin or gcc missing, or no summary written |
 | 3 config tamper | `python3 verify/validator/config_tamper.py --base BASE --head HEAD` or `--selftest` | no finding hidden by the head config, no watched file touched | a dropped finding or a touched watched file | git or scanner error |
 
 All three take `--repo DIR` (default: this checkout).
@@ -31,11 +31,11 @@ repo's own `run.sh` unchanged, then parses `results/summary.txt`. Expected
 verdicts come from `verify/spin/README.md` at the same REF (main table and
 ablations, 49 cells), plus hard rules from the top README: `fixed` passes
 P1-P7, `a` fails all seven, and b and b-cas fail at least one. State counts
-are compared too (a difference is a note). The verdict does not depend on
-run.sh's exit code; a disagreement between the two is printed as a note.
-Self-test: six tampered summaries (fixed P1 to FAIL, a P1 to PASS, an
-ablation flipped, a row dropped, a gcc ERROR row, no footer) must all turn
-the gate red.
+are compared too (a difference is a note). A nonzero `run.sh` with a green
+gate is a MISMATCH and the check exits 1. Self-test: seven tampered
+summaries (fixed P1 to FAIL, fixed P1 got-column to FAIL with expect left
+PASS and the run.sh marker, a P1 to PASS, an ablation flipped, a row
+dropped, a gcc ERROR row, no footer) must all turn the gate red.
 
 **3 config_tamper.** Runs `tools/check_hidden_code.py` from BASE twice on the
 same BASE..HEAD diff: once with `ci/hidden-code.toml` as at BASE, once as at
