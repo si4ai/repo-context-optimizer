@@ -71,3 +71,54 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y spin
       - name: Run SPIN model
         run: verify/spin/run.sh
+
+  # Hidden-code report: a visible report of the PR (or push) diff. It is not
+  # a merge gate: the scan exits 0 on findings (never --strict here). A
+  # crash, a git failure, or bad arguments exits nonzero and fails the job.
+  # Kept out of ci/test-select.toml on purpose: path-based selection runs
+  # nothing for a file no rule lists, which is the blind spot this scan
+  # covers, so it runs on every trigger.
+  hidden_code_report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PR_AUTHOR: ${{ github.event.pull_request.user.login }}
+          MQ_BASE: ${{ github.event.merge_group.base_sha }}
+          MQ_HEAD: ${{ github.event.merge_group.head_sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+          GITHUB_ACTOR: ${{ github.actor }}
+        run: |
+          set -euo pipefail
+          base=""
+          head="$PUSH_SHA"
+          case "$EVENT_NAME" in
+            pull_request)
+              head="$PR_HEAD"
+              base=$(git merge-base "$PR_BASE" "$PR_HEAD" 2>/dev/null || echo "$PR_BASE")
+              ;;
+            merge_group)
+              base="$MQ_BASE"
+              head="$MQ_HEAD"
+              ;;
+            push)
+              base="$PUSH_BEFORE"
+              ;;
+          esac
+          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
+            base=$(git rev-parse --verify --quiet "$head^1" || true)
+            echo "No usable base for this event; scanning the last commit against its first parent."
+          fi
+          if [ -z "$base" ]; then
+            echo "Root commit, nothing to compare: no hidden-code report."
+            exit 0
+          fi
+          python3 tools/check_hidden_code.py --base "$base" --head "$head" --author "${PR_AUTHOR:-$GITHUB_ACTOR}"

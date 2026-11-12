@@ -24,6 +24,7 @@ jobs = ["spin"]
 paths = [
   "src/**/*.py",
   "tests/**/*.py",
+  "tools/**/*.py",
 ]
 jobs = ["pytest"]
 
