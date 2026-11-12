@@ -183,3 +183,46 @@ def test_email_home_ip_secret_junk_and_pr_body(tmp_path: Path, capsys) -> None:
     assert _PLANTED_IP not in blob
     assert _PLANTED_PAT not in blob
     assert _PLANTED_NAME not in blob
+
+
+# WSL and key shapes ported from the md2xarticle reference scanner.
+# These are assembled at run time so this file does not trip the scan itself.
+_BS = "\\"
+_WSL = "w" + "sl"
+_LOGIN = "fixture" + "login"
+
+
+def test_wsl_home_paths_are_findings() -> None:
+    for text in (
+        _BS * 2 + _WSL + "$" + _BS + "ubuntu" + _BS + "home" + _BS + _LOGIN,
+        _BS * 2 + _WSL + ".localhost" + _BS + "ubuntu" + _BS + "home" + _BS + _LOGIN,
+        _BS * 4 + _WSL + ".localhost" + _BS * 2 + "ubuntu",
+        "//" + _WSL + "$/ubuntu/home/" + _LOGIN,
+        "//" + _WSL + ".localhost/ubuntu/home/" + _LOGIN,
+        "/mnt/c/" + "Users/" + _LOGIN + "/desktop",
+        "cd /mnt/d/" + "users/" + _LOGIN,
+    ):
+        assert ch.text_has_personal_home_path(text), text
+
+
+def test_wsl_placeholders_and_near_misses_pass() -> None:
+    for text in (
+        "open the folder through " + _BS * 2 + _WSL + "$",
+        _BS * 2 + _WSL + ".localhost" + _BS + "<distro>" + _BS + "home",
+        "//" + _WSL + "$/<distro>/home/<user>",
+        "/mnt/c/" + "Users/<user>/out",
+        "/mnt/c/" + "Users/%USERNAME%",
+        "/mnt/c/program files/app",
+        "/mnt/data/users/list.csv",
+        "run " + _WSL + ".exe and " + _WSL + " --install",
+    ):
+        assert not ch.text_has_personal_home_path(text), text
+
+
+def test_pypi_and_sk_key_shapes_are_findings() -> None:
+    body = "PLANTED0FIXTURE0NOT0A0REAL0TOKEN0000"
+    assert "pypi-token" in ch.credential_kinds("pypi-" + "AgEIcHlwaS5vcmc" + body)
+    assert "sk-api-key" in ch.credential_kinds("sk" + "-" + body)
+    assert "sk-api-key" in ch.credential_kinds("sk" + "-proj-" + body)
+    for text in ("pypi-AgE", "sk" + "-abc123", "pypi" + "-" + "a" * 40):
+        assert ch.credential_kinds(text) == [], text
