@@ -50,7 +50,15 @@ def tree_to_obj(t: Tree) -> dict:
 
 
 def tree_hash(t: Tree) -> str:
-    return sha256_tag(canonical_json(tree_to_obj(t)))
+    """sha256 of the Tree's contract: everything but module_hash.
+
+    module_hash moves on any file edit; TreeHash must move only when the
+    contract does (README incremental update: "TreeHash changed? no,
+    internal change").
+    """
+    obj = tree_to_obj(t)
+    del obj["module_hash"]
+    return sha256_tag(canonical_json(obj))
 
 
 def map_to_obj(m: Map) -> dict:

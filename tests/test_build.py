@@ -36,9 +36,7 @@ def test_body_change_same_treehash_new_modulehash(tmp_path):
     repo, a = fixture.make_repo(tmp_path / "r", FILES)
     b = fixture.commit(repo, {"pkg/a.py": "def f(x: int) -> int:\n    y = x\n    return y\n"})
     ta, tb = _tree(build.build_map(repo, a), "pkg"), _tree(build.build_map(repo, b), "pkg")
-    assert canon.tree_hash(ta) != canon.tree_hash(tb)  # module_hash is inside the tree
-    strip = lambda t: canon.canonical_json({**canon.tree_to_obj(t), "module_hash": ""})  # noqa: E731
-    assert strip(ta) == strip(tb)
+    assert canon.tree_hash(ta) == canon.tree_hash(tb)
     assert ta.module_hash != tb.module_hash
 
 
@@ -47,6 +45,7 @@ def test_signature_change_moves_contract(tmp_path):
     b = fixture.commit(repo, {"pkg/a.py": "def f(x: int, y: int) -> int:\n    return x\n"})
     ta, tb = _tree(build.build_map(repo, a), "pkg"), _tree(build.build_map(repo, b), "pkg")
     assert ta.nodes != tb.nodes
+    assert canon.tree_hash(ta) != canon.tree_hash(tb)
 
 
 def test_same_content_at_two_shas_same_hashes(tmp_path):

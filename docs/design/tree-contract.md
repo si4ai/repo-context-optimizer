@@ -176,7 +176,7 @@ def canonical_json(obj) -> bytes:
                       ensure_ascii=False, allow_nan=False).encode("utf-8")
 
 def sha256_tag(b: bytes) -> str:      # "sha256:" + hexdigest
-def tree_hash(t: Tree) -> str:        # sha256_tag(canonical_json(tree_to_obj(t)))
+def tree_hash(t: Tree) -> str:        # sha256_tag(canonical_json(tree_to_obj(t) minus "module_hash"))
 def module_hash(module: Module, blobs: dict[str, str],
                 extractors: tuple[tuple[str, str], ...]) -> str:
     return sha256_tag(canonical_json({
@@ -184,6 +184,9 @@ def module_hash(module: Module, blobs: dict[str, str],
         "files": [[p, blobs[p]] for p in module.files],
         "extractors": [list(e) for e in extractors]}))
 ```
+
+TreeHash leaves out `module_hash`, so an edit to a function body moves
+ModuleHash but not TreeHash; only a contract change moves TreeHash.
 
 In JSON, `attrs` becomes an object and `extractors` a list of
 `[name, version]` pairs. The commit SHA appears only in the Map, never in
