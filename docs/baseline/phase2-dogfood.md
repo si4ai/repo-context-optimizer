@@ -50,7 +50,7 @@ rco check --selftest
 
 `git status` should stay clean. `/.rco/` should appear only in
 `.git/info/exclude`. A pack that shows stale prose exits 1; after
-`rco update` and a prose queue drain, a later pack of the same SHA
+`rco update` (which drains mined prose), a later pack of the same SHA
 exits 0.
 
 The wheel smoke used in CI is `ci/wheel_smoke.sh` on a scratch fixture.

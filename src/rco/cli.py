@@ -109,9 +109,11 @@ def run(args: argparse.Namespace) -> Exit:
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
     if args.cmd == "update":
         from rco import update
+        from rco.prose import drain_queue
         from rco.store.sqlite import open_repo_store
         store = open_repo_store(repo)
         res = update.update(repo, store, args.new, args.name)
+        drain_queue(repo, store, args.name)  # mined prose: queue is not a separate CLI step
         return emit(update.UpdateReport(res), args.format, args.out)
     if args.cmd == "forest":
         from rco import forest

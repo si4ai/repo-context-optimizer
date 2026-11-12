@@ -85,3 +85,21 @@ def test_cli_update_uses_repo_store(hist, capsys):
     assert cli.main(["update", shas[1], "--repo", str(repo)]) == Exit.OK  # refused: exit 0
     assert "not moved" in capsys.readouterr().out
     assert fixture.git(repo, "status", "--porcelain", "--untracked-files=all") == ""
+
+
+def test_cli_update_drains_mined_prose(tmp_path, capsys):
+    """rco update must mine prose so a later pack shows it (W1)."""
+    files = {
+        "pkg/__init__.py": '"""pkg does the work."""\n',
+        "pkg/core.py": "def run(x: int) -> int:\n    return x\n",
+    }
+    repo, sha = fixture.make_repo(tmp_path / "r", files)
+    assert cli.main(["update", "--repo", str(repo)]) == 0
+    capsys.readouterr()
+    assert cli.main(["pack", "--repo", str(repo), "--format", "json"]) == 0
+    p = json.loads(capsys.readouterr().out)
+    forest = {e["id"]: e for e in p["forest"]}
+    prose = forest["pkg"].get("prose") or {}
+    assert prose.get("text") == "pkg does the work."
+    assert prose.get("source") == "mined"
+    assert p["stale"] == []
