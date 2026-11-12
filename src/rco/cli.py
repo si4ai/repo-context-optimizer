@@ -48,7 +48,7 @@ def make_parser() -> argparse.ArgumentParser:
     d.add_argument("head", nargs="?", default=None)
     _common(d)
 
-    u = sub.add_parser("update", help="publish a commit to the store (not implemented yet)")
+    u = sub.add_parser("update", help="publish a commit to the store (.rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
@@ -66,7 +66,7 @@ def make_parser() -> argparse.ArgumentParser:
 
 
 # Phase 2 commands that exist but are not built yet: exit 2 (usage), one line.
-_NOT_YET = {"update": "step 3", "pack": "step 5", "forest": "step 2"}
+_NOT_YET = {"pack": "step 5", "forest": "step 2"}
 
 
 @dataclass(frozen=True)
@@ -106,6 +106,12 @@ def run(args: argparse.Namespace) -> Exit:
         return emit(check.check(repo, sha, m), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+    if args.cmd == "update":
+        from rco import update
+        from rco.store.sqlite import open_repo_store
+        store = open_repo_store(repo)
+        res = update.update(repo, store, args.new, args.name)
+        return emit(update.UpdateReport(res), args.format, args.out)
     if args.cmd in _NOT_YET:
         raise UsageError(f"{args.cmd}: not implemented (Phase 2 {_NOT_YET[args.cmd]})")
     raise UsageError(f"unknown command {args.cmd}")
