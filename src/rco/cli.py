@@ -53,7 +53,7 @@ def make_parser() -> argparse.ArgumentParser:
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
 
-    k = sub.add_parser("pack", help="Forest plus Trees for an agent (not implemented yet)")
+    k = sub.add_parser("pack", help="Forest plus Trees for an agent, within a token budget")
     k.add_argument("sha", nargs="?", default="HEAD")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE")
     k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
@@ -66,7 +66,7 @@ def make_parser() -> argparse.ArgumentParser:
 
 
 # Phase 2 commands that exist but are not built yet: exit 2 (usage), one line.
-_NOT_YET = {"update": "step 3", "pack": "step 5"}
+_NOT_YET = {"update": "step 3"}
 
 
 @dataclass(frozen=True)
@@ -110,6 +110,16 @@ def run(args: argparse.Namespace) -> Exit:
         from rco import forest
         sha = gitread.resolve(repo, args.sha)
         return emit(forest.ForestReport(forest.build_forest(repo, sha)), args.format, args.out)
+    if args.cmd == "pack":
+        from rco import pack
+        sha = gitread.resolve(repo, args.sha)
+        store = None
+        db = repo / ".rco" / "rco.db"
+        if db.exists():  # read only: pack never creates a store
+            from rco.store.sqlite import SqliteStore
+            store = SqliteStore(db)
+        p = pack.pack(repo, sha, args.for_paths, args.budget, store)
+        return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd in _NOT_YET:
         raise UsageError(f"{args.cmd}: not implemented (Phase 2 {_NOT_YET[args.cmd]})")
     raise UsageError(f"unknown command {args.cmd}")
