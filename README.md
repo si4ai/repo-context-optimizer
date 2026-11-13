@@ -221,7 +221,7 @@ Lists added, removed, and changed signatures, flags, columns, and routes. For ea
 
 Triage never rebases, merges, or pushes anyone's branch. For each open branch it reports either `clean: no changed file, no changed contract used` or a structural brief, as a hint. The branch owner or a merge-main step acts on that hint.
 
-Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. Both see Python callers only; CLI, SQL, and route changes show up as files changed on both sides.
+Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. In CI (`ci/notice_report.sh`), BASE is the merge-base of the PR base tip and head, and only open PRs into the same base branch are compared. Both see Python callers only; CLI, SQL, and route changes show up as files changed on both sides.
 
 An unchanged contract can still hide a behavior change, so tests still run. The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
 

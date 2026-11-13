@@ -19,7 +19,7 @@ Neither command rebases, merges, pushes or writes a ref. An unchanged contract c
 
 The `notice_report` job lists open PR heads, fetches each other head as the local ref `pr-N`, and runs `rco notice` of this head against those refs. The report goes to the job summary. The job is a visible hint: `rco notice` always exits 0, and a run with no other open PRs writes a short note and passes. Only a usage error or a crash (exit 2 or 3) fails the job. Skipped in the merge queue, which re-checks the same head. Kept out of `ci/test-select.toml` so it runs on every PR and push.
 
-On a pull_request event, this head is the PR head and base, and the current PR is excluded from the other-heads list. On a push to main, this head is the pushed commit against its predecessor, and every open PR is an other head.
+On a pull_request event, this head is the PR head and BASE is `git merge-base` of the PR base tip and the head, so later commits on the base branch are never counted as this PR's changes. The current PR is excluded from the other-heads list, and only open PRs into the same base branch are other heads (a PR into main is never compared with a PR into a release branch). On a push, this head is the pushed commit against its predecessor, and every open PR into the pushed branch is an other head.
 
 ## The hypothesis
 
