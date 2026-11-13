@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on, prose derived from extracted facts fills the gaps, and the LLM path is off. The release is still rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
+**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on, prose derived from extracted facts fills the gaps, and the LLM path is off. The release is still rough on purpose: import edges for Python, JS/TS, Go, Rust, shell, and PowerShell; modules from `package.json` and `Cargo.toml` with a `rco.toml` override file and directory fallback; no import-graph clustering, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -70,7 +70,19 @@ Detection order:
 2. Import-graph clustering (for example Louvain community detection) when packages are not already explicit.
 3. Directory fallback for whatever remains, with size caps (for example a maximum file count or line count per module) so summaries stay small enough to be useful.
 
-A checked-in override file can pin boundaries; the detector only falls back to heuristics where that file is silent. A check reports any file that belongs to no module. The override file format is still an open question.
+A checked-in override file can pin boundaries; the detector only falls back to heuristics where that file is silent. A check reports any file that belongs to no module.
+
+Shipped today: the override file, then manifests, then the directory fallback. Clustering is not built yet. Python files keep the directory grain (one module per package directory). A `package.json` owns the JS/TS files under it, and a `Cargo.toml` with a `[package]` table owns the Rust files under it. Each manifest stops at the next nested one, and files in other languages there stay at the directory grain. Go packages are already directories. Every file maps to exactly one module, so the "file in no module" check passes by construction.
+
+The override file is `rco.toml` at the repo root, read at the same commit as the code:
+
+```toml
+[[module]]
+id = "frontend"
+paths = ["web/**", "shared/**/*.ts"]
+```
+
+The first rule whose glob matches a path owns it. `*` and `?` stay inside one path segment, and `**` spans segments. A bad entry (no `id`, no `paths`, invalid TOML) becomes a note in the output, never an error.
 
 ### Tree (micro-contracts)
 
@@ -392,7 +404,6 @@ When `--budget` trims a pack, the pack names what it trimmed.
 
 - **PyPI package name.** Publish as `repo-context-optimizer` (installs the `rco` command). It was unclaimed on PyPI on 2026-11-09; the first release claims it.
 - **Which prose pieces truly need an LLM.** Find out empirically: ship Phase 1 with no LLM, then see what cold agents still ask for or get wrong.
-- **Module override file format.**
 - **Default `--budget`.** 8000 estimated tokens is the design default; confirm against Phase 0 pack sizes.
 
 ## Proposed: merge planning (mill tool, scope TBD)

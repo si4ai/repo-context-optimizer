@@ -208,3 +208,15 @@ step-0 follow-up PR, sent to every open step first.
   #22 call).
 - Open: name-in-Tree flags (`prose.flags`) are not shown in the pack or
   counted in `rco check` yet (step 7).
+
+## Amendments in 0.1.2
+
+- Applied: `depends_on` covers JS/TS, Go, Rust, shell and PowerShell as
+  well as Python (`rco/edges.py`). Only specifiers that resolve to a
+  tracked file count; registry packages, the standard library and
+  computed paths add no edge. Comments and strings are masked first, so a
+  commented-out import adds no edge.
+- Applied: modules come from the layout in tree-contract section 4
+  (amended): `rco.toml`, then manifests, then directories. `rco forest`,
+  `rco pack`, `rco update` and `rco check` all use the layout read at the
+  SHA they work on.

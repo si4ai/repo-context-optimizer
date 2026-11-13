@@ -500,3 +500,15 @@ Applied in 0.1.2 (bundled parsers for other languages):
   name not starting with `_` (JS scripts); capitalized (Go); `pub` (Rust);
   every function (shell, PowerShell). The doc is the first line of the
   comment right above a declaration.
+
+Applied in 0.1.2 (modules from manifests and an override file):
+
+- Applied: `module_of(path, layout=None)` and `group(paths, layout=None)`
+  take a `Layout` read from git at the same SHA (`layout_at`), so the same
+  commit always gives the same modules. The order is: `rco.toml`
+  `[[module]]` rules (`id`, `paths` globs, first match wins), then
+  `package.json` (JS/TS files) and `Cargo.toml` with `[package]` (Rust
+  files), each down to the next nested manifest, then the directory
+  grain (section 4). A bad override entry becomes a Map note, never an
+  error. With no `rco.toml` and no such manifest, every module id is
+  unchanged.
