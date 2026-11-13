@@ -102,7 +102,7 @@ class TriageReport:
 
 def _changed(repo: Path, a: str, b: str) -> tuple[list[str], tuple[gitread.Entry, ...]]:
     eb = gitread.ls_tree(repo, b)
-    return diff._changed_paths(gitread.ls_tree(repo, a), eb), eb
+    return diff.changed_paths(gitread.ls_tree(repo, a), eb), eb
 
 
 def _name(c: diff.Change) -> str:

@@ -229,13 +229,21 @@ CLI: tw run, tw stop
 
 Lists added, removed, and changed signatures, flags, columns, and routes. For each change it lists callers as `file:line` from a reverse index.
 
+`rco diff --staged [BASE]` diffs the index and `rco diff --worktree [BASE]` diffs the working tree (tracked changes plus untracked files that are not ignored). With either flag, `BASE` defaults to `HEAD`. rco still reads only git objects. It first writes the index or working tree as a commit object with fixed author, committer, and dates, so the same content always gives the same SHA. Only loose objects are written: no ref moves, and the real index is never touched.
+
+### `rco affected [BASE] [HEAD]`
+
+Selects tests from a diff. A test is picked when it changed itself or reaches a changed file through in-repo imports in any supported language. Imports are read at both `BASE` and `HEAD`, so a test that imported a deleted file is still picked. Python imports also resolve from the importing file's own directory, as pytest sees them. A changed `conftest.py` picks every test under its directory.
+
+A changed file that is not code (data, config, fixtures, docs a test reads) sets `run_all`, and the reason is listed. `--ignore GLOB` drops paths that you know no test reads. `--staged` and `--worktree` work as in `rco diff`. `--list` prints only the test paths, one per line, and every test when `run_all` is set. That makes `pytest $(rco affected --list)` safe: with an empty list, pytest runs everything. Imports computed at run time are not seen. Test files are `test_*.py`, `*_test.py`, `*_test.go`, `*.test.*`, `*.spec.*`, anything under `__tests__/`, and `.rs` files directly in a `tests/` directory. Always exits 0.
+
 ### `rco triage`
 
 Triage never rebases, merges, or pushes anyone's branch. For each open branch it reports either `clean: no changed file, no changed contract used` or a structural brief, as a hint. The branch owner or a merge-main step acts on that hint.
 
 Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. Both see Python callers only; CLI, SQL, and route changes show up as files changed on both sides.
 
-An unchanged contract can still hide a behavior change, so tests still run. The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
+An unchanged contract can still hide a behavior change, so tests still run (`rco affected` picks which). The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
 
 ### `rco update`
 

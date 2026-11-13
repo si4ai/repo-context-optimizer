@@ -512,3 +512,13 @@ Applied in 0.1.2 (modules from manifests and an override file):
   grain (section 4). A bad override entry becomes a Map note, never an
   error. With no `rco.toml` and no such manifest, every module id is
   unchanged.
+
+Applied in 0.1.2 (staged and working-tree input, test selection):
+
+- Applied: `rco diff --staged|--worktree [BASE]` (section 8). HEAD is a
+  commit object that `gitread.snapshot` writes for the index or the
+  working tree, with fixed author, committer and dates; BASE defaults to
+  HEAD. Readers still see only git objects (section 5).
+- Applied: `rco affected [BASE] [HEAD] [--staged|--worktree] [--ignore
+  GLOB] [--list]` reports `rco.affected/1` (`base`, `head`, `changed`,
+  `files`, `tests`, `run_all`, `reasons`) and always exits 0.
