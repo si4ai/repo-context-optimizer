@@ -39,3 +39,30 @@ def test_help_names_positionals_and_requires_branches(capsys):
     usage = note.split("options:")[0]
     assert "BRANCH [BRANCH ...]" in usage or "BRANCH BRANCH" in usage
     assert usage.count("[BRANCH ...]") == 0 or "BRANCH [BRANCH ...]" in usage
+
+
+def test_plan_triage_notice_progress_uses_the_command_name(tmp_path, capsys):
+    repo, base = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "def run() -> int:\n    return 1\n",
+        "pkg/b.py": "from pkg.a import run\n\n\ndef main() -> int:\n    return run()\n",
+    })
+    fixture.git(repo, "switch", "-q", "-c", "other")
+    fixture.commit(repo, {"pkg/b.py": "from pkg.a import run\n\n\ndef main() -> int:\n    return run() + 1\n"})
+    fixture.git(repo, "switch", "-q", "main")
+    fixture.commit(repo, {"pkg/a.py": "def run(x: int = 0) -> int:\n    return x\n"})
+
+    assert cli.main(["plan", "main", "other", "--repo", str(repo)]) in (0, 1)
+    err = capsys.readouterr().err
+    assert "rco plan:" in err
+    assert "rco diff:" not in err
+
+    assert cli.main(["triage", "other", "--onto", "main", "--repo", str(repo)]) in (0, 1)
+    err = capsys.readouterr().err
+    assert "rco triage:" in err
+    assert "rco diff:" not in err
+
+    assert cli.main(["notice", "other", "--base", base, "--head", "main", "--repo", str(repo)]) == 0
+    err = capsys.readouterr().err
+    assert "rco notice:" in err
+    assert "rco diff:" not in err
