@@ -45,6 +45,7 @@ paths = [
   "ci/test-select.toml",
   "ci/check_dist.py",
   "ci/notice_heads.py",
+  "ci/notice_report.sh",
   "ci/wheel_smoke.sh",
   ".github/workflows/release.yml",
 ]
