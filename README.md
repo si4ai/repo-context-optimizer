@@ -320,6 +320,35 @@ The SQLite backend (`sqlite`) is the default: one database under `.rco/`. Tree a
 
 The mill backend is an optional extra (`pip install repo-context-optimizer[mill]`) that talks to the mill (si4ai/the-mill). It calls only existing mill commands; it adds no new mill verbs.
 
+Shipped today: `sqlite`, plus adapters. `mill` and `mcp` are not built yet; naming either one is a usage error (exit 2) that says so. The settings come from `rco.toml` at the top of the working tree, because they describe this checkout, not a commit. The `[[module]]` rules in the same file are read from git at each SHA, so a setting can never change a commit's Tree or Forest.
+
+```toml
+backend = "sqlite"          # or the name of an installed rco.backends entry point
+[store]
+path = ".rco/rco.db"        # sqlite: relative to the working tree top
+[affected]
+ignore = ["docs/**"]        # added to every rco affected --ignore
+```
+
+If the file is missing, the defaults apply. If it is not valid TOML, rco notes that on stderr and ignores it. A wrong type, or a backend that is not installed, is a usage error. An adapter registers a callable `factory(repo, options) -> Store` in the entry point group `rco.backends`; `options` is the `[store]` table. It checks itself with `rco.store.conformance.run_all`. `rco pack` and `rco check` only read a store and never create one.
+
+### A store cached across CI runs
+
+A CI job starts with an empty `.rco/`, so every `rco update` would extract every module. Cache the directory instead. Trees are keyed by ModuleHash, so a restored store only extracts the modules that changed, and a stale cache can only cost time, never correctness. Use one pointer per branch:
+
+```yaml
+- uses: actions/cache@v4   # pin to a full SHA
+  with:
+    path: .rco
+    key: rco-${{ github.ref_name }}-${{ github.sha }}
+    restore-keys: |
+      rco-${{ github.ref_name }}-
+      rco-${{ github.event.repository.default_branch }}-
+- run: rco update --name "${{ github.ref_name }}"
+```
+
+The database is a single file once `rco update` exits, because SQLite checkpoints its WAL on close.
+
 - **Content:** Tree and Forest JSON stay in the SQLite content store. The mill holds only hashes and pointers. There is no mill tree node per module per SHA. Mill trees outline mail and todo. Card text has a 4096-character budget.
 - **label** holds pointers such as `rco/main` or `rco/0.8.11`. A new label needs `mill create label` (Admin) on limited trust.
 - **Staleness** is a score, `stale Forests outstanding`, and optionally one rollup card per repo. Not a card per module. Cards start only when a human asks.

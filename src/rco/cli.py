@@ -70,7 +70,7 @@ def make_parser() -> argparse.ArgumentParser:
                    help="print only test paths, one per line (every test when run_all)")
     _common(a)
 
-    u = sub.add_parser("update", help="publish a commit to the store (.rco/rco.db)")
+    u = sub.add_parser("update", help="publish a commit to the store (rco.toml backend; default .rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
@@ -158,23 +158,21 @@ def run(args: argparse.Namespace) -> Exit:
             return emit(check.check(repo, sha, claimed_forest=claim), args.format, args.out)
         m = claim
         sha = gitread.resolve(repo, args.sha or m.sha)
-        store = None
-        db = repo / ".rco" / "rco.db"
-        if db.exists():  # read only: check never creates a store
-            from rco.store.sqlite import SqliteStore
-            store = SqliteStore(db)
+        from rco.config import open_store
+        store = open_store(repo, create=False)  # read only: check never creates a store
         return emit(check.check(repo, sha, m, store), args.format, args.out)
     if args.cmd == "diff":
         return emit(diff.diff(repo, args.base, args.head, args.snapshot), args.format, args.out)
     if args.cmd == "affected":
-        from rco import affected
-        res = affected.affected(repo, args.base, args.head, args.snapshot, args.ignore)
+        from rco import affected, config
+        ignore = (*config.load(repo).affected_ignore, *args.ignore)
+        res = affected.affected(repo, args.base, args.head, args.snapshot, ignore)
         return emit(affected.AffectedReport(res, args.as_list), args.format, args.out)
     if args.cmd == "update":
         from rco import update
         from rco.prose import drain_queue
-        from rco.store.sqlite import open_repo_store
-        store = open_repo_store(repo)
+        from rco.config import open_store
+        store = open_store(repo, create=True)
         res = update.update(repo, store, args.new, args.name)
         drain_queue(repo, store, args.name)  # mined prose: queue is not a separate CLI step
         return emit(update.UpdateReport(res), args.format, args.out)
@@ -191,11 +189,8 @@ def run(args: argparse.Namespace) -> Exit:
     if args.cmd == "pack":
         from rco import pack
         sha = gitread.resolve(repo, args.sha)
-        store = None
-        db = repo / ".rco" / "rco.db"
-        if db.exists():  # read only: pack never creates a store
-            from rco.store.sqlite import SqliteStore
-            store = SqliteStore(db)
+        from rco.config import open_store
+        store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd == "pin":
