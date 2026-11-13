@@ -172,3 +172,13 @@ def test_cli_exit_codes(tmp_path, capsysbinary):
     capsysbinary.readouterr()
     cli.main(["diff", a, b, "--repo", str(repo), "--format", "json"])
     assert out.read_bytes() == capsysbinary.readouterr().out
+
+
+def test_diff_progress_pluralizes_one_file(tmp_path, capsys):
+    repo, a = fixture.make_repo(tmp_path / "r", {"a.py": "X = 1\n"})
+    fixture.commit(repo, {"a.py": "X = 2\n"})
+    from rco import cli
+    cli.main(["diff", a, "HEAD", "--repo", str(repo)])
+    err = capsys.readouterr().err
+    assert "1 changed file," in err
+    assert "changed files" not in err

@@ -10,10 +10,11 @@ triage BRANCH... --onto TARGET
     Otherwise it gets a structural brief. Exit 1 when any brief is emitted.
 
 notice OTHER... [--base BASE] [--head HEAD]
-    The cross-PR contract notice: this PR's contract diff (rco diff BASE
-    HEAD) and, per other open branch, the files it changed that use a
-    changed name. It names branches (PRs), never desks: mapping a PR to a
-    desk needs a per-desk GitHub identity (see the mail backend in the README).
+    The cross-PR contract notice: this PR's contract changes, listed once,
+    and, per other open branch, the files it changed that use one of those
+    contracts and the files changed on both sides. The wording is a hint about the PR's own changes, not an upstream structural brief.
+    It names branches (PRs), never desks: mapping a PR to a desk needs a
+    per-desk GitHub identity (see the mail backend in the README).
     Always exit 0, so a CI job running it stays a visible hint, not a block.
 
 References come from rco.refs, the qualified index rco diff uses: Python,
@@ -31,7 +32,7 @@ from rco import build, diff, gitread, refs
 from rco.output import Exit, UsageError
 
 SCHEMA_TRIAGE = "rco.triage/1"
-SCHEMA_NOTICE = "rco.notice/1"
+SCHEMA_NOTICE = "rco.notice/2"
 CLEAN = "clean: no changed file, no changed contract used"
 
 
@@ -134,30 +135,89 @@ def _hint(repo: Path, branch: str, base: str, upstream: tuple[diff.Change, ...],
     return BranchHint(branch, sha, base, overlap, impacted, contract)
 
 
-def _need(branches: Sequence[str]) -> None:
+def _need(branches: Sequence[str], cmd: str) -> None:
     if not branches:
-        raise UsageError("triage needs at least one BRANCH")
+        raise UsageError(f"{cmd} needs at least one BRANCH")
 
 
 def triage(repo: Path, branches: Sequence[str], onto: str | None = None) -> TriageReport:
-    _need(branches)
+    _need(branches, "triage")
     target = gitread.resolve(repo, onto or gitread.default_branch(repo))
     hints = []
     for br in branches:
         base = gitread.merge_base(repo, target, gitread.resolve(repo, br))
-        up = diff.diff(repo, base, target)
+        up = diff.diff(repo, base, target, progress="rco triage")
         up_paths, _ = _changed(repo, base, target)
         hints.append(_hint(repo, br, base, up.changes, set(up_paths)))
     return TriageReport(SCHEMA_TRIAGE, target, tuple(hints))
 
 
-def notice(repo: Path, base: str | None, head: str | None, others: Sequence[str]) -> TriageReport:
-    _need(others)
-    mine = diff.diff(repo, base, head)
+@dataclass(frozen=True, slots=True)
+class NoticeReport:
+    """This PR's contract changes once, then per-branch impacts. Always exit 0."""
+
+    schema: str
+    head: str
+    base: str
+    changes: tuple[diff.Change, ...]
+    branches: tuple[BranchHint, ...]
+
+    def to_obj(self) -> dict:
+        return {
+            "schema": self.schema, "head": self.head, "base": self.base,
+            "changes": [{"op": c.op, "key": c.key, "kind": c.kind, "path": c.path,
+                         "before": c.before, "after": c.after} for c in self.changes],
+            "branches": [
+                {"branch": b.branch, "sha": b.sha, "base": b.base, "clean": b.clean,
+                 "overlap": list(b.overlap),
+                 "impacted": [{"file": f, "names": list(n)} for f, n in b.impacted]}
+                for b in self.branches
+            ],
+        }
+
+    def to_markdown(self) -> str:
+        lines = [
+            f"# rco notice  (this PR={self.head[:12]}, base={self.base[:12]}, "
+            "hint only: nothing is rebased or pushed)",
+            "",
+            "## Contract changes in this PR",
+        ]
+        if self.changes:
+            for c in self.changes:
+                sign = {"added": "+ ADDED", "removed": "- REMOVED"}.get(c.op, "~ CHANGED")
+                after = c.after or c.before
+                lines.append(f"{sign}: `{diff._qn(c)}` `{diff._human(after)}` ({c.path})")
+        else:
+            lines.append("none")
+        for b in self.branches:
+            lines += ["", f"## {b.branch} ({b.sha[:12]})"]
+            if b.clean:
+                lines.append(
+                    "no files this branch changed use a contract this PR changed, "
+                    "and no files changed on both sides"
+                )
+                continue
+            if b.overlap:
+                lines += ["", "files changed on both sides:"] + [f"- `{p}`" for p in b.overlap]
+            if b.impacted:
+                lines += ["", "files this branch changed that use a contract this PR changed:"]
+                lines += [f"- `{f}` (calls {', '.join(f'`{n}`' for n in names)})"
+                          for f, names in b.impacted]
+        return "\n".join(lines) + "\n"
+
+    def exit_code(self) -> Exit:
+        return Exit.OK
+
+
+def notice(repo: Path, base: str | None, head: str | None, others: Sequence[str]) -> NoticeReport:
+    _need(others, "notice")
+    mine = diff.diff(repo, base, head, progress="rco notice")
     head_sha = gitread.resolve(repo, mine.head)
     paths, _ = _changed(repo, mine.base, head_sha)
+    contract = tuple(c for c in mine.changes if c.op != "doc")
     hints = []
     for br in others:
         b = gitread.merge_base(repo, head_sha, gitread.resolve(repo, br))
-        hints.append(_hint(repo, br, b, mine.changes, set(paths)))
-    return TriageReport(SCHEMA_NOTICE, head_sha, tuple(hints))
+        hint = _hint(repo, br, b, mine.changes, set(paths))
+        hints.append(hint)
+    return NoticeReport(SCHEMA_NOTICE, head_sha, mine.base, contract, tuple(hints))

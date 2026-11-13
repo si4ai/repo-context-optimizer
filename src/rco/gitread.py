@@ -45,6 +45,15 @@ def _git(repo: Path, *args: str, stdin: bytes | None = None,
     return p.stdout
 
 
+def has_commit(repo: Path, rev: str = "HEAD") -> bool:
+    """True when rev names a commit (a repo with no commits has no HEAD)."""
+    p = subprocess.run(
+        ["git", "-C", str(repo), "-c", "core.quotepath=off",
+         "rev-parse", "--verify", "--quiet", f"{rev}^{{commit}}"],
+        capture_output=True, env=_env())
+    return p.returncode == 0
+
+
 def resolve(repo: Path, rev: str) -> str:
     try:
         out = _git(repo, "rev-parse", "--verify", "--quiet", f"{rev}^{{commit}}")

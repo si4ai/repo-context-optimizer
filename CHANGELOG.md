@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.1.3 - 2026-11-13
+
+Fixes from the 0.1.2 validator warnings and the post-ship cold test.
+Trees, Forests, and packs stay deterministic: no LLM runs, and the same
+commit gives the same output.
+
+### added
+
+- tests that fail if a union-with-none annotation stops resolving, if a
+  constructor assignment loses its type, if `rco plan` counts an
+  added-only symbol as a use, or if a stacked branch is not ordered
+  after its base (#53)
+
+### changed
+
+- `rco plan` compares each pair against that pair's own merge-base,
+  unless `--base` is given (#56)
+- `rco notice` lists this PR's contract changes once, then per-branch
+  overlap and impacted files, in neutral wording (#57)
+- `rco notice --format json` is now `rco.notice/2`: top-level `head` and
+  `base` replace `target`, and the contract change list sits at the top
+  level, not on each branch (#62)
+- `rco pack` puts hop lines back when later cuts leave room for them,
+  and lists test modules after non-test modules (#54)
+- a repository with no commits yields an empty pack, tree, and forest
+  with exit 0 (#58)
+- a `--for` path that matches no module warns on stderr, keeps exit 0,
+  and leaves stdout unchanged (#58)
+
+### fixed
+
+- `rco notice` with no branch no longer says triage needs a BRANCH
+  (#57, #58)
+- a missing BRANCH on triage, notice, or plan names that command in the
+  usage error (#62)
+- progress from triage, notice, and plan is labelled with that command,
+  not `rco diff` (#55, #56, #57)
+- singular forms for one changed file and one change (#55)
+- `--help` documents sha, base, head, and pack `--for`, and shows
+  plan, triage, and notice branches as required (#58)
+- README: the "never invents a caller" claim is scoped to Python;
+  usage for tree, forest, and check; MAP is `rco tree --format json`;
+  absolute links for the PyPI page; stale install and status lines (#59)
+
+
 ## 0.1.2 - 2026-11-13
 
 0.1.1 was merged to main but never tagged or published to PyPI. 0.1.2 is the first
@@ -65,7 +110,6 @@ list is part of it. A store from 0.1.x re-extracts once on the first
 - the `notice_report` CI job diffs from the merge-base of the PR base
   tip and head, not the base tip, and compares only open PRs into the
   same base branch (#39).
-
 - `rco pack` and `rco check` now find the store from a subdirectory of
   the working tree (#44).
 - the CI drift report job no longer fails on drift; drift is a

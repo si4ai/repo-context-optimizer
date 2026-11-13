@@ -34,7 +34,7 @@ from typing import Iterable, Iterator, Literal, Mapping
 
 from rco import build, canon, gitread
 from rco.model import Kind, Map, Node, walk
-from rco.output import Exit, UsageError
+from rco.output import Exit, UsageError, counted
 
 SCHEMA_DIFF = "rco.diff/1"
 
@@ -254,13 +254,14 @@ def resolve_range(repo: Path, base: str | None, head: str | None,
 
 
 def diff(repo: Path, base: str | None, head: str | None,
-         snapshot: str | None = None) -> DiffReport:
+         snapshot: str | None = None, progress: str = "rco diff") -> DiffReport:
     """Contract changes from BASE to HEAD.
 
     HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD). With
     snapshot "staged" or "worktree", HEAD is that snapshot
     (gitread.snapshot) and BASE defaults to HEAD, like `git diff --cached`
-    and `git diff HEAD`.
+    and `git diff HEAD`. progress is the stderr label, so triage, notice
+    and plan can name themselves instead of "rco diff".
     """
     t0 = time.perf_counter()
     base_sha, head_sha = resolve_range(repo, base, head, snapshot)
@@ -269,6 +270,7 @@ def diff(repo: Path, base: str | None, head: str | None,
     bm = build.build_map(repo, base_sha, paths)
     hm = build.build_map(repo, head_sha, paths)
     report = diff_maps(bm, hm, code_sources(repo, he))
-    print(f"rco diff: {len(paths)} changed files, {len(report.changes)} changes "
+    print(f"{progress}: {counted(len(paths), 'changed file')}, "
+          f"{counted(len(report.changes), 'change')} "
           f"in {time.perf_counter() - t0:.3f}s", file=sys.stderr)
     return report

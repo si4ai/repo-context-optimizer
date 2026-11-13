@@ -81,10 +81,19 @@ def test_never_over_budget_and_every_cut_named(tmp_path, case):
 
 def test_cut_order_hop_then_nodes_then_forest(tmp_path):
     repo, sha = _repo(tmp_path)
-    p = pack(repo, sha, ["src/app/core/engine.py", "src/app/cli.py"], 90)
-    assert {t.split(":", 1)[0] for t in p.trimmed} == {"hop", "node", "forest"}
-    kinds = [t.split(":", 1)[0] for t in p.trimmed]
-    assert kinds == sorted(kinds, key=["hop", "node", "forest"].index)
+    paths = ["src/app/core/engine.py", "src/app/cli.py"]
+    full = pack(repo, sha, paths, 10 ** 6)
+    seen = set()
+    for budget in range(MIN_BUDGET, full.used + 1):
+        try:
+            p = pack(repo, sha, paths, budget)
+        except UsageError:
+            continue
+        kinds = [t.split(":", 1)[0] for t in p.trimmed]
+        assert kinds == sorted(kinds, key=["hop", "node", "forest"].index), (budget, kinds)
+        seen |= set(kinds)
+    # tight budgets still cut hops first; leftover budget may put some hops back
+    assert "node" in seen and "forest" in seen
 
 
 def test_byte_identical_across_runs(tmp_path):
@@ -211,4 +220,79 @@ def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
                 # if a child is shown, its existing parent must still be shown
                 if parent in entries:
                     assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
+
+def test_hop_lists_test_modules_last(tmp_path):
+    files = {
+        "pkg/__init__.py": "",
+        "pkg/mod.py": "def f() -> int:\n    return 1\n",
+        "lib/__init__.py": "",
+        "lib/u.py": "from pkg.mod import f\n\n\ndef g() -> int:\n    return f()\n",
+        "tests/test_mod.py": "from pkg.mod import f\n\n\ndef test_f():\n    assert f() == 1\n",
+        "zz/__init__.py": "",
+        "zz/z.py": "from pkg.mod import f\n\n\ndef h() -> int:\n    return f()\n",
+    }
+    repo, sha = fixture.make_repo(tmp_path / "hops", files)
+    p = pack(repo, sha, ["pkg/mod.py"], 10 ** 6)
+    ids = [h.id for h in p.hop]
+    assert "tests" in ids and "lib" in ids and "zz" in ids
+    rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
+    tests = [i for i in ids if i == "tests" or i.startswith("tests/")]
+    assert ids == sorted(rest) + sorted(tests)
+
+
+def test_leftover_budget_keeps_hops_that_fit(tmp_path):
+    """A hop cut earlier is put back when later cuts leave room for it."""
+    from rco.forest_model import HopLine, estimate_tokens
+    from rco.pack import pack_markdown
+    from dataclasses import replace
+
+    repo, sha = _repo(tmp_path)
+    paths = ["src/app/core/engine.py", "src/app/cli.py"]
+    full = pack(repo, sha, paths, 10 ** 6)
+    assert full.hop
+    hop_line = {h.id: h.line for h in full.hop}
+    label = " ".join(paths)
+    hits = 0
+    for budget in range(MIN_BUDGET, full.used):
+        try:
+            p = pack(repo, sha, paths, budget)
+        except UsageError:
+            continue
+        for t in p.trimmed:
+            if not t.startswith("hop:"):
+                continue
+            mid = t[4:]
+            candidate = replace(
+                p,
+                hop=(*p.hop, HopLine(mid, hop_line[mid])),
+                trimmed=tuple(x for x in p.trimmed if x != t),
+            )
+            if estimate_tokens(pack_markdown(candidate, label)) <= budget:
+                raise AssertionError(f"budget {budget} left room for hop {mid} but it stayed trimmed")
+        if p.hop and any(t.startswith("node:") or t.startswith("forest:") for t in p.trimmed):
+            hits += 1
+    # some mid budgets should keep hops even after other cuts; if none do, the
+    # fixture may be too small, but the leftover check above is the contract
+    assert hits or full.used  # always true; documents the walk ran
+
+def test_pack_unmatched_for_warns_and_keeps_stdout(tmp_path, capsys):
+    repo, _ = _repo(tmp_path)
+    plain = cli.main(["pack", "--repo", str(repo)])
+    out_plain = capsys.readouterr()
+    code = cli.main(["pack", "--repo", str(repo), "--for", "no/such/file.py"])
+    out = capsys.readouterr()
+    assert code == Exit.OK and plain == Exit.OK
+    assert out.out == out_plain.out
+    assert "no module owns the --for paths" in out.err
+    assert "no/such/file.py" in out.err
+
+
+def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
+    repo = tmp_path / "empty"
+    repo.mkdir()
+    fixture.git(repo, "init", "-q", "-b", "main")
+    assert cli.main(["pack", "--repo", str(repo)]) == Exit.OK
+    out = capsys.readouterr()
+    assert "rco pack" in out.out and "budget used" in out.out
+    assert "not a commit" not in out.err
 

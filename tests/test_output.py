@@ -132,7 +132,8 @@ def test_cli_exit_2_usage(tmp_path, argv, capsys):
     repo, _ = _repo(tmp_path)
     assert cli.main([*argv, "--repo", str(repo)]) == Exit.USAGE
     cap = capsys.readouterr()
-    assert cap.out == "" and cap.err.startswith("rco: ")
+    assert cap.out == ""
+    assert cap.err.startswith("rco:") or cap.err.startswith("rco ")
 
 
 def test_cli_exit_2_unwritable_out(tmp_path, capsys):
