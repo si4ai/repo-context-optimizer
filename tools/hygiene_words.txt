@@ -485,6 +485,7 @@ stub
 such
 summary
 sunday
+swagger
 sym
 sync
 table

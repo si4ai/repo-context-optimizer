@@ -77,6 +77,14 @@ def make_parser() -> argparse.ArgumentParser:
     i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
     _common(i)
 
+    lv = sub.add_parser("live", help="check the map against captured real outputs")
+    lv.add_argument("sha", nargs="?", default="HEAD")
+    lv.add_argument("--schema", metavar="FILE", help="a SQL schema dump")
+    lv.add_argument("--openapi", metavar="FILE", help="an OpenAPI or Swagger JSON document")
+    lv.add_argument("--help-text", dest="help_texts", action="append", default=[],
+                    metavar="CMD=FILE", help="a captured `CMD --help` (repeatable)")
+    _common(lv)
+
     u = sub.add_parser("update", help="publish a commit to the store (rco.toml backend; default .rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
     u.add_argument("--name", default="main", help="pointer name (default: main)")
@@ -180,6 +188,11 @@ def run(args: argparse.Namespace) -> Exit:
         if args.hooks and args.remove_hooks:
             raise UsageError("init takes --hooks or --remove-hooks, not both")
         rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks)
+        return emit(rep, args.format, args.out)
+    if args.cmd == "live":
+        from rco import live
+        sha = gitread.resolve(repo, args.sha)
+        rep = live.live(build.build_map(repo, sha), args.schema, args.openapi, args.help_texts)
         return emit(rep, args.format, args.out)
     if args.cmd == "update":
         from rco import update
