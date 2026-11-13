@@ -183,30 +183,6 @@ def compare(base: Map, head: Map) -> tuple[tuple[str, Op, _Entry, _Entry | None]
 
 # ------------------------------------------------------------ callers
 
-def caller_index_bare(files: Iterable[tuple[str, bytes]], names: set[str]) -> dict[str, tuple[str, ...]]:
-    """name -> sorted unique "file:line" of Name (load) and Attribute references."""
-    hits: dict[str, set[tuple[str, int]]] = defaultdict(set)
-    if not names:
-        return {}
-    for path, data in files:
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                tree = ast.parse(data.decode("utf-8", errors="replace"), filename=path)
-        except (SyntaxError, ValueError, RecursionError, MemoryError):
-            continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
-                ref = node.id
-            elif isinstance(node, ast.Attribute):
-                ref = node.attr
-            else:
-                continue
-            if ref in names:
-                hits[ref].add((path, node.lineno))
-    return {name: tuple(f"{p}:{ln}" for p, ln in sorted(locs)) for name, locs in hits.items()}
-
-
 def code_sources(repo: Path, entries: tuple[gitread.Entry, ...]) -> dict[str, bytes]:
     """path -> bytes of every code file (Python and the bundled languages) plus manifests."""
     from rco.edges import MANIFEST_NAMES
