@@ -1,6 +1,6 @@
 # adopting rco from T0 to TN
 
-Status: draft for review. Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. PyPI still has only 0.1.0 when this was written, so `pip install repo-context-optimizer` does not give you 0.1.1 yet.
+Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. PyPI still has only 0.1.0 when this was written, so `pip install repo-context-optimizer` does not give you 0.1.1 yet.
 
 This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach.
 
@@ -31,11 +31,11 @@ Codes are used in every table and diagram. Shipped = in the 0.1.1 CLI (`src/rco/
 |---|---|---|---|
 | TR | `rco tree [SHA]` | what are the public contracts (functions, classes, argparse flags, SQL tables, routes) at this commit? | 0 |
 | FO | `rco forest [SHA]` | How do modules depend on each other, and what are the entry points? | 0 |
-| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 2 if budget < 64 |
+| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget < 64 |
 | DF | `rco diff BASE HEAD` | Which contracts changed between two commits, and who calls them? | 0 none, 1 changes |
 | CK | `rco check MAP` / `--selftest` | Is this map still true for the code? Does the checker catch planted errors? | 0 ok, 1 findings |
 | UP | `rco update [SHA] --name P` | save a commit's map to the local store `.rco/rco.db` and move pointer P forward | 0; refuses to move backwards |
-| PN | `rco pin --for FILES` | freeze a reviewed contract as `pins/NAME.json` | 0 |
+| PN | `rco pin --for FILES --format json --out pins/NAME.json` | freeze a reviewed contract as a pin file (without `--out`, it prints markdown) | 0 |
 | DR | `rco drift pins` | did any pinned contract change? | 0 none, 1 drift |
 | TG | `rco triage BRANCH... --onto T` | does my branch use anything the target changed? | 0 clean, 1 brief |
 | NT | `rco notice OTHER... --base B --head H` | Which other open branches use what this PR changed? | always 0 |
@@ -115,6 +115,8 @@ simulated locally with pull_request and push events, including an all-zero `befo
       - uses: actions/setup-python@<sha> # v5
         with:
           python-version: "3.12"
+      # 0.1.1 is not on PyPI yet; until it is, install from a git SHA:
+      # pip install "repo-context-optimizer @ git+https://github.com/si4ai/repo-context-optimizer@<sha>"
       - run: pip install repo-context-optimizer==0.1.1
       - env:
           EVENT_NAME: ${{ github.event_name }}
@@ -152,7 +154,7 @@ The README's zero-config acceptance table, checked against 0.1.1 with fixture re
 | Large monorepo | pack respects `--budget`; update re-extracts only changed modules | 60-package fixture: first update extracted 60 modules, the next extracted 2. `--budget 500` used 499 and listed what it trimmed. On a real 885-file repo, each command took 2-5 s | verified at that size; cost at larger scale not measured | use `--for` on every pack; cache `.rco/` in CI. Per-package releases are not modeled (MO not shipped) |
 | submodules | skipped, with a note | `tree` prints "note: skipped submodule ..."; `pack` and `diff` print no note; adding a submodule shows "no contract changes" | partly: the note only appears in `tree` | contracts inside submodules are invisible; run rco in the submodule's own repo |
 | LFS | pointer files opaque, not fetched | a pointer shows as `file ... (lfs=pointer)` | verified (pointer committed without git-lfs) | none; no need for `lfs: true` on checkout |
-| Empty | empty pack, exit 0 | repo with no commits: every command exits 2 "not a commit: HEAD". Repo with an empty commit: empty pack, exit 0 | differs for a repo with no commits | at T0, make the first commit before adding rco jobs, or guard the job on `git rev-parse HEAD` |
+| Empty | empty pack, exit 0 | repo with no commits: commands that resolve HEAD exit 2 (`check --selftest` exits 0) "not a commit: HEAD". Repo with an empty commit: empty pack, exit 0 | differs for a repo with no commits | at T0, make the first commit before adding rco jobs, or guard the job on `git rev-parse HEAD` |
 
 ## Release approaches
 
@@ -194,7 +196,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  f["feature"] -->|"PR: DF NT, base develop"| d["develop"]
+  f["feature"] -->|"PR: DF NT DR CK, base develop"| d["develop"]
   d -->|"push: UP --name develop"| d
   d --> r["release/X"] -->|"PR: DF = release contract notes"| m["main"]
   h["hotfix"] -->|"PR: DF, base main"| m
@@ -245,7 +247,7 @@ Sizes measured on two repos (tokens = characters / 4, the estimate rco uses):
 
 | repo | All .py read raw | `rco tree` (full map) | `rco forest` | `rco pack --for` one file | raw files in that file's module |
 |---|---|---|---|---|---|
-| repo-context-optimizer (101 .py) | 127,115 | 13,603 | 760 | 4,062 | 26,898 (21 files) |
+| repo-context-optimizer (101 .py) | 127,115 | 13,603 | 760 | 4,062 (after `rco update`; 3,850 without a store) | 26,898 (21 files) |
 | a large Python repo (885 .py) | 1,519,485 | 138,279 | 3,269 | 5,292 | 21,238 (11 files) |
 
 These are size ratios, not savings. No A/B savings claim exists yet. The harness is in `tools/phase3_ab.py`, but the counting run waits for a released install. The README says to claim no savings until they are measured against a baseline.
