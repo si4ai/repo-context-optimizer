@@ -471,6 +471,7 @@ set
 several
 sha
 shared
+shell
 ship
 shipper
 show

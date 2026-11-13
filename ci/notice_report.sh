@@ -2,21 +2,35 @@
 set -uo pipefail
 zeros=0000000000000000000000000000000000000000
 if [ "$EVENT_NAME" = "pull_request" ]; then
-  base="$PR_BASE"
+  tip="$PR_BASE"
   head="$PR_HEAD"
+  base_ref="${PR_BASE_REF:-}"
   exclude_args=(--exclude "$PR_NUMBER")
 else
-  base="$PUSH_BEFORE"
+  tip="$PUSH_BEFORE"
   head="$PUSH_SHA"
+  base_ref="${PUSH_REF_NAME:-}"
   exclude_args=()
 fi
-if [ -z "$base" ] || [ "$base" = "$zeros" ]; then
+if [ -z "$tip" ] || [ "$tip" = "$zeros" ]; then
   echo "no usable base for this event: no cross-PR contract notice."
   echo "no usable base for this event: no cross-PR contract notice." >> "$GITHUB_STEP_SUMMARY"
   exit 0
 fi
+# the PR's own changes are merge-base(base tip, head) -> head. diffing
+# from the base tip would count every later base commit as this PR's.
+if [ "$EVENT_NAME" = "pull_request" ]; then
+  base=$(git merge-base "$tip" "$head") || { echo "git merge-base $tip $head failed" >&2; exit 3; }
+else
+  base="$tip"
+fi
+echo "notice base: $base"
+base_args=()
+if [ -n "$base_ref" ]; then
+  base_args=(--base-ref "$base_ref")
+fi
 gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" > pulls_raw.json || exit 3
-python3 ci/notice_heads.py pulls_raw.json "${exclude_args[@]}" > others.txt || exit 3
+python3 ci/notice_heads.py pulls_raw.json "${exclude_args[@]}" "${base_args[@]}" > others.txt || exit 3
 if [ ! -s others.txt ]; then
   echo "no other open PRs: no cross-PR contract notice."
   echo "no other open PRs: no cross-PR contract notice." >> "$GITHUB_STEP_SUMMARY"
