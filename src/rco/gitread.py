@@ -1,11 +1,15 @@
 """Read a commit from the git object store (tree-contract section 5).
 
-Never the working tree, so a dirty checkout cannot change the output.
+Never the working tree, so a dirty checkout cannot change the output. The
+one way in is `snapshot`, which turns the index or the working tree into a
+commit object first, so every reader still sees a commit.
 """
 from __future__ import annotations
 
 import os
+import shutil
 import subprocess
+import tempfile
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable
@@ -31,9 +35,10 @@ def _env() -> dict[str, str]:
     return env
 
 
-def _git(repo: Path, *args: str, stdin: bytes | None = None) -> bytes:
+def _git(repo: Path, *args: str, stdin: bytes | None = None,
+         env: dict[str, str] | None = None) -> bytes:
     cmd = ["git", "-C", str(repo), "-c", "core.quotepath=off", *args]
-    p = subprocess.run(cmd, input=stdin, capture_output=True, env=_env())
+    p = subprocess.run(cmd, input=stdin, capture_output=True, env={**_env(), **(env or {})})
     if p.returncode != 0:
         err = p.stderr.decode("utf-8", "replace").strip().splitlines()
         raise UsageError(f"git {args[0]} failed: {err[0] if err else p.returncode}")
@@ -76,6 +81,44 @@ def read_blobs(repo: Path, blobs: Iterable[str]) -> dict[str, bytes]:
         got[oid] = out[nl + 1: nl + 1 + size]
         i = nl + 1 + size + 1
     return got
+
+
+SNAPSHOTS = ("staged", "worktree")
+_SNAP_ENV = {"GIT_AUTHOR_NAME": "rco", "GIT_AUTHOR_EMAIL": "rco@localhost",
+             "GIT_COMMITTER_NAME": "rco", "GIT_COMMITTER_EMAIL": "rco@localhost",
+             "GIT_AUTHOR_DATE": "@0 +0000", "GIT_COMMITTER_DATE": "@0 +0000"}
+
+
+def snapshot(repo: Path, which: str) -> str:
+    """A commit object for the index ("staged") or the working tree ("worktree").
+
+    "worktree" is what `git add -A` would stage: tracked changes plus
+    untracked files that are not ignored. It is built in a temporary copy of
+    the index, so the real index is never touched. The commit has HEAD as
+    its parent (none in a repo with no commits) and fixed author, committer
+    and dates, so the same content gives the same SHA. Only loose objects are
+    written; no ref moves.
+    """
+    if which not in SNAPSHOTS:
+        raise UsageError(f"unknown snapshot {which!r}")
+    try:
+        parent = ["-p", resolve(repo, "HEAD")]
+    except UsageError:
+        parent = []
+    if which == "staged":
+        tree = _git(repo, "write-tree").decode().strip()
+    else:
+        index = Path(_git(repo, "rev-parse", "--path-format=absolute", "--git-path", "index")
+                     .decode().strip())
+        with tempfile.TemporaryDirectory(prefix="rco-index-") as tmp:
+            tmp_index = Path(tmp) / "index"
+            if index.exists():
+                shutil.copyfile(index, tmp_index)
+            env = {"GIT_INDEX_FILE": str(tmp_index)}
+            _git(repo, "add", "-A", "--", ".", env=env)
+            tree = _git(repo, "write-tree", env=env).decode().strip()
+    msg = f"rco {which} snapshot\n".encode()
+    return _git(repo, "commit-tree", tree, *parent, stdin=msg, env=_SNAP_ENV).decode().strip()
 
 
 def merge_base(repo: Path, a: str, b: str) -> str:

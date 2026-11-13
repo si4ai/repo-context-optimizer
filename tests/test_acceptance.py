@@ -45,17 +45,21 @@ def test_small_python_repo_pack_and_diff(tmp_path, capsys):
     assert any(n.kind is Kind.FUNCTION and n.name == "run" for t in m.trees for _, n in walk(t))
 
 
-def test_polyglot_unknown_language_is_a_file_outline(tmp_path):
+def test_polyglot_bundled_parsers_and_unknown_language_outline(tmp_path):
     repo, sha = fixture.make_repo(tmp_path / "poly", {
         **SMALL,
-        "native/demo.rs": "fn main() {}\n",
-        "native/demo.go": "package main\nfunc main() {}\n",
+        "native/demo.rs": "pub fn main() {}\n",
+        "native/demo.go": "package main\nfunc Main() {}\n",
+        "native/demo.zig": "pub fn main() void {}\n",
     })
     m = build.build_map(repo, sha)
     paths = {n.path: n for t in m.trees for _, n in walk(t)}
-    assert paths["native/demo.rs"].kind is Kind.FILE
-    assert paths["native/demo.go"].kind is Kind.FILE
-    assert "error" not in dict(paths["native/demo.rs"].attrs)
+    assert paths["native/demo.rs"].kind is Kind.SRCMODULE
+    assert paths["native/demo.go"].kind is Kind.SRCMODULE
+    assert paths["native/demo.zig"].kind is Kind.FILE  # unknown language: an outline
+    assert "error" not in dict(paths["native/demo.zig"].attrs)
+    names = {n.name for t in m.trees for _, n in walk(t)}
+    assert {"main", "Main"} <= names
     assert cli.main(["pack", "--repo", str(repo)]) == 0
 
 

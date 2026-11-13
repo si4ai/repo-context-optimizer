@@ -8,7 +8,7 @@ from pathlib import Path
 
 import pytest
 
-import store_conformance as conf
+from rco.store import conformance as conf
 from rco import fixture
 from rco.forest_model import Prose, ProseSource
 from rco.store import IndexRow, MemoryStore, NodeKind
