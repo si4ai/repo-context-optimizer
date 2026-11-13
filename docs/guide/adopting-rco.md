@@ -1,6 +1,6 @@
 # adopting rco from T0 to TN
 
-Status: draft for review. Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on two other repos, and on small fixture repos. PyPI still has only 0.1.0 when this was written, so `pip install repo-context-optimizer` does not give you 0.1.1 yet.
+Status: draft for review. Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. PyPI still has only 0.1.0 when this was written, so `pip install repo-context-optimizer` does not give you 0.1.1 yet.
 
 This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach.
 
@@ -20,14 +20,6 @@ Answer three questions, then read your rows off the tables below.
 3. Merge option: squash, merge commit, rebase, merge queue, or direct pushes? This sets which commits rco compares after a merge.
 
 Then start from the [stage table](#stages-t0-to-tn) and apply the "what differs" notes for your type and approach.
-
-### worked examples (settings read from GitHub and the workflow files)
-
-| repo | Type | Release approach | Merge option | protection | what to add |
-|---|---|---|---|---|---|
-| repo-context-optimizer | small Python | branch folding: card PRs into `release/X`, then a release PR into main (squashed) | squash or merge; queue with merge method MERGE | ruleset on main; required: pytest, spin, hidden_code_report | already has `drift_report` and `notice_report`. Add a diff job, a map check job, and a push trigger on `release/**` for update and triage |
-| the-mill | large Python (885 .py) | branch folding: card PRs into `release/X.Y.Z`, release branch lands on main with a merge commit | squash or merge; queue with merge method MERGE | ruleset on main; required: build_pack, check_pack, mill_cli_smoke, pytest_* | install rco (hash-locked), add one report job off the required list, add a push trigger on `release/**` |
-| md2xarticle | small Python | trunk: PRs squashed to main, plus some direct pushes | squash, merge and rebase all allowed; no queue | no rulesets | PR report job, a push-to-main report job (covers direct pushes), an optional pre-push hook, and a Python 3.12 job |
 
 ## capability legend
 
@@ -166,19 +158,19 @@ The README's zero-config acceptance table, checked against 0.1.1 with fixture re
 
 Every approach uses the same rule for pull requests: base = `git merge-base <PR base sha> <PR head sha>`, head = PR head. What changes is which branches get a push job, and what UP and TG point at.
 
-| Approach | examples | PR run | After merge (push) | Merge queue | Main caveat |
-|---|---|---|---|---|---|
-| trunk + squash (GitHub flow) | md2xarticle; card PRs into main | DF NT DR CK | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
-| trunk + merge commits | - | same | same; before..after spans the merge | n/a | none for rco |
-| trunk + rebase merge | allowed in md2xarticle | same | same; before..after spans the rebased commits | n/a | PR-time SHAs never reach main; cite main SHAs in notes and pins |
-| Merge queue (any method) | the-mill, repo-context-optimizer | same | push after the queue lands | merge_group: base_sha..head_sha. Skip rco jobs there, or run them if required | a required job that skips blocks the queue |
-| Branch folding (release branches) | the-mill, repo-context-optimizer | card PR into `release/X`: base = merge-base with `release/X`. Release PR into main: DF = whole release | push to `release/X`: UP `--name release-X`, TG card PRs `--onto release/X`. Push to main: UP `--name main` | as above | default base is main; always pass the release branch base explicitly |
-| Git flow | - | feature PRs into `develop`; release and hotfix PRs into main | UP per branch (`develop`, `main`); after a hotfix, TG `develop --onto main` | as above | same base caveat as folding |
-| maintenance lines with backports | - | backport PR into `maint/X`: base = merge-base with `maint/X` | UP `--name maint-X`; DR against pins at that line's tag | as above | each line keeps its own `pins/` |
-| stacked PRs | - | base = the parent PR branch; DF shows only this layer | rerun when the parent lands and GitHub retargets | as above | NT sees the stack as overlapping |
-| forks | any public repo | `pull_request` from a fork: read-only token; DF and NT still work | as trunk | as above | never use `pull_request_target` to check out fork code |
-| direct pushes, no protection | md2xarticle (some commits) | none: no PR, so no NT | push job: DF before..after, DR, UP; pre-push hook is the early warning | n/a | a force push makes `before` a non-ancestor; UP refuses it, as designed |
-| Tag-driven releases (semantic-release, release-please) | - | release PR: DF last tag..HEAD as contract notes | on tag: DF previous tag..tag | as above | rco does not suggest a version bump; a human decides |
+| Approach | PR run | After merge (push) | Merge queue | Main caveat |
+|---|---|---|---|---|
+| trunk + squash (GitHub flow) | DF NT DR CK | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
+| trunk + merge commits | same | same; before..after spans the merge | n/a | none for rco |
+| trunk + rebase merge | same | same; before..after spans the rebased commits | n/a | PR-time SHAs never reach main; cite main SHAs in notes and pins |
+| Merge queue (any method) | same | push after the queue lands | merge_group: base_sha..head_sha. Skip rco jobs there, or run them if required | a required job that skips blocks the queue |
+| Branch folding (release branches) | feature PR into `release/X`: base = merge-base with `release/X`. Release PR into main: DF = whole release | push to `release/X`: UP `--name release-X`, TG feature PRs `--onto release/X`. Push to main: UP `--name main` | as above | default base is main; always pass the release branch base explicitly |
+| Git flow | feature PRs into `develop`; release and hotfix PRs into main | UP per branch (`develop`, `main`); after a hotfix, TG `develop --onto main` | as above | same base caveat as folding |
+| maintenance lines with backports | backport PR into `maint/X`: base = merge-base with `maint/X` | UP `--name maint-X`; DR against pins at that line's tag | as above | each line keeps its own `pins/` |
+| stacked PRs | base = the parent PR branch; DF shows only this layer | rerun when the parent lands and GitHub retargets | as above | NT sees the stack as overlapping |
+| forks | `pull_request` from a fork: read-only token; DF and NT still work | as trunk | as above | never use `pull_request_target` to check out fork code |
+| direct pushes, no protection | none: no PR, so no NT | push job: DF before..after, DR, UP; pre-push hook is the early warning | n/a | a force push makes `before` a non-ancestor; UP refuses it, as designed |
+| Tag-driven releases (semantic-release, release-please) | release PR: DF last tag..HEAD as contract notes | on tag: DF previous tag..tag | as above | rco does not suggest a version bump; a human decides |
 
 ### Branch folding vs no folding
 
@@ -186,8 +178,8 @@ Every approach uses the same rule for pull requests: base = `git merge-base <PR 
 flowchart LR
   subgraph fold["branch folding"]
     direction LR
-    c1["card branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(release/X, card)"| r1["release/X"]
-    r1 -->|"push: UP --name release-X<br/>TG other cards --onto release/X"| r1
+    c1["feature branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(release/X, feature)"| r1["release/X"]
+    r1 -->|"push: UP --name release-X<br/>TG other feature PRs --onto release/X"| r1
     r1 -->|"release PR: DF merge-base(main, release/X)..release/X<br/>= contract notes for the release; PN re-pin"| m1["main"]
     m1 -->|"push: UP --name main<br/>TG next release --onto main"| t1["tag"]
   end
@@ -254,7 +246,7 @@ Sizes measured on two repos (tokens = characters / 4, the estimate rco uses):
 | repo | All .py read raw | `rco tree` (full map) | `rco forest` | `rco pack --for` one file | raw files in that file's module |
 |---|---|---|---|---|---|
 | repo-context-optimizer (101 .py) | 127,115 | 13,603 | 760 | 4,062 | 26,898 (21 files) |
-| the-mill (885 .py) | 1,519,485 | 138,279 | 3,269 | 5,292 | 21,238 (11 files) |
+| a large Python repo (885 .py) | 1,519,485 | 138,279 | 3,269 | 5,292 | 21,238 (11 files) |
 
 These are size ratios, not savings. No A/B savings claim exists yet. The harness is in `tools/phase3_ab.py`, but the counting run waits for a released install. The README says to claim no savings until they are measured against a baseline.
 
@@ -263,14 +255,7 @@ These are size ratios, not savings. No A/B savings claim exists yet. The harness
 - `ci/notice_report.sh` passes the PR base tip as `--base`, not the merge-base. `rco diff` uses an explicit base as given, so a PR whose base branch moved on shows the base's new changes reversed. Fix: pass `git merge-base`.
 - `ci/notice_heads.py` lists every open PR, whatever its base branch. With branch folding, filter to PRs into the same base.
 - Caller lists match bare names, so a common name such as `label` lists callers that are not related.
-- After `rco update`, `rco check` adds prose-name findings: 38 on the-mill, 2 on md2xarticle. A map check job should run before update, or treat these as advisory.
+- After `rco update`, `rco check` adds prose-name findings: 38 on the large repo, 2 on a small one. A map check job should run before update, or treat these as advisory.
 - `rco diff` with no arguments fails in a detached CI checkout that has no `main`, and `HEAD~1` fails in a shallow clone. Use `fetch-depth: 0` and explicit SHAs.
 - The package needs Python 3.12+. Repos that test on 3.10 or 3.11 need a separate 3.12 job for rco.
 - A repo with no commits exits 2, where the README table says exit 0.
-
-## appendix: internal dogfood (optional)
-
-proposals only. Nothing is built.
-- repo-context-optimizer: fix the two notice issues above; add diff and map check jobs; add a push trigger on `release/**` for UP and TG. Owner: Builder; Validator measures.
-- the-mill: publish 0.1.1 and add a hash-locked install; add one report job, kept off the required list; add a push trigger on `release/**`; add `rco pack` to the contributing doc and the builder skill, and the report to the validator skill. Owners: Builder, Gardener, Validator.
-- md2xarticle: PR and push-to-main report jobs on Python 3.12, plus an optional pre-push hook. Owners: Builder, the md2xarticle desk.
