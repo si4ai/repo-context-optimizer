@@ -522,3 +522,7 @@ Applied in 0.1.2 (staged and working-tree input, test selection):
 - Applied: `rco affected [BASE] [HEAD] [--staged|--worktree] [--ignore
   GLOB] [--list]` reports `rco.affected/1` (`base`, `head`, `changed`,
   `files`, `tests`, `run_all`, `reasons`) and always exits 0.
+- Applied: `rco init` reports `rco.init/1` (`steps`: `path`, `action` in
+  wrote, kept, removed or absent, `detail`) and always exits 0. It never
+  overwrites a file; `--remove-hooks` deletes only a hook carrying rco's
+  marker line.
