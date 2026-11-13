@@ -312,7 +312,7 @@ The mill backend is an optional extra (`pip install repo-context-optimizer[mill]
 Claim no savings until they are measured against a baseline.
 
 - Tokens and reads before the first useful action, and wrong guesses on cold runs, come from cold-agent logs, not from rco itself. Phase 0 uses the mill's cold-test kit and an existing baseline.
-- Branches triage reported clean (hypothesis, measured in Phase 5). Tests still run, because an unchanged contract can hide a behavior change.
+- Branches triage reported clean (hypothesis, measured in Phase 5; see [`docs/baseline/phase5-triage.md`](docs/baseline/phase5-triage.md)). Tests still run, because an unchanged contract can hide a behavior change.
 - LLM tokens spent per module and per merge, when prose is on (from rco's own logs).
 - Stale Forests outstanding (score).
 
