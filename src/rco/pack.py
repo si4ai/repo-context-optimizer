@@ -17,11 +17,14 @@ from pathlib import Path
 from typing import Sequence
 
 from rco import build, canon, forest, gitread, imports, modules
-from rco.forest_model import (DEFAULT_BUDGET, ForestEntry, HopLine, Pack, estimate_tokens,
-                              is_stale, pack_to_obj)
-from rco.model import Map, Node, Tree, node_key
+from rco.forest_model import (DEFAULT_BUDGET, ForestEntry, HopLine, Pack, ProseSource,
+                              estimate_tokens, is_stale, pack_to_obj)
+from rco.model import Kind, Map, Node, Tree, node_key
 from rco.output import Exit, UsageError
-from rco.render import _lines as _node_lines
+from rco.render import node_line
+from rco.extract.langs import lang_of
+from rco.prose import derived_prose
+from rco.prose.derive import call_index, with_derived_docs
 from rco.store import NodeKind, Store
 
 MIN_BUDGET = 64  # header and footer alone need about this much
@@ -29,8 +32,11 @@ LINE_CAP = 100
 
 
 def _is_empty_forest_entry(e: ForestEntry) -> bool:
-    """layer 0, no edges, nothing owned, and no prose to show."""
-    if e.prose is not None and e.prose.text.strip():
+    """layer 0, no edges, nothing owned, and no mined or written prose to show.
+
+    Derived prose only restates the Tree, so it does not keep a line from being cut first.
+    """
+    if e.prose is not None and e.prose.text.strip() and e.prose.source is not ProseSource.DERIVED:
         return False
     return (e.layer == 0 and not e.depends_on and not e.used_by
             and not e.owns.commands and not e.owns.tables and not e.owns.routes)
@@ -78,6 +84,8 @@ def _next_forest_cut(entries: list[ForestEntry], all_ids: set[str],
 def _one_line(e: ForestEntry) -> str:
     if e.prose is not None and e.prose.text.strip():
         text = e.prose.text.strip().splitlines()[0]
+        if e.prose.source is ProseSource.DERIVED:
+            text = f"layer {e.layer}; {text}"
         line = text if len(text) <= LINE_CAP else text[: LINE_CAP - 3] + "..."
         return line + (" [stale]" if is_stale(e.prose, e.tree_hash) else "")
     bits = [f"layer {e.layer}"]
@@ -111,10 +119,25 @@ def forest_line(e: ForestEntry, name_flags: str = "") -> str:
     return s
 
 
+_DOC_KINDS = (Kind.CLASS, Kind.FUNCTION, Kind.METHOD)
+
+
 def _tree_lines(n: Node) -> list[str]:
+    """Tree lines as `rco tree` renders them, plus `  # doc` on classes and functions."""
     out: list[str] = []
-    _node_lines(n, 0, out)
+    _doc_lines(n, 0, out, "")
     return out
+
+
+def _doc_lines(n: Node, depth: int, out: list[str], lang: str) -> None:
+    line = "  " * depth + node_line(n, lang)
+    if n.kind in _DOC_KINDS and n.doc:
+        line += f"  # {n.doc}"
+    out.append(line)
+    if n.kind is Kind.SRCMODULE:
+        lang = dict(n.attrs).get("lang", "")
+    for c in n.children:
+        _doc_lines(c, depth + 1, out, lang)
 
 
 def _trimmed_summary(trimmed: Sequence[str]) -> str:
@@ -160,6 +183,15 @@ def _measure(p: Pack, label: str) -> int:
     return estimate_tokens(pack_markdown(replace(p, used=used), label))
 
 
+def _code_sources(repo: Path, sha: str) -> dict[str, bytes]:
+    """Bytes of every Python or bundled-language file at sha, for the call index."""
+    ents = [e for e in gitread.ls_tree(repo, sha)
+            if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
+            and (e.path.endswith(".py") or lang_of(e.path))]
+    data = gitread.read_blobs(repo, [e.blob for e in ents])
+    return {e.path: data[e.blob] for e in ents}
+
+
 def _map_from_store(store: Store, sha: str) -> Map | None:
     rows = store.list_by_sha(sha)
     if not rows:
@@ -190,8 +222,13 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     entries = list(f.entries)
     if store is not None:
         entries = [replace(e, prose=store.get_prose(e.id)) for e in entries]
-    by_id = {e.id: e for e in entries}
     trees_by = {t.module: t for t in m.trees}
+    entries = [e if e.prose is not None and e.prose.text.strip()
+               else replace(e, prose=derived_prose(trees_by[e.id], e.tree_hash))
+               if e.id in trees_by else e for e in entries]
+    entries = [replace(e, prose=None) if e.prose is not None and not e.prose.text.strip() else e
+               for e in entries]
+    by_id = {e.id: e for e in entries}
     if store is not None:
         from rco.prose import flags as prose_flags
         for e in entries:
@@ -208,6 +245,9 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
                      - set(owners))
     trees = [trees_by[o] for o in owners]
+    if trees:
+        idx = call_index(m.trees, _code_sources(repo, sha), focus=trees)
+        trees = [with_derived_docs(t, idx) for t in trees]
     hop = [HopLine(h, _one_line(by_id[h])) for h in hop_ids]
     stale = tuple(sorted(e.id for e in entries if is_stale(e.prose, e.tree_hash)))
     label = " ".join(for_paths or ())

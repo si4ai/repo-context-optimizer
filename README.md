@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is still rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
+**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on, prose derived from extracted facts fills the gaps, and the LLM path is off. The release is still rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -85,7 +85,7 @@ Output is canonical (sorted JSON, no line numbers), so identical input always yi
 
 A Forest describes how modules fit together. Most of it is computed, not generated: layer; depends-on and used-by, from the import graph; entry points; and the commands, tables, and routes a module owns.
 
-A small, optional LLM prose part may add purpose, invariants, and gotchas. rco works with the prose turned off; generation rules live under [Phase 2](#roadmap). A repo-level Forest can render the module graph (for example as a mermaid diagram) plus a short paragraph per layer.
+Prose is deterministic by default. It is mined first (docstrings, module headers, READMEs). Where nothing can be mined, it is derived from extracted facts: a module line from the names its Tree defines and owns, and, in a pack, a line per class or function with no docstring from its name, signature, the in-repo symbols it calls, and its in-repo callers (resolved through imports, never guessed from a bare method name). Derived lines are marked `derived` and cite only names in the Tree, so the name-in-Tree check holds. A small, optional LLM prose part may add purpose, invariants, and gotchas; it is off, and rco works without it. Generation rules live under [Phase 2](#roadmap). A repo-level Forest can render the module graph (for example as a mermaid diagram) plus a short paragraph per layer.
 
 ## Fingerprints
 
@@ -188,7 +188,7 @@ flowchart LR
 
 #### Pack output (example)
 
-This sample is about 120 estimated tokens (characters / 4; the estimator is approximate).
+This sample is about 150 estimated tokens (characters / 4; the estimator is approximate).
 
 ```markdown
 # rco pack  (SHA=abc1234, budget=8000 estimated tokens)
@@ -200,15 +200,15 @@ This sample is about 120 estimated tokens (characters / 4; the estimator is appr
 
 ## Trees (full, for --for tw/cli.py)
 ### tw
-def run(argv: list[str]) -> int
-def stop_run(run_id: str) -> None
+def run(argv: list[str]) -> int  # Run one tw command and return its exit code.
+def stop_run(run_id: str) -> None  # Stop run. Takes run_id. Calls kill. Called by cli.py:main.
 CLI: tw run, tw stop
 
 ## One hop (name and one line)
 - proc: process supervision for tw runs
 - client: shared client library
 
-# budget used: ~120 / 8000 estimated tokens
+# budget used: ~150 / 8000 estimated tokens
 ```
 
 ### `rco diff [BASE] [HEAD]`

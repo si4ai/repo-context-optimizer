@@ -140,6 +140,11 @@ def compute_forest(m: Map, edges: Mapping[str, tuple[str, ...]],
     return Forest(m.sha, tuple(entries), tuple(notes))
 
 
+def owns_of(t: Tree) -> Owns:
+    """The commands, tables and routes a module's Tree owns."""
+    return _owns(t)[0]
+
+
 def _tree_paths(t: Tree) -> list[str]:
     return sorted({n.path for n in t.nodes if n.path})
 
