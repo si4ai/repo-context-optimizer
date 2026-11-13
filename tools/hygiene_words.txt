@@ -9,6 +9,7 @@ add
 addr
 address
 admin
+affected
 after
 against
 agent
@@ -67,6 +68,7 @@ cards
 cargo
 case
 change
+changed
 changelog
 changes
 check
@@ -379,6 +381,7 @@ queue
 queued
 random
 read
+readers
 readme
 ready
 recipe
@@ -394,6 +397,7 @@ registers
 regression
 release
 reply
+repo
 report
 request
 requests

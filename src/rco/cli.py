@@ -48,7 +48,27 @@ def make_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("diff", help="contract changes between two commits")
     d.add_argument("base", nargs="?", default=None)
     d.add_argument("head", nargs="?", default=None)
+    snap = d.add_mutually_exclusive_group()
+    snap.add_argument("--staged", dest="snapshot", action="store_const", const="staged",
+                      help="HEAD is the index; BASE defaults to HEAD")
+    snap.add_argument("--worktree", dest="snapshot", action="store_const", const="worktree",
+                      help="HEAD is the working tree (tracked and untracked, not ignored); "
+                           "BASE defaults to HEAD")
     _common(d)
+
+    a = sub.add_parser("affected", help="tests that can see the changes between two commits")
+    a.add_argument("base", nargs="?", default=None)
+    a.add_argument("head", nargs="?", default=None)
+    snap = a.add_mutually_exclusive_group()
+    snap.add_argument("--staged", dest="snapshot", action="store_const", const="staged",
+                      help="HEAD is the index; BASE defaults to HEAD")
+    snap.add_argument("--worktree", dest="snapshot", action="store_const", const="worktree",
+                      help="HEAD is the working tree; BASE defaults to HEAD")
+    a.add_argument("--ignore", action="append", default=[], metavar="GLOB",
+                   help="changed paths no test reads (repeatable)")
+    a.add_argument("--list", dest="as_list", action="store_true",
+                   help="print only test paths, one per line (every test when run_all)")
+    _common(a)
 
     u = sub.add_parser("update", help="publish a commit to the store (.rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
@@ -145,7 +165,11 @@ def run(args: argparse.Namespace) -> Exit:
             store = SqliteStore(db)
         return emit(check.check(repo, sha, m, store), args.format, args.out)
     if args.cmd == "diff":
-        return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+        return emit(diff.diff(repo, args.base, args.head, args.snapshot), args.format, args.out)
+    if args.cmd == "affected":
+        from rco import affected
+        res = affected.affected(repo, args.base, args.head, args.snapshot, args.ignore)
+        return emit(affected.AffectedReport(res, args.as_list), args.format, args.out)
     if args.cmd == "update":
         from rco import update
         from rco.prose import drain_queue

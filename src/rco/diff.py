@@ -34,7 +34,7 @@ from typing import Iterable, Iterator, Literal
 
 from rco import build, canon, gitread
 from rco.model import Kind, Map, Node, walk
-from rco.output import Exit
+from rco.output import Exit, UsageError
 
 SCHEMA_DIFF = "rco.diff/1"
 
@@ -217,7 +217,7 @@ def _python_files(repo: Path, entries: tuple[gitread.Entry, ...]) -> Iterator[tu
 
 # ------------------------------------------------------------ entry point
 
-def _changed_paths(a: tuple[gitread.Entry, ...], b: tuple[gitread.Entry, ...]) -> list[str]:
+def changed_paths(a: tuple[gitread.Entry, ...], b: tuple[gitread.Entry, ...]) -> list[str]:
     sa = {(e.path, e.mode, e.blob) for e in a}
     sb = {(e.path, e.mode, e.blob) for e in b}
     return sorted({p for p, _, _ in sa ^ sb})
@@ -244,20 +244,40 @@ def diff_maps(base: Map, head: Map, head_files: Iterable[tuple[str, bytes]] = ()
     return DiffReport(base=base.sha, head=head.sha, changes=tuple(changes))
 
 
-def diff(repo: Path, base: str | None, head: str | None) -> DiffReport:
+def resolve_range(repo: Path, base: str | None, head: str | None,
+                  snapshot: str | None = None) -> tuple[str, str]:
+    """(base, head) SHAs. HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD).
+
+    With snapshot "staged" or "worktree", HEAD is that snapshot
+    (gitread.snapshot) and BASE defaults to HEAD, like `git diff --cached`
+    and `git diff HEAD`.
+    """
+    if snapshot is not None:
+        if head is not None:
+            raise UsageError(f"--{snapshot} takes at most one commit (BASE)")
+        head_sha = gitread.snapshot(repo, snapshot)
+        base = base or "HEAD"
+    else:
+        head_sha = gitread.resolve(repo, head or "HEAD")
+    if base is None:
+        return gitread.merge_base(repo, gitread.resolve(repo, gitread.default_branch(repo)),
+                                  head_sha), head_sha
+    return gitread.resolve(repo, base), head_sha
+
+
+def diff(repo: Path, base: str | None, head: str | None,
+         snapshot: str | None = None) -> DiffReport:
     """Contract changes from BASE to HEAD.
 
-    HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD).
+    HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD). With
+    snapshot "staged" or "worktree", HEAD is that snapshot
+    (gitread.snapshot) and BASE defaults to HEAD, like `git diff --cached`
+    and `git diff HEAD`.
     """
     t0 = time.perf_counter()
-    head_sha = gitread.resolve(repo, head or "HEAD")
-    if base is None:
-        base_sha = gitread.merge_base(repo, gitread.resolve(repo, gitread.default_branch(repo)),
-                                      head_sha)
-    else:
-        base_sha = gitread.resolve(repo, base)
+    base_sha, head_sha = resolve_range(repo, base, head, snapshot)
     be, he = gitread.ls_tree(repo, base_sha), gitread.ls_tree(repo, head_sha)
-    paths = _changed_paths(be, he)
+    paths = changed_paths(be, he)
     bm = build.build_map(repo, base_sha, paths)
     hm = build.build_map(repo, head_sha, paths)
     report = diff_maps(bm, hm, _python_files(repo, he))
