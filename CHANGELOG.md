@@ -43,8 +43,28 @@ list is part of it. A store from 0.1.x re-extracts once on the first
 - `rco live`: checks the map against a captured SQL schema dump,
   OpenAPI or Swagger JSON, and `--help` texts. rco never runs repo code
   (#46).
+- `rco plan BRANCH BRANCH... [--base BASE]`: simple merge planning.
+  Against the branches' common merge-base, for each pair: files both
+  changed, uses of symbols one branch changed or removed in the other's
+  changed files, module dependencies in the Forest, tests that see both
+  sides, stacking, and a merge order. Every report lists what it cannot
+  prove. Read-only (#51).
+
+### changed
+
+- `rco diff` callers are resolved to the changed symbol's file and
+  qualname (imports, module aliases, `self`, annotated and returned
+  types, Go `pkg.Name`), not matched by bare name, in Python and every
+  bundled language. On a large repo the caller count for 20 commits fell
+  from 10,106 to 613 (#49).
+- `rco triage` and `rco notice` use the same index, so changed JS/TS,
+  Go, Rust, shell, and PowerShell files count as impacted (#50).
 
 ### fixed
+
+- the `notice_report` CI job diffs from the merge-base of the PR base
+  tip and head, not the base tip, and compares only open PRs into the
+  same base branch (#39).
 
 - `rco pack` and `rco check` now find the store from a subdirectory of
   the working tree (#44).
@@ -55,7 +75,7 @@ list is part of it. A store from 0.1.x re-extracts once on the first
 
 LLM prose (off by design), the mill backend extra, mail notices
 through a backend, `tw rco update` runs, the MCP backend, and merge
-planning. Naming `mill` or `mcp` as the backend is a usage error.
+planning beyond `rco plan`. Naming `mill` or `mcp` as the backend is a usage error.
 
 ## 0.1.1 - 2026-11-12 (not published)
 
