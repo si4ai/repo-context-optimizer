@@ -147,3 +147,12 @@ def test_function_local_imports_resolve(tmp_path):
     idx = call_index(m.trees, {p: v.encode() for p, v in files.items()})
     assert idx.calls[("pkg/run.py", "go")] == {"conf.py:home"}
     assert idx.calls[("pkg/run.py", "stay")] == set()  # the import is local to go()
+
+
+def test_hyphenated_function_names_pass_the_name_check(tmp_path):
+    files = {"ops/setup.ps1": "function Test-PythonOk {\n  return $true\n}\n"}
+    repo, sha = fixture.make_repo(tmp_path / "r", files)
+    t = build.build_map(repo, sha).trees[0]
+    text = module_prose(t)
+    assert text == "Defines function Test-PythonOk."
+    assert unknown_names(text, t) == ()
