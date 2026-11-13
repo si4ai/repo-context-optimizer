@@ -69,6 +69,7 @@ class Kind(str, Enum):
     # order of declaration == sort order (KIND_ORDER)
     FILE = "file"            # outline fallback: unknown language, LFS pointer, parse error
     PYMODULE = "pymodule"    # one per .py file; children below
+    SRCMODULE = "srcmodule"  # one per JS/TS, Go, Rust, shell or PowerShell file
     CLASS = "class"
     FUNCTION = "function"
     METHOD = "method"
@@ -287,6 +288,7 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map
 | Kind | Owner | name | sig | attrs (shape) |
 |---|---|---|---|---|
 | PYMODULE | python | dotted module (`src/` stripped, `__init__` dropped) | `""` | none |
+| SRCMODULE | js, go, rust, shell | the file path | `""` | `lang` (`js`, `ts`, `go`, `rust`, `sh`, `powershell`); `module`=`esm` or `script` (JS/TS); `package` (Go) |
 | CLASS | python | class name | `(Base1, Base2)` from `ast.unparse` of bases and keywords, or `""` | `decorators` = comma-joined unparsed decorators |
 | FUNCTION / METHOD | python | def name | `(args) -> ret` from `ast.unparse(node.args)` and `returns`; a default that is not a literal of 40 chars or fewer becomes `...` | `async`=`1`; `decorators` |
 | FIELD | python | attribute | annotation, unparsed | `value` (literal or `...`) |
@@ -482,3 +484,19 @@ Applied in the steps 2 to 6 fold (card 1167):
   strings, subparser aliases). It changes cli output, the cli golden and
   the parity check against the mill's parser, so it is not a trivial fold
   change; it goes to a later step.
+
+Applied in 0.1.2 (bundled parsers for other languages):
+
+- Applied: Kind `SRCMODULE`, a file container like PYMODULE, for the
+  `js`, `go`, `rust` and `shell` extractors (sections 2 and 6). Their
+  children reuse CLASS (with a `kind` attr: `class`, `interface`, `type`,
+  `enum`, `struct`, `trait`, `impl`, `alias`, `mod`), FUNCTION, METHOD,
+  FIELD, CONSTANT and EXPORT. The extractors share one deterministic
+  scanner (`rco/extract/scan.py`): it masks comments and strings, tracks
+  brace depth, and reads top-level declarations only (plus the body of a
+  top-level IIFE in a JS script). There is no tree-sitter dependency, so
+  `pip install` stays dependency-free and the same bytes come out
+  everywhere. Public means: exported (JS/TS modules) or every top-level
+  name not starting with `_` (JS scripts); capitalized (Go); `pub` (Rust);
+  every function (shell, PowerShell). The doc is the first line of the
+  comment right above a declaration.
