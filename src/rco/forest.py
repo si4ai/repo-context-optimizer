@@ -15,7 +15,7 @@ from rco import build, canon, gitread, imports, modules
 from rco.check import Finding
 from rco.extract.python import module_name
 from rco.forest_model import Forest, ForestEntry, Owns, forest_to_obj
-from rco.model import Kind, Map, Tree, walk
+from rco.model import Kind, Map, Module, Tree, walk
 from rco.output import Exit
 
 _OWN_KINDS = {Kind.COMMAND: "commands", Kind.TABLE: "tables", Kind.VIEW: "tables",
@@ -78,7 +78,8 @@ def layers(ids: list[str], edges: Mapping[str, tuple[str, ...]]) -> tuple[dict[s
     return {m: layer_of_comp[comp_of[m]] for m in ids}, sorted(notes)
 
 
-def _scripts(sources: Mapping[str, bytes], index: Mapping[str, str]) -> dict[str, set[str]]:
+def _scripts(sources: Mapping[str, bytes], index: Mapping[str, str],
+             owner: Mapping[str, str]) -> dict[str, set[str]]:
     """Module id -> [project.scripts] names whose target lives there."""
     raw = sources.get("pyproject.toml")
     out: dict[str, set[str]] = {}
@@ -94,7 +95,7 @@ def _scripts(sources: Mapping[str, bytes], index: Mapping[str, str]) -> dict[str
         mod = str(target).split(":", 1)[0].strip()
         path = index.get(mod)
         if path is not None:
-            out.setdefault(modules.module_of(path), set()).add(str(name))
+            out.setdefault(owner.get(path, modules.dir_of(path)), set()).add(str(name))
     return out
 
 
@@ -126,7 +127,8 @@ def compute_forest(m: Map, edges: Mapping[str, tuple[str, ...]],
     layer, notes = layers(ids, deps)
     py = [p for t in m.trees for p in _tree_paths(t)]
     index = {module_name(p): p for p in sorted(py) if p.endswith(".py")}
-    scripts = _scripts(sources, index)
+    owner = {p: t.module for t in m.trees for p in _tree_paths(t)}
+    scripts = _scripts(sources, index, owner)
     entries = []
     for t in sorted(m.trees, key=lambda t: t.module):
         owns, top_cmds = _owns(t)
@@ -150,10 +152,14 @@ def _tree_paths(t: Tree) -> list[str]:
 
 
 def read_sources(repo: Path, sha: str) -> dict[str, bytes]:
-    """Python files and pyproject.toml at sha; no symlinks, no submodules."""
+    """Code the edge rules read at sha: Python, bundled languages, pyproject.toml and
+    the package.json, go.mod and Cargo.toml manifests; no symlinks, no submodules."""
+    from rco.edges import MANIFEST_NAMES
+    from rco.extract.langs import lang_of
     ents = [e for e in gitread.ls_tree(repo, sha)
             if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
-            and (e.path.endswith(".py") or e.path == "pyproject.toml")]
+            and (e.path.endswith(".py") or e.path == "pyproject.toml" or lang_of(e.path)
+                 or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
     data = gitread.read_blobs(repo, [e.blob for e in ents])
     return {e.path: data[e.blob] for e in ents}
 
@@ -162,9 +168,13 @@ def build_forest(repo: Path, sha: str) -> Forest:
     """Forest of a commit, computed on the fly from git (no store)."""
     m = build.build_map(repo, sha)
     sources = read_sources(repo, sha)
-    mods = modules.group(e.path for e in gitread.ls_tree(repo, sha)
-                         if e.mode != gitread.MODE_SUBMODULE)
-    return compute_forest(m, imports.module_edges(mods, sources), sources)
+    return compute_forest(m, imports.module_edges(map_modules(m), sources), sources)
+
+
+def map_modules(m: Map) -> tuple[Module, ...]:
+    """The modules of a Map, with every path its Trees name (from git, so complete)."""
+    return tuple(Module(t.module, tuple(sorted({n.path for n in t.nodes if n.path})))
+                 for t in m.trees)
 
 
 def compare_edges(claimed: Forest, actual: Forest) -> tuple[Finding, ...]:

@@ -1,4 +1,4 @@
-"""Python import edges between in-repo modules (Phase 2 step 2).
+"""Import edges between in-repo modules (Phase 2 step 2; other languages in rco.edges).
 
 Only `import` and `from ... import` statements count, relative ones too.
 An import resolves to the longest dotted prefix that names an in-repo
@@ -89,14 +89,18 @@ def module_edges(modules: Sequence[Module], sources: Mapping[str, bytes]
     sources maps repo-relative path to file bytes at one SHA. Every module
     in modules gets a key, with () when it imports nothing in the repo.
     """
+    from rco.edges import file_edges, repo_facts
     owner = {p: m.id for m in modules for p in m.files}
     index = _dotted_index([p for p in owner if p in sources])
+    facts = repo_facts(frozenset(owner), sources)
     out: dict[str, set[str]] = {m.id: set() for m in modules}
     for m in modules:
         for p in m.files:
-            if not p.endswith(".py") or p not in sources:
+            if p not in sources:
                 continue
-            for t in file_imports(p, sources[p], index):
+            found = (file_imports(p, sources[p], index) if p.endswith(".py")
+                     else file_edges(p, sources[p], facts))
+            for t in found:
                 tid = owner.get(t, module_of(t))
                 if tid != m.id and tid in out:
                     out[m.id].add(tid)

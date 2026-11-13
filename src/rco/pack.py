@@ -216,9 +216,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         m = build.build_map(repo, sha)
         notes.append("built from git (no published SHA in the store)")
     sources = forest.read_sources(repo, sha)
-    mods = modules.group(e.path for e in gitread.ls_tree(repo, sha)
-                         if e.mode != gitread.MODE_SUBMODULE)
-    f = forest.compute_forest(m, imports.module_edges(mods, sources), sources)
+    f = forest.compute_forest(m, imports.module_edges(forest.map_modules(m), sources), sources)
     entries = list(f.entries)
     if store is not None:
         entries = [replace(e, prose=store.get_prose(e.id)) for e in entries]
@@ -239,7 +237,8 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
 
     owners: list[str] = []
     if for_paths:
-        owners = sorted({modules.module_of(p.strip("/")) for p in for_paths} & set(by_id))
+        layout = modules.layout_at(repo, sha)
+        owners = sorted({layout.module_of(p.strip("/")) for p in for_paths} & set(by_id))
         if not owners:
             notes.append("no module owns the --for paths")
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
