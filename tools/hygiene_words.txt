@@ -65,6 +65,7 @@ callable
 called
 calls
 cancel
+capability
 card
 cards
 cargo
@@ -98,6 +99,7 @@ conflict
 conflicts
 connect
 connection
+content
 contentful
 context
 contoso
@@ -188,6 +190,7 @@ focus
 follow
 for
 force
+forests
 formatter
 from
 front
@@ -292,6 +295,7 @@ messages
 meta
 metadata
 methods
+metrics
 minimal
 miss
 mixed
@@ -470,6 +474,7 @@ something
 speech
 spell
 sql
+staleness
 start
 state
 status

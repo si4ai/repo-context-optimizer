@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on, prose derived from extracted facts fills the gaps, and the LLM path is off. The release is still rough on purpose: import edges for Python, JS/TS, Go, Rust, shell, and PowerShell; modules from `package.json` and `Cargo.toml` with a `rco.toml` override file and directory fallback; no import-graph clustering, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
+**Status:** 0.1.2 is the current release. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 is the first install after 0.1.0 and carries both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -12,6 +12,28 @@ Run `rco pack --for <files you will touch>`.
 Read the pack.
 Open raw files only on demand.
 
+## What ships
+
+| Code | Capability | 0.1.2 |
+|---|---|---|
+| TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
+| PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
+| LG | bundled parsers for JavaScript/TypeScript, Go, Rust, shell, and PowerShell | shipped |
+| MO | modules from `rco.toml`, then `package.json` / `Cargo.toml`, then directories | shipped |
+| CF | `rco.toml` settings and backend choice (`sqlite` or an entry point adapter) | shipped |
+| SS | a store cached across CI runs | shipped |
+| SG | `rco diff --staged` / `--worktree` | shipped |
+| TS | `rco affected`: test selection from a diff | shipped |
+| IN | `rco init`: config, CI workflow, and hook setup | shipped |
+| HK | post-merge hook trigger for `rco update` | shipped (a merge webhook needs your own server) |
+| RO | `rco live`: check against a schema dump, OpenAPI, or `--help` | shipped |
+| LP | LLM prose | not shipped; off by design |
+| MB | mill backend extra | not shipped |
+| NM | notices sent by mail through a backend | not shipped |
+| TW | `tw rco update` recorded runs | not shipped |
+| MC | MCP backend | not shipped |
+| MP | merge planning | not shipped; [proposed](#proposed-merge-planning-mill-tool-scope-tbd) |
+
 ## Why
 
 Cold-start agents waste tokens rediscovering a repository: they read too many files, guess at module boundaries, and re-learn contracts that code already knows. Parallel agents on a busy repo pay again in rebase churn, often rereading full diffs when only a contract changed, or waking an agent when no contract they use has moved.
@@ -20,7 +42,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.1:
+The default in 0.1.2:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command
@@ -34,7 +56,7 @@ rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 
 Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
 
-`rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend fails to load, rco falls back to SQLite and prints the exact command to fix it.
+`rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend is not installed, rco exits 2 and names it; it never silently switches to another store.
 
 ### Acceptance tests (zero-config goal)
 
@@ -338,6 +360,15 @@ The SQLite backend (`sqlite`) is the default: one database under `.rco/`. Tree a
 
 The mill backend is an optional extra (`pip install repo-context-optimizer[mill]`) that talks to the mill (si4ai/the-mill). It calls only existing mill commands; it adds no new mill verbs.
 
+The mill and MCP backends are design only and not shipped. The mill design:
+
+- **Content:** Tree and Forest JSON stay in the SQLite content store. The mill holds only hashes and pointers. There is no mill tree node per module per SHA. Mill trees outline mail and todo. Card text has a 4096-character budget.
+- **label** holds pointers such as `rco/main` or `rco/0.8.11`. A new label needs `mill create label` (Admin) on limited trust.
+- **Staleness** is a score, `stale Forests outstanding`, and optionally one rollup card per repo. Not a card per module. Cards start only when a human asks.
+- **mail** may carry a contract-diff notice. Mapping a PR to a desk requires a per-desk GitHub identity, which is not available while desks share one account. Letters are batched, one per affected PR, and addressed; every wake costs tokens.
+- **tw** is the mill's recorded command runner. From a desk's sitting `mill connect DESK`, `tw rco update` records the run: start, finished, and failed.
+- **score** also tracks LLM tokens rco itself spends (when prose is on) and stale Forests outstanding. Tokens and reads before the first useful action are not produced by rco; see Metrics.
+
 Shipped today: `sqlite`, plus adapters. `mill` and `mcp` are not built yet; naming either one is a usage error (exit 2) that says so. The settings come from `rco.toml` at the top of the working tree, because they describe this checkout, not a commit. The `[[module]]` rules in the same file are read from git at each SHA, so a setting can never change a commit's Tree or Forest.
 
 ```toml
@@ -366,13 +397,6 @@ A CI job starts with an empty `.rco/`, so every `rco update` would extract every
 ```
 
 The database is a single file once `rco update` exits, because SQLite checkpoints its WAL on close.
-
-- **Content:** Tree and Forest JSON stay in the SQLite content store. The mill holds only hashes and pointers. There is no mill tree node per module per SHA. Mill trees outline mail and todo. Card text has a 4096-character budget.
-- **label** holds pointers such as `rco/main` or `rco/0.8.11`. A new label needs `mill create label` (Admin) on limited trust.
-- **Staleness** is a score, `stale Forests outstanding`, and optionally one rollup card per repo. Not a card per module. Cards start only when a human asks.
-- **mail** may carry a contract-diff notice. Mapping a PR to a desk requires a per-desk GitHub identity, which is not available while desks share one account. Letters are batched, one per affected PR, and addressed; every wake costs tokens.
-- **tw** is the mill's recorded command runner. From a desk's sitting `mill connect DESK`, `tw rco update` records the run: start, finished, and failed.
-- **score** also tracks LLM tokens rco itself spends (when prose is on) and stale Forests outstanding. Tokens and reads before the first useful action are not produced by rco; see Metrics.
 
 ## Metrics
 
