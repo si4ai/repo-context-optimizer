@@ -249,7 +249,7 @@ CLI: tw run, tw stop
 
 `BASE` defaults to the merge-base of the repository's default branch and `HEAD`. `HEAD` defaults to `HEAD`.
 
-Lists added, removed, and changed signatures, flags, columns, and routes. For each change it lists callers as `file:line` from a reverse index.
+Lists added, removed, and changed signatures, flags, columns, and routes. For each changed class, function, method, field, or constant, it lists callers as `file:line`. A caller counts only when it resolves to that symbol. In Python, that means through imports, `self`, an annotation, an assignment from a constructor or from a function whose declared return type is the class, or a constructor keyword. In JS/TS, Go, Rust, shell, and PowerShell, it means a use in the defining file or in a file that imports it (for Go, also the same package). A field named `base` never picks up every other `.base` in the repo. An attribute on a receiver rco cannot resolve is not counted, so rco can miss a caller but never invents one.
 
 `rco diff --staged [BASE]` diffs the index and `rco diff --worktree [BASE]` diffs the working tree (tracked changes plus untracked files that are not ignored). With either flag, `BASE` defaults to `HEAD`. rco still reads only git objects. It first writes the index or working tree as a commit object with fixed author, committer, and dates, so the same content always gives the same SHA. Only loose objects are written: no ref moves, and the real index is never touched.
 

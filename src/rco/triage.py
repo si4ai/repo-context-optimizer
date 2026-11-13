@@ -118,8 +118,9 @@ def _hint(repo: Path, branch: str, base: str, upstream: tuple[diff.Change, ...],
     mine, entries = _changed(repo, base, sha)
     contract = tuple(c for c in upstream if c.op != "doc")
     names = {_name(c) for c in contract if c.kind in _PY}
-    files = [(p, d) for p, d in diff._python_files(repo, entries) if p in set(mine)]
-    idx = diff.caller_index(files, names)
+    files = [(p, d) for p, d in diff.code_sources(repo, entries).items()
+             if p in set(mine) and p.endswith(".py")]
+    idx = diff.caller_index_bare(files, names)
     by_file: dict[str, set[str]] = {}
     for n, locs in idx.items():
         for loc in locs:
