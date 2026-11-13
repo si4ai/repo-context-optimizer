@@ -136,3 +136,27 @@ def test_name_in_tree_flags_in_pack_and_check(tmp_path, capsys):
     assert code == Exit.FINDINGS
     obj = json.loads(out)
     assert any(f["key"] == "prose:pkg:nope_here" for f in obj["findings"])
+
+def test_no_commit_repo_empty_tree_and_forest_exit_0(tmp_path, capsys):
+    repo = tmp_path / "empty"
+    repo.mkdir()
+    fixture.git(repo, "init", "-q", "-b", "main")
+    assert cli.main(["tree", "--repo", str(repo)]) == Exit.OK
+    tree_out = capsys.readouterr()
+    assert "modules=0" in tree_out.out and "not a commit" not in tree_out.err
+    assert cli.main(["forest", "--repo", str(repo)]) == Exit.OK
+    forest_out = capsys.readouterr()
+    assert "rco forest" in forest_out.out and "not a commit" not in forest_out.err
+    # an explicit bad ref is still a usage error
+    assert cli.main(["tree", "nosuch", "--repo", str(repo)]) == Exit.USAGE
+
+
+def test_tree_unmatched_for_warns_and_keeps_exit_0(tmp_path, capsys):
+    repo, _ = fixture.make_repo(tmp_path / "r", SMALL)
+    code = cli.main(["tree", "--repo", str(repo), "--for", "no/such/file.py"])
+    out = capsys.readouterr()
+    assert code == Exit.OK
+    assert "modules=0" in out.out
+    assert "no module owns the --for paths" in out.err
+    assert "no/such/file.py" in out.err
+

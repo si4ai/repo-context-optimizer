@@ -274,3 +274,25 @@ def test_leftover_budget_keeps_hops_that_fit(tmp_path):
     # some mid budgets should keep hops even after other cuts; if none do, the
     # fixture may be too small, but the leftover check above is the contract
     assert hits or full.used  # always true; documents the walk ran
+
+def test_pack_unmatched_for_warns_and_keeps_stdout(tmp_path, capsys):
+    repo, _ = _repo(tmp_path)
+    plain = cli.main(["pack", "--repo", str(repo)])
+    out_plain = capsys.readouterr()
+    code = cli.main(["pack", "--repo", str(repo), "--for", "no/such/file.py"])
+    out = capsys.readouterr()
+    assert code == Exit.OK and plain == Exit.OK
+    assert out.out == out_plain.out
+    assert "no module owns the --for paths" in out.err
+    assert "no/such/file.py" in out.err
+
+
+def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
+    repo = tmp_path / "empty"
+    repo.mkdir()
+    fixture.git(repo, "init", "-q", "-b", "main")
+    assert cli.main(["pack", "--repo", str(repo)]) == Exit.OK
+    out = capsys.readouterr()
+    assert "rco pack" in out.out and "budget used" in out.out
+    assert "not a commit" not in out.err
+
