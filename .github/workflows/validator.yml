@@ -1,0 +1,97 @@
+name: Validator checks
+
+# Validator's orthogonal checks (verify/validator/README.md). Validator
+# owns the checks; this file is its own status context, not a required
+# check. Only a false claim or a real mismatch is red: the README ledger
+# runs with --red-on FAIL, so UNTESTABLE and STALE claims are reported in
+# the job summary and stay green. A crash or bad arguments exits 2 and
+# fails the job.
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  # check 2 then check 1: the ledger's SPIN claims read this job's SPIN
+  # run for the same commit, so both run in one job, in this order.
+  readme_ledger:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Install PyYAML and Spin
+        run: |
+          set -euo pipefail
+          pip install pyyaml==6.0.3
+          sudo apt-get update && sudo apt-get install -y spin
+      - name: SPIN gate (check 2)
+        run: |
+          set -euo pipefail
+          python3 verify/validator/spin_gate.py --ref HEAD --out "$RUNNER_TEMP/validator"
+      - name: README ledger (check 1)
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          python3 verify/validator/readme_ledger.py --ref HEAD --out "$RUNNER_TEMP/validator" --red-on FAIL \
+            | tee -a "$GITHUB_STEP_SUMMARY"
+
+  # check 3: does the change's own hidden-code config hide findings? The
+  # self-test runs on every trigger; base vs head runs on pull requests
+  # and the merge queue only.
+  config_tamper:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Self-test (rebuilds the RCO #3 hole)
+        run: python3 verify/validator/config_tamper.py --selftest
+      - name: Base vs head
+        if: github.event_name != 'push'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          MQ_BASE: ${{ github.event.merge_group.base_sha }}
+          MQ_HEAD: ${{ github.event.merge_group.head_sha }}
+          HEAD_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          base=""
+          head="$HEAD_SHA"
+          case "$EVENT_NAME" in
+            pull_request)
+              head="$PR_HEAD"
+              base=$(git merge-base "$PR_BASE" "$PR_HEAD" 2>/dev/null || echo "$PR_BASE")
+              ;;
+            merge_group)
+              base="$MQ_BASE"
+              head="$MQ_HEAD"
+              ;;
+          esac
+          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
+            base=$(git rev-parse --verify --quiet "$head^1" || true)
+            echo "no usable base for this event; comparing the last commit with its first parent."
+          fi
+          if [ -z "$base" ]; then
+            echo "root commit, nothing to compare."
+            exit 0
+          fi
+          python3 verify/validator/config_tamper.py --base "$base" --head "$head"

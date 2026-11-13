@@ -1,0 +1,46 @@
+# README promises, one per entry. quote must appear verbatim in README.md; line is where it was
+# when written (the ledger re-finds it and reports drift). probe: null => UNTESTABLE (red unless --red-on leaves it out).
+# kind: now = says something true today; rule = design rule checked by a model; planned = needs rco code;
+#       done-when = a slice exit criterion.
+- {id: R01, kind: now, quote: "Nothing is implemented yet.", probe: no_rco_code}
+- {id: R02, kind: now, quote: "Nothing below is implemented yet. Defaults match the", probe: no_rco_code}
+- {id: R03, kind: now, quote: "These defaults match the [Planned commands](#planned-commands) section.", probe: defaults_consistent}
+- {id: R04, kind: now, quote: "8000 estimated tokens is the design default", probe: defaults_consistent}
+- {id: R05, kind: now, quote: "This sample is about 120 estimated tokens", probe: sample_pack_tokens}
+- {id: R06, kind: now, quote: "It was unclaimed on PyPI on 2026-11-09", probe: pypi_unclaimed}
+- {id: R07, kind: now, quote: "Status: modelled in `verify/spin/rco_update.pml`", probe: spin_model_present}
+- {id: R08, kind: rule, quote: "The design as first written failed all seven properties; with the four rules above it passes all seven.", probe: spin_gate}
+- {id: R09, kind: rule, quote: "The pointer write is one atomic compare-and-swap:", probe: spin_gate}
+- {id: R10, kind: rule, quote: "Publish only a complete SHA:", probe: spin_gate}
+- {id: R11, kind: rule, quote: "Staleness is computed, not stored:", probe: spin_gate}
+- {id: R12, kind: rule, quote: "Queue the prose rewrite after the pointer write,", probe: spin_gate}
+- {id: R13, kind: rule, quote: "running the same update twice equals running it once", probe: spin_gate}
+- {id: R14, kind: now, quote: "Rebased history and a lossy store are not modelled yet.", probe: spin_limits_match}
+- {id: R15, kind: now, quote: "A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push.", probe: hidden_code_every_event}
+- {id: R16, kind: now, quote: "It exits 0 on findings; a crash fails the job.", probe: hidden_code_exit}
+- {id: R17, kind: now, quote: "The recipe for pointing the same process at a user repository is in", probe: setup_doc_present}
+- {id: R18, kind: now, quote: "MIT. See [LICENSE](LICENSE).", probe: license_mit}
+- {id: R19, kind: now, quote: "Generated summaries are not committed to the default branch.", probe: no_generated_committed}
+- {id: R20, kind: done-when, quote: "CI is green on `main` and selects jobs from [`ci/test-select.toml`]", probe: ci_green_and_selects}
+- {id: R21, kind: done-when, quote: "the hygiene check fails a planted personal name in a test PR", probe: hygiene_check_present}
+- {id: R22, kind: done-when, quote: "the role-trailer check fails a commit with no known role", probe: role_trailer_present}
+- {id: R23, kind: done-when, quote: "a desk can take a card from worktree to PR", probe: null}
+- {id: R24, kind: planned, quote: "Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required.", probe: null}
+- {id: R25, kind: planned, quote: "which rco adds to `.git/info/exclude`, never to `.gitignore`", probe: null}
+- {id: R26, kind: planned, quote: "An unknown language falls back to a file outline instead of an error.", probe: null}
+- {id: R27, kind: planned, quote: "No LLM, keys, or network are required.", probe: null}
+- {id: R28, kind: planned, quote: "If a configured backend fails to load, rco falls back to SQLite and prints the exact command to fix it.", probe: null}
+- {id: R29, kind: planned, quote: "| Repo with submodules | Submodules are skipped, with a note in the output. |", probe: null}
+- {id: R30, kind: planned, quote: "| LFS repo | LFS pointer files are treated as opaque", probe: null}
+- {id: R31, kind: planned, quote: "| Empty repo | Empty pack, exit 0. |", probe: null}
+- {id: R32, kind: planned, quote: "identical input always yields byte-identical output", probe: null}
+- {id: R33, kind: planned, quote: "The commit SHA is not part of this key:", probe: null}
+- {id: R34, kind: planned, quote: "anything beyond that is trimmed to its name and one line", probe: null}
+- {id: R35, kind: planned, quote: "When `--budget` trims a pack, the pack names what it trimmed.", probe: null}
+- {id: R36, kind: planned, quote: "Triage never rebases, merges, or pushes anyone's branch.", probe: null}
+- {id: R37, kind: planned, quote: "| 2 | Usage error. |", probe: null}
+- {id: R38, kind: planned, quote: "Redacted values are replaced with a placeholder and are never written through.", probe: null}
+- {id: R39, kind: planned, quote: "It calls only existing mill commands; it adds no new mill verbs.", probe: null}
+- {id: R40, kind: planned, quote: "A conformance test suite is the check that an adapter is honest.", probe: null}
+- {id: R41, kind: planned, quote: "Modules detected from the package layout; Trees extracted;", probe: null}
+- {id: R42, kind: planned, quote: "`rco update` re-extracts only modules whose tree ids changed", probe: null}
