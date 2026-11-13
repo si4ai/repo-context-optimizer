@@ -44,6 +44,8 @@ def tree_names(tree: Tree) -> frozenset[str]:
             out.update(".".join(parts[: i + 1]) for i in range(len(parts)))
         if n.kind is Kind.FLAG:
             out.add(n.name.lstrip("-"))
+        if n.kind is Kind.ROUTE:  # path parameters like <int:user_id> are part of the route
+            out.update(re.findall(r"[A-Za-z_]\w*", n.name))
     out.add(tree.module)
     return frozenset(x for x in out if x)
 

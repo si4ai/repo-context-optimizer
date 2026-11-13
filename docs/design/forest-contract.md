@@ -52,7 +52,7 @@ One entry per module of the Map at the same SHA:
 | `entry_points` | sorted names | `[project.scripts]` names, `__main__` when the module has `__main__.py`, top-level COMMAND names |
 | `owns.commands` / `owns.tables` / `owns.routes` | sorted names | COMMAND qualnames, TABLE and VIEW names, ROUTE names from the module's Tree |
 | `tree_hash` | str | the module's TreeHash (tree-contract section 3) |
-| `prose` | optional | `{text, source: mined or llm, tree_hash, prompt_version, model_id}` |
+| `prose` | optional | `{text, source: mined, derived or llm, tree_hash, prompt_version, model_id}` |
 
 Entries sort by `id`; `notes` (cycles, unresolved relative imports) sort as
 strings. No line numbers and no stored stale flag anywhere. Canonical JSON is
@@ -69,7 +69,7 @@ ForestHash = sha256 of canonical
    "prompt_version", "model_id"}
 ```
 
-Mined prose uses `prompt_version = "mined/1"` and `model_id = ""`. A prompt or
+Mined prose uses `prompt_version = "mined/1"` and `model_id = ""`. Derived prose (`rco/prose/derive.py`, used when nothing can be mined) uses `prompt_version = "derived/1"` and `model_id = ""`. A prompt or
 model change moves ForestHash and so invalidates only the prose (README
 Fingerprints).
 
