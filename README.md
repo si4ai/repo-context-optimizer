@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.0 is the first installable release (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, no triage, and no A/B claim. The phase 3 cold-agent A/B harness is `tools/phase3_ab.py`; the A/B that counts waits until this install is the one under test. Later phases remain design.
+**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is still rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -20,7 +20,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.0:
+The default in 0.1.1:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command
