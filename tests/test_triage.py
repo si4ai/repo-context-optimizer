@@ -132,3 +132,30 @@ def test_triage_and_notice_see_callers_in_every_bundled_language(tmp_path):
                    "svc/main.go": ("Get",), "web/page.ts": ("fetchUser",)}
     note = triage.notice(repo, base, "main", ["users"])
     assert dict(note.branches[0].impacted) == got and note.exit_code() is Exit.OK
+
+def test_notice_no_branch_names_notice_not_triage(tmp_path, capsys):
+    repo, _ = _setup(tmp_path)
+    assert cli.main(["notice", "--repo", str(repo)]) == 2
+    err = capsys.readouterr().err
+    assert "notice needs at least one BRANCH" in err or "the following arguments are required" in err
+    assert "triage needs" not in err
+
+
+def test_notice_lists_changes_once_with_neutral_wording(tmp_path):
+    repo, base = _setup(tmp_path)
+    rep = triage.notice(repo, base, "main", ["clean", "uses", "same"])
+    md = rep.to_markdown()
+    assert md.startswith("# rco notice")
+    assert md.count("## Contract changes in this PR") == 1
+    assert "STRUCTURAL UPDATE REQUIRED" not in md
+    assert "contract changes (upstream)" not in md
+    assert "impacted files in your branch" not in md
+    assert "task: update the impacted files" not in md
+    obj = rep.to_obj()
+    assert obj["schema"] == "rco.notice/1" and obj["changes"]
+    assert "changes" not in obj["branches"][0]
+    assert rep.exit_code() is Exit.OK
+    # triage still uses the structural brief
+    tri = triage.triage(repo, ["uses"], onto="main")
+    assert "STRUCTURAL UPDATE REQUIRED" in tri.to_markdown()
+
