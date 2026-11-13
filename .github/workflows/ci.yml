@@ -293,3 +293,75 @@ jobs:
                exit 0 ;;
             *) exit "$code" ;;
           esac
+
+  # cross-PR contract notice (README roadmap, Phase 5): lists other
+  # open PR heads and reports which of them use a contract this head
+  # changes. a visible hint, never a block: rco notice always exits 0.
+  # a usage error or crash (2/3) fails the job. skipped in the merge
+  # queue. kept out of ci/test-select.toml so it runs on every PR and push.
+  notice_report:
+    if: github.event_name != 'merge_group'
+    permissions:
+      contents: read
+      pull-requests: read
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: List other open PR heads and write the notice
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+          PUSH_BEFORE: ${{ github.event.before }}
+          PUSH_SHA: ${{ github.sha }}
+        run: |
+          set -uo pipefail
+          zeros=0000000000000000000000000000000000000000
+          if [ "$EVENT_NAME" = "pull_request" ]; then
+            base="$PR_BASE"
+            head="$PR_HEAD"
+            exclude_args=(--exclude "$PR_NUMBER")
+          else
+            base="$PUSH_BEFORE"
+            head="$PUSH_SHA"
+            exclude_args=()
+          fi
+          if [ -z "$base" ] || [ "$base" = "$zeros" ]; then
+            echo "no usable base for this event: no cross-PR contract notice."
+            echo "no usable base for this event: no cross-PR contract notice." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          gh api --paginate "repos/${GITHUB_REPOSITORY}/pulls?state=open&per_page=100" > pulls_raw.json
+          python3 ci/notice_heads.py pulls_raw.json "${exclude_args[@]}" > others.txt
+          if [ ! -s others.txt ]; then
+            echo "no other open PRs: no cross-PR contract notice."
+            echo "no other open PRs: no cross-PR contract notice." >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          while read -r label sha; do
+            git fetch --no-tags origin "pull/${label#pr-}/head:refs/heads/${label}"
+            got=$(git rev-parse --verify "${label}^{commit}")
+            if [ "$got" != "$sha" ]; then
+              echo "fetched $label is $got, expected $sha" >&2
+              exit 3
+            fi
+          done < others.txt
+          # notice names the local refs pr-N, never a login or a desk
+          mapfile -t labels < <(awk '{print $1}' others.txt)
+          PYTHONPATH=src python -m rco notice --base "$base" --head "$head" "${labels[@]}" > notice.md
+          code=$?
+          cat notice.md
+          cat notice.md >> "$GITHUB_STEP_SUMMARY"
+          case "$code" in
+            0) exit 0 ;;
+            *) exit "$code" ;;
+          esac
