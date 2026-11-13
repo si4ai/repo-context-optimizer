@@ -110,3 +110,35 @@ def test_plan_ignores_added_only_contracts_and_lists_unseen_files(tmp_path):
     assert grow.modules == ("core",) and grow.breaking == () and grow.unseen == ("core/schema.json",)
     assert _pair(p, "grow", "dep").clean and _pair(p, "grow", "uses").clean
     assert "`core/schema.json`" in p.to_markdown()
+
+def test_plan_added_only_symbol_is_not_a_use(tmp_path):
+    """A symbol A only added is not a use, even if B also adds and calls it (M11)."""
+    repo, base = _setup(tmp_path)
+    fixture.git(repo, "switch", "-q", "-c", "grow", base)
+    fixture.commit(repo, {
+        "core/io.py": BASE["core/io.py"].replace(
+            "path: str", "path: str, mode: str = 'r'"
+        ) + "\n\ndef save(path: str) -> None:\n    pass\n",
+    })
+    fixture.git(repo, "switch", "-q", "-c", "also", base)
+    fixture.commit(repo, {
+        "core/io.py": BASE["core/io.py"] + "\n\ndef save(path: str) -> None:\n    pass\n",
+        "app/main.py": BASE["app/main.py"] + "\n\nfrom core.io import save\n\n\ndef persist() -> None:\n    save('a')\n",
+    })
+    p = plan.plan(repo, ["grow", "also"])
+    pair = _pair(p, "grow", "also")
+    assert pair.overlap == ("core/io.py",)
+    assert {q for q, _ in pair.uses} == {"load"}
+    assert not any(q == "save" for q, _ in pair.uses)
+
+
+def test_plan_stacked_branch_orders_after_its_base(tmp_path):
+    """A branch that has all of another's commits is stacked and merges after it (M12)."""
+    repo, _ = _setup(tmp_path)
+    fixture.git(repo, "switch", "-q", "-c", "stacked", "lone")
+    fixture.commit(repo, {"tools/fmt.py": BASE["tools/fmt.py"] + "\n\nEXTRA = 1\n"})
+    p = plan.plan(repo, ["lone", "stacked"])
+    pair = _pair(p, "lone", "stacked")
+    assert pair.contains and pair.depends
+    assert not _pair(p, "stacked", "lone").contains
+    assert p.order == (("lone",), ("stacked",))
