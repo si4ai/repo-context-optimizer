@@ -220,3 +220,9 @@ step-0 follow-up PR, sent to every open step first.
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the
   SHA they work on.
+- Applied: the store comes from `rco.toml` (`backend`, `[store]`), read
+  from the working tree (`rco/config.py`): `sqlite` at `[store] path`
+  (default `.rco/rco.db`) or an `rco.backends` entry point
+  `factory(repo, options) -> Store`. `mill` and `mcp` are usage errors
+  until they ship. The conformance suite moved to `rco.store.conformance`
+  so an installed adapter can run it.

@@ -36,6 +36,7 @@ august
 auth
 automagic
 aws
+barrier
 base
 before
 below
@@ -60,6 +61,7 @@ by
 bytes
 cache
 call
+callable
 called
 calls
 cancel
@@ -91,6 +93,7 @@ commit
 commits
 compare
 compresses
+config
 conflict
 conflicts
 connect
@@ -286,6 +289,7 @@ merge
 message
 messages
 meta
+metadata
 methods
 minimal
 miss
