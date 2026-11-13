@@ -65,7 +65,6 @@ list is part of it. A store from 0.1.x re-extracts once on the first
 - the `notice_report` CI job diffs from the merge-base of the PR base
   tip and head, not the base tip, and compares only open PRs into the
   same base branch (#39).
-
 - `rco pack` and `rco check` now find the store from a subdirectory of
   the working tree (#44).
 - the CI drift report job no longer fails on drift; drift is a
