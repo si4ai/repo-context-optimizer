@@ -109,3 +109,34 @@ def test_diff_callers_are_deterministic(tmp_path):
     b = fixture.commit(repo, {"pkg/report.py": NOISY_BASE["pkg/report.py"] + "\nX = 1\n"})
     one = diff.diff(repo, a, b).to_obj()
     assert one == diff.diff(repo, a, b).to_obj()
+
+def test_union_none_annotation_resolves_the_class(tmp_path):
+    """A parameter typed `Cls | None` still types that name as Cls (M9)."""
+    files = {
+        "pkg/__init__.py": "",
+        "pkg/box.py": "class Box:\n    size: int\n",
+        "pkg/use.py": (
+            "from pkg.box import Box\n\n\n"
+            "def via_union(v: Box | None):\n"
+            "    return v.size\n"
+        ),
+    }
+    by = _diff(tmp_path, files, {"pkg/box.py": "class Box:\n    size: float\n"})
+    assert "pkg/use.py:5" in by["field:pkg/box.py:Box.size"]
+
+
+def test_constructor_assignment_types_the_variable(tmp_path):
+    """`x = Cls(...)` types x as Cls, so `x.attr` is a caller (M10)."""
+    files = {
+        "pkg/__init__.py": "",
+        "pkg/box.py": "class Box:\n    size: int\n",
+        "pkg/use.py": (
+            "from pkg.box import Box\n\n\n"
+            "def via_ctor():\n"
+            "    x = Box()\n"
+            "    return x.size\n"
+        ),
+    }
+    by = _diff(tmp_path, files, {"pkg/box.py": "class Box:\n    size: float\n"})
+    assert "pkg/use.py:6" in by["field:pkg/box.py:Box.size"]
+
