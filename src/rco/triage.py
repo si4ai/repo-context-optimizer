@@ -32,7 +32,7 @@ from rco import build, diff, gitread, refs
 from rco.output import Exit, UsageError
 
 SCHEMA_TRIAGE = "rco.triage/1"
-SCHEMA_NOTICE = "rco.notice/1"
+SCHEMA_NOTICE = "rco.notice/2"
 CLEAN = "clean: no changed file, no changed contract used"
 
 

@@ -17,7 +17,7 @@ from rco.output import Exit, UsageError, emit, note
 
 class _Parser(argparse.ArgumentParser):
     def error(self, message: str):  # argparse would exit 2 itself; keep it one path
-        raise UsageError(message)
+        raise UsageError(f"{self.prog}: {message}")
 
 
 def _common(p: argparse.ArgumentParser) -> None:
@@ -286,7 +286,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         args = make_parser().parse_args(argv)
         return int(run(args))
     except UsageError as e:
-        print(f"rco: {e}", file=sys.stderr)
+        text = str(e)
+        if not text.startswith("rco"):
+            text = f"rco: {text}"
+        print(text, file=sys.stderr)
         return int(Exit.USAGE)
     except SystemExit as e:  # --help / --version
         return int(e.code or 0)

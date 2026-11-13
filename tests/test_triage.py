@@ -68,7 +68,7 @@ def test_notice_names_other_prs_using_a_changed_contract(tmp_path):
     by = {b.branch: b for b in rep.branches}
     assert not by["uses"].clean and by["clean"].clean
     obj = rep.to_obj()
-    assert obj["schema"] == "rco.notice/1"
+    assert obj["schema"] == "rco.notice/2"
     assert rep.exit_code() is Exit.OK  # a notice is a hint, never a failing check
     assert "uses" in rep.to_markdown()
 
@@ -137,7 +137,8 @@ def test_notice_no_branch_names_notice_not_triage(tmp_path, capsys):
     repo, _ = _setup(tmp_path)
     assert cli.main(["notice", "--repo", str(repo)]) == 2
     err = capsys.readouterr().err
-    assert "notice needs at least one BRANCH" in err or "the following arguments are required" in err
+    assert "rco notice:" in err
+    assert "the following arguments are required" in err
     assert "triage needs" not in err
 
 
@@ -152,7 +153,7 @@ def test_notice_lists_changes_once_with_neutral_wording(tmp_path):
     assert "impacted files in your branch" not in md
     assert "task: update the impacted files" not in md
     obj = rep.to_obj()
-    assert obj["schema"] == "rco.notice/1" and obj["changes"]
+    assert obj["schema"] == "rco.notice/2" and obj["changes"]
     assert "changes" not in obj["branches"][0]
     assert rep.exit_code() is Exit.OK
     # triage still uses the structural brief

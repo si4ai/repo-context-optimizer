@@ -66,3 +66,13 @@ def test_plan_triage_notice_progress_uses_the_command_name(tmp_path, capsys):
     err = capsys.readouterr().err
     assert "rco notice:" in err
     assert "rco diff:" not in err
+
+
+def test_missing_branches_name_the_command(capsys):
+    # argparse required-arg errors should name the subcommand.
+    for cmd in ("triage", "notice", "plan"):
+        assert cli.main([cmd]) == Exit.USAGE
+        err = capsys.readouterr().err
+        assert err.startswith(f"rco {cmd}:"), err
+        assert "the following arguments are required: BRANCH" in err
+

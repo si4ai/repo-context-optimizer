@@ -9,7 +9,7 @@ No per-desk mapping (identity constraint): the notice addresses PRs (`pr-N`), no
 | Command | Report | Exit 1 when |
 |---|---|---|
 | `rco triage BRANCH... [--onto TARGET]` | `rco.triage/1` | any branch gets a structural brief |
-| `rco notice OTHER... [--base BASE] [--head HEAD]` | `rco.notice/1` | never (always exit 0) |
+| `rco notice OTHER... [--base BASE] [--head HEAD]` | `rco.notice/2` | never (always exit 0) |
 | `rco plan BRANCH BRANCH... [--base BASE]` | `rco.plan/1` | any pair of branches has a finding |
 
 `TARGET` defaults to the default branch. A branch is clean when it changed no file the upstream side also changed, and none of its changed code files references a symbol the upstream contract diff changed. References are resolved by `rco.refs` to the changed symbol's file and qualname, never by bare name, in Python, JS/TS, Go, Rust, shell and PowerShell. Otherwise it gets a structural brief. CLI, SQL and route changes show up as files changed on both sides.

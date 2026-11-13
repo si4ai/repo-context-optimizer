@@ -19,6 +19,9 @@ commit gives the same output.
   unless `--base` is given (#56)
 - `rco notice` lists this PR's contract changes once, then per-branch
   overlap and impacted files, in neutral wording (#57)
+- `rco notice --format json` is now `rco.notice/2`: top-level `head` and
+  `base` replace `target`, and the contract change list sits at the top
+  level, not on each branch (#62)
 - `rco pack` puts hop lines back when later cuts leave room for them,
   and lists test modules after non-test modules (#54)
 - a repository with no commits yields an empty pack, tree, and forest
@@ -30,6 +33,8 @@ commit gives the same output.
 
 - `rco notice` with no branch no longer says triage needs a BRANCH
   (#57, #58)
+- a missing BRANCH on triage, notice, or plan names that command in the
+  usage error (#62)
 - progress from triage, notice, and plan is labelled with that command,
   not `rco diff` (#55, #56, #57)
 - singular forms for one changed file and one change (#55)
