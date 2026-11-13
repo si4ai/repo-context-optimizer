@@ -245,6 +245,16 @@ Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default br
 
 An unchanged contract can still hide a behavior change, so tests still run (`rco affected` picks which). The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
 
+### `rco live [SHA] [--schema FILE] [--openapi FILE] [--help-text CMD=FILE]...`
+
+Checks the map against real outputs that you captured. rco never runs repo code, so you capture what the running system says and pass in the files:
+
+- `--schema` takes a SQL schema dump (`pg_dump --schema-only`, `sqlite3 db .schema`). Tables, views, and column names are compared; column types are not, because dumps spell them differently.
+- `--openapi` takes an OpenAPI or Swagger JSON document, compared against the routes. Path parameters match in any spelling (`{id}`, `<int:id>`, `:id`), and an `ANY` route matches every method.
+- `--help-text "tool run=run-help.txt"` takes a captured `tool run --help`, compared against that command's long flags.
+
+`missing` means the live output has something the map lacks. `extra` means the map claims something the live output lacks. Exit 1 on any finding.
+
 ### `rco update`
 
 The incremental post-merge updater described above.

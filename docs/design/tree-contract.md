@@ -526,3 +526,13 @@ Applied in 0.1.2 (staged and working-tree input, test selection):
   wrote, kept, removed or absent, `detail`) and always exits 0. It never
   overwrites a file; `--remove-hooks` deletes only a hook carrying rco's
   marker line.
+
+Applied in 0.1.2 (check against real outputs):
+
+- Applied: `rco live [SHA] [--schema FILE] [--openapi FILE] [--help-text
+  CMD=FILE]` reports `rco.live/1` (`sha`, `sources`, `findings` with
+  status `missing` or `extra`), exit 1 on any finding. It compares
+  captured outputs and never runs repo code: a schema dump parsed by the
+  SQL extractor (tables, views, column names), OpenAPI or Swagger JSON
+  paths and methods (path parameters normalized), and a `--help` text's
+  long flags for one COMMAND node.
