@@ -169,7 +169,7 @@ Properties, checked by the SPIN model in `verify/spin/` (see [Verification](#ver
 - Idempotent and content-addressed: running the same update twice equals running it once. There is no hold: mill holds do not auto-expire, so a lock taken for regeneration could be left stuck.
 - The new SHA's pointer moves as soon as its Trees are complete. Forest prose catches up asynchronously. A stale Forest is shown as stale, not as if it were current.
 
-Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a merge webhook.
+Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a merge webhook. `rco init --hooks` installs the hook, and `rco init` writes the CI job. A webhook needs a server, which rco does not ship: point one at the same `rco update --name BRANCH` call.
 
 ## Planned commands
 
@@ -248,6 +248,14 @@ An unchanged contract can still hide a behavior change, so tests still run (`rco
 ### `rco update`
 
 The incremental post-merge updater described above.
+
+### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci]`
+
+One-step setup. It writes only files that don't exist yet, never overwrites one, and reports each file as wrote or kept:
+
+- `rco.toml` with every setting commented out, so nothing changes until you edit it.
+- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, and (when `pins/` exists) `rco drift` into the job summary. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3.
+- With `--hooks`, a `post-merge` hook in git's hooks directory (`core.hooksPath` is honored). After a pull or merge it runs `rco update --name <branch>` in the background, and it always exits 0, even without `rco` on `PATH`. If another post-merge hook is already there, it is kept, and you add the line by hand. `--remove-hooks` deletes the hook only if rco wrote it.
 
 ### Structural brief (example)
 

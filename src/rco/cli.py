@@ -70,6 +70,13 @@ def make_parser() -> argparse.ArgumentParser:
                    help="print only test paths, one per line (every test when run_all)")
     _common(a)
 
+    i = sub.add_parser("init", help="set up rco.toml, a CI report job and (with --hooks) a hook")
+    i.add_argument("--hooks", action="store_true", help="also install a post-merge hook")
+    i.add_argument("--remove-hooks", action="store_true", help="remove rco's post-merge hook")
+    i.add_argument("--no-config", dest="config", action="store_false", help="skip rco.toml")
+    i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
+    _common(i)
+
     u = sub.add_parser("update", help="publish a commit to the store (rco.toml backend; default .rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
     u.add_argument("--name", default="main", help="pointer name (default: main)")
@@ -168,6 +175,12 @@ def run(args: argparse.Namespace) -> Exit:
         ignore = (*config.load(repo).affected_ignore, *args.ignore)
         res = affected.affected(repo, args.base, args.head, args.snapshot, ignore)
         return emit(affected.AffectedReport(res, args.as_list), args.format, args.out)
+    if args.cmd == "init":
+        from rco import init
+        if args.hooks and args.remove_hooks:
+            raise UsageError("init takes --hooks or --remove-hooks, not both")
+        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks)
+        return emit(rep, args.format, args.out)
     if args.cmd == "update":
         from rco import update
         from rco.prose import drain_queue
