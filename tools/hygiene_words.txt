@@ -615,8 +615,6 @@ forest
 frozen
 iterator
 kind
-literal
-map
 module
 neither
 otherwise
