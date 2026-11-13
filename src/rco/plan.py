@@ -1,8 +1,10 @@
 """Simple merge planning (`rco plan BRANCH BRANCH...`, code MP).
 
 Deterministic, read-only, no LLM: nothing is merged, rebased or pushed.
-All branches are compared against one BASE, their common merge-base
-(or `--base`). Per branch the plan reads, from git:
+Each pair is compared against that pair's own merge-base, unless `--base`
+overrides every pair. Per branch the overview is still read against the
+common merge-base of all the branches (or `--base`). Per branch the plan
+reads, from git:
 
 - the changed files (BASE -> branch);
 - the contract changes (rco diff BASE branch: signatures, fields, flags,
@@ -41,7 +43,7 @@ from typing import Mapping, Sequence
 
 from rco import affected, build, canon, diff, gitread, imports, refs
 from rco.forest import compute_forest, layers, map_modules
-from rco.output import Exit, UsageError
+from rco.output import Exit, UsageError, counted
 
 SCHEMA_PLAN = "rco.plan/1"
 LIMITS = (
@@ -71,6 +73,7 @@ class Side:
 class Pair:
     first: str    # A: the branch whose changes are used
     then: str     # B: the branch that uses them
+    base: str     # merge-base of this pair, or --base when given
     overlap: tuple[str, ...]
     uses: tuple[tuple[str, str], ...]          # (qualname changed by A, "file:line" in B)
     module_deps: tuple[tuple[str, str], ...]   # (B module, A module it depends on)
@@ -103,7 +106,8 @@ class Plan:
                           "changes": [{"op": c.op, "key": c.key, "kind": c.kind, "path": c.path,
                                        "before": c.before, "after": c.after} for c in s.changes]}
                          for s in self.sides],
-            "pairs": [{"first": p.first, "then": p.then, "clean": p.clean, "contains": p.contains,
+            "pairs": [{"first": p.first, "then": p.then, "base": p.base,
+                       "clean": p.clean, "contains": p.contains,
                        "overlap": list(p.overlap),
                        "uses": [{"symbol": q, "at": at} for q, at in p.uses],
                        "module_deps": [{"module": b, "depends_on": a} for b, a in p.module_deps],
@@ -120,7 +124,8 @@ class Plan:
         out += [f"- {n}" for n in self.notes]
         for s in self.sides:
             out += ["", f"## {s.branch} ({s.sha[:12]})",
-                    f"{len(s.changed)} changed files, {len(s.changes)} contract changes, "
+                    f"{counted(len(s.changed), 'changed file')}, "
+                    f"{counted(len(s.changes), 'contract change')}, "
                     f"Tree changed in: {', '.join(f'`{m}`' for m in s.modules) or 'none'}"]
             if s.unseen:
                 out += ["", "not code, so who reads them is unknown (run all tests on a merge "
@@ -130,7 +135,9 @@ class Plan:
             two = frozenset((p.first, p.then))
             if p.clean and (not p.tests or two in shown):
                 continue
-            out += ["", f"## `{p.then}` against `{p.first}`" + (" (clean)" if p.clean else "")]
+            out += ["", f"## `{p.then}` against `{p.first}`"
+                    + (" (clean)" if p.clean else "")
+                    + f"  (base={p.base[:12]})"]
             if p.contains:
                 out += ["", f"`{p.then}` is stacked on `{p.first}` (has all its commits)."]
             if p.overlap:
@@ -175,7 +182,8 @@ def _side(repo: Path, branch: str, base: str, base_entries) -> _Head:
     sha = gitread.resolve(repo, branch)
     entries = gitread.ls_tree(repo, sha)
     changed = tuple(diff.changed_paths(base_entries, entries))
-    changes = tuple(c for c in diff.diff(repo, base, sha).changes if c.op != "doc")
+    changes = tuple(c for c in diff.diff(repo, base, sha, progress="rco plan").changes
+                    if c.op != "doc")
     bmap = build.build_map(repo, base, list(changed)) if changed else None
     before = _hashes(bmap) if bmap else {}
     full = build.build_map(repo, sha)
@@ -198,7 +206,7 @@ def _side(repo: Path, branch: str, base: str, base_entries) -> _Head:
     return _Head(side, entries, sources, owner, deps, _graph(repo, entries))
 
 
-def _pair(repo: Path, a: _Head, b: _Head, base_graph, head_paths_ab) -> Pair:
+def _pair(repo: Path, a: _Head, b: _Head, base_graph, head_paths_ab, base: str) -> Pair:
     A, B = a.side, b.side
     overlap = tuple(sorted(set(A.changed) & set(B.changed)))
     # a symbol A only added cannot break a use in B: B can name it only by
@@ -219,8 +227,8 @@ def _pair(repo: Path, a: _Head, b: _Head, base_graph, head_paths_ab) -> Pair:
     _, tb, _, _ = affected.select(list(B.changed), head_paths_ab, graphs)
     tests = tuple(sorted(set(ta) & set(tb)))
     contains = A.sha != B.sha and gitread.merge_base(repo, A.sha, B.sha) == A.sha
-    return Pair(A.branch, B.branch, overlap, tuple(sorted(uses, key=_loc_key)), module_deps,
-                tests, contains)
+    return Pair(A.branch, B.branch, base, overlap, tuple(sorted(uses, key=_loc_key)),
+                module_deps, tests, contains)
 
 
 def _loc_key(u: tuple[str, str]) -> tuple[str, str, int]:
@@ -240,18 +248,42 @@ def plan(repo: Path, branches: Sequence[str], base: str | None = None) -> Plan:
         common = shas[0]
         for s in shas[1:]:
             common = gitread.merge_base(repo, common, s)
+        forced = None
     else:
         common = gitread.resolve(repo, base)
-    base_entries = gitread.ls_tree(repo, common)
-    heads = [_side(repo, b, common, base_entries) for b in branches]
-    base_graph = _graph(repo, base_entries)
+        forced = common
+    # overview sides stay against the common base (or --base)
+    cache: dict[tuple[str, str], _Head] = {}
+    trees: dict[str, tuple[gitread.Entry, ...]] = {}
+    graphs: dict[str, Mapping[str, tuple[str, ...]]] = {}
+
+    def entries_at(sha: str) -> tuple[gitread.Entry, ...]:
+        if sha not in trees:
+            trees[sha] = gitread.ls_tree(repo, sha)
+        return trees[sha]
+
+    def graph_at(sha: str, ents: tuple[gitread.Entry, ...]):
+        if sha not in graphs:
+            graphs[sha] = _graph(repo, ents)
+        return graphs[sha]
+
+    def head(branch: str, base_sha: str) -> _Head:
+        key = (branch, base_sha)
+        if key not in cache:
+            cache[key] = _side(repo, branch, base_sha, entries_at(base_sha))
+        return cache[key]
+
+    heads = [head(b, common) for b in branches]
+    base_graph = graph_at(common, entries_at(common))
     pairs = []
-    for a in heads:
-        for b in heads:
-            if a is b:
+    for i, a in enumerate(heads):
+        for j, b in enumerate(heads):
+            if i == j:
                 continue
-            paths = sorted({e.path for e in a.entries} | {e.path for e in b.entries})
-            pairs.append(_pair(repo, a, b, base_graph, paths))
+            pb = forced if forced is not None else gitread.merge_base(repo, shas[i], shas[j])
+            aa, bb = head(a.side.branch, pb), head(b.side.branch, pb)
+            paths = sorted({e.path for e in aa.entries} | {e.path for e in bb.entries})
+            pairs.append(_pair(repo, aa, bb, graph_at(pb, entries_at(pb)), paths, pb))
     names = [h.side.branch for h in heads]
     edges = {n: tuple(sorted({p.first for p in pairs if p.then == n and p.depends})) for n in names}
     layer, cycles = layers(names, edges)

@@ -142,3 +142,28 @@ def test_plan_stacked_branch_orders_after_its_base(tmp_path):
     assert pair.contains and pair.depends
     assert not _pair(p, "stacked", "lone").contains
     assert p.order == (("lone",), ("stacked",))
+
+def test_plan_compares_each_pair_against_its_own_merge_base(tmp_path):
+    """An older branch must not inflate overlap between two recent ones."""
+    repo, old = fixture.make_repo(tmp_path / "r", {
+        "shared.py": "X = 1\n",
+        "a.py": "A = 1\n",
+        "b.py": "B = 1\n",
+    })
+    # main moves on; many files change after `old`
+    fixture.commit(repo, {"shared.py": "X = 2\n", "extra.py": "E = 1\n", "more.py": "M = 1\n"})
+    main = fixture.git(repo, "rev-parse", "HEAD")
+    fixture.git(repo, "switch", "-q", "-c", "ancient", old)
+    fixture.commit(repo, {"a.py": "A = 9\n"})
+    fixture.git(repo, "switch", "-q", "-c", "left", main)
+    fixture.commit(repo, {"shared.py": "X = 3\n", "left.py": "L = 1\n"})
+    fixture.git(repo, "switch", "-q", "-c", "right", main)
+    fixture.commit(repo, {"shared.py": "X = 4\n", "right.py": "R = 1\n"})
+    p = plan.plan(repo, ["ancient", "left", "right"])
+    pair = _pair(p, "left", "right")
+    assert pair.overlap == ("shared.py",)
+    assert pair.base == main
+    # the common base of all three is `old`; that must not be this pair's base
+    assert pair.base != p.base
+    assert p.base == old
+
