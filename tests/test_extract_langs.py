@@ -168,3 +168,13 @@ def test_secrets_in_other_languages_are_redacted(tmp_path):
     })
     out = canon.canonical_json(canon.map_to_obj(build.build_map(repo, sha)))
     assert token.encode() not in out
+
+
+def test_js_nested_template_literals_keep_later_functions():
+    src = ("function first(rows) {\n"
+           "  return `<tr>${rows.map(r => `<td>${r}</td>`).join(\"\")}</tr>`;\n"
+           "}\n"
+           "function second() { return `a ${ {x: 1}.x } b`; }\n"
+           "function third() {}\n")
+    flat = _flat(_nodes(JsExtractor(), "a.js", src))
+    assert {"first", "second", "third"} <= set(flat)

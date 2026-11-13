@@ -142,6 +142,12 @@ def scan(text: str, lang: str) -> Scan:
                     i = j + 1
                     last = "/"
                     continue
+        if q == "`" and lang == "js":
+            end = _skip_template(text, i)
+            _blank(code, i + 1, end)
+            i = end + 1
+            last = q
+            continue
         if q:
             j = i + 1
             raw = (lang == "go" and q == "`") or (lang == "sh" and q == "'")
@@ -173,6 +179,73 @@ def scan(text: str, lang: str) -> Scan:
         elif ch == "}":
             d = max(0, d - 1)
     return Scan(text, "".join(nc), "".join(code), tuple(comments), tuple(depth))
+
+
+def _skip_string(text: str, i: int) -> int:
+    """Index of the closing quote of the JS string at i (or of the newline that ends it)."""
+    q, j, n = text[i], i + 1, len(text)
+    while j < n:
+        ch = text[j]
+        if ch == "\\":
+            j += 2
+            continue
+        if ch == q or ch == "\n":
+            return j
+        j += 1
+    return n
+
+
+def _skip_template(text: str, i: int) -> int:
+    """Index of the backtick that closes the JS template literal at i.
+
+    ${ ... } expressions are followed with their own strings, comments and
+    nested templates, so a backtick inside an expression does not end it.
+    Iterative, so deep nesting cannot overflow the stack.
+    """
+    n = len(text)
+    stack = ["t"]  # "t" = in template text; an int = brace depth in an expression
+    j = i + 1
+    while j < n:
+        ch = text[j]
+        top = stack[-1]
+        if top == "t":
+            if ch == "\\":
+                j += 2
+                continue
+            if ch == "`":
+                stack.pop()
+                if not stack:
+                    return j
+                j += 1
+                continue
+            if ch == "$" and j + 1 < n and text[j + 1] == "{":
+                stack.append(0)
+                j += 2
+                continue
+            j += 1
+            continue
+        if ch in "\"'":
+            j = _skip_string(text, j) + 1
+            continue
+        if ch == "/" and j + 1 < n and text[j + 1] == "/":
+            k = text.find("\n", j)
+            j = n if k < 0 else k
+            continue
+        if ch == "/" and j + 1 < n and text[j + 1] == "*":
+            k = text.find("*/", j + 2)
+            j = n if k < 0 else k + 2
+            continue
+        if ch == "`":
+            stack.append("t")
+        elif ch == "{":
+            stack[-1] = top + 1
+        elif ch == "}":
+            if top == 0:
+                stack.pop()
+            else:
+                stack[-1] = top - 1
+        j += 1
+    return n
 
 
 def match_brace(code: str, i: int) -> int:
