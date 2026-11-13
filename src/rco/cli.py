@@ -15,9 +15,13 @@ from rco.model import Map
 from rco.output import Exit, UsageError, emit, note
 
 
+class _ParserError(UsageError):
+    """An argparse usage error; its text already starts with the parser's prog."""
+
+
 class _Parser(argparse.ArgumentParser):
     def error(self, message: str):  # argparse would exit 2 itself; keep it one path
-        raise UsageError(f"{self.prog}: {message}")
+        raise _ParserError(f"{self.prog}: {message}")
 
 
 def _common(p: argparse.ArgumentParser) -> None:
@@ -286,9 +290,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         args = make_parser().parse_args(argv)
         return int(run(args))
     except UsageError as e:
-        text = str(e)
-        if not text.startswith("rco"):
-            text = f"rco: {text}"
+        text = str(e) if isinstance(e, _ParserError) else f"rco: {e}"
         print(text, file=sys.stderr)
         return int(Exit.USAGE)
     except SystemExit as e:  # --help / --version
