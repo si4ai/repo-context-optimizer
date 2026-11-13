@@ -28,7 +28,7 @@ from typing import Iterable, Mapping, Sequence
 from rco import gitread, imports
 from rco.extract.langs import lang_of
 from rco.modules import dir_of, glob_regex
-from rco.output import Exit
+from rco.output import Exit, counted
 
 SCHEMA_AFFECTED = "rco.affected/1"
 _TEST_DIRS = {"tests", "test"}
@@ -126,7 +126,8 @@ def affected(repo: Path, base: str | None, head: str | None, snapshot: str | Non
     head_paths = [e.path for e in he]
     files, tests, run_all, reasons = select(changed, head_paths, graphs, ignore)
     all_tests = tuple(sorted(p for p in head_paths if is_test(p)))
-    print(f"rco affected: {len(changed)} changed files, {len(tests)} tests"
+    print(f"rco affected: {counted(len(changed), 'changed file')}, "
+          f"{counted(len(tests), 'test')}"
           f"{' (run all)' if run_all else ''} in {time.perf_counter() - t0:.3f}s", file=sys.stderr)
     return Affected(base_sha, head_sha, tuple(changed), files, tests, run_all, reasons, all_tests)
 

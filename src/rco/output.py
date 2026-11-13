@@ -36,6 +36,11 @@ class UsageError(Exception):
     """Bad arguments, a bad rev, an unreadable map or an unwritable --out: exit 2."""
 
 
+def counted(n: int, word: str) -> str:
+    """English count: '1 file', '0 files', '2 files'."""
+    return f"{n} {word}" if n == 1 else f"{n} {word}s"
+
+
 class Report(Protocol):
     def to_obj(self) -> dict: ...
 
