@@ -30,12 +30,12 @@ def test_cli_usage_exit_2(capsys):
     assert cli.main(["check"]) == Exit.USAGE
 
 def test_readme_names_landed_diff_and_output_contract():
-    """D3: Planned commands must not call rco diff or the output contract unimplemented."""
+    """The commands section must not call rco diff or the output contract unimplemented."""
     text = (Path(__file__).resolve().parents[1] / "README.md").read_text(encoding="utf-8")
     assert "Nothing below is implemented yet" not in text
-    planned = text.split("## Planned commands", 1)[1].split("\n## ", 1)[0]
-    assert "rco diff" in planned and "have landed" in planned
-    assert "output contract" in planned.lower()
-    assert "rco pack" in planned and "rco update" in planned and "have landed" in planned
-    assert "rco triage" in planned and "rco notice" in planned and "have landed" in planned
-    assert "not implemented yet" not in planned
+    shipped = text.split("## Commands", 1)[1].split("\n## ", 1)[0]
+    assert "rco diff" in shipped and "have landed" in shipped
+    assert "output contract" in shipped.lower()
+    assert "rco pack" in shipped and "rco update" in shipped and "have landed" in shipped
+    assert "rco triage" in shipped and "rco notice" in shipped and "have landed" in shipped
+    assert "not implemented yet" not in shipped
