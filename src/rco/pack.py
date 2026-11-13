@@ -6,9 +6,11 @@ fetched on demand. The budget is estimated tokens (characters / 4) of the
 rendered markdown, footer included. Over budget, cuts go in this order:
 hop lines from the end, then empty Forest lines (layer 0, no edges, nothing
 owned, no prose) from the deepest level up, then top-level Tree nodes from
-the end of each full Tree, then the remaining Forest entries. A parent
-Forest line is kept until all of its children are cut. Every cut is named
-in `trimmed`.
+the end of each full Tree, then the remaining Forest entries. After the pack
+fits, hop lines that now fit are put back, last cut first, so leftover
+budget still shows a One hop section. Hop lists put test modules after
+non-test modules. A parent Forest line is kept until all of its children
+are cut. Every cut is named in `trimmed`.
 """
 from __future__ import annotations
 
@@ -58,6 +60,17 @@ def _parent_id(mid: str, ids: set[str]) -> str | None:
 
 def _forest_depth(mid: str) -> int:
     return 0 if mid == "." else mid.count("/") + 1
+
+
+def _is_test_module(mid: str) -> bool:
+    """A module whose id has a `test` or `tests` path component."""
+    return any(part in {"test", "tests"} for part in mid.split("/"))
+
+
+def _hop_key(mid: str) -> tuple[bool, str]:
+    """Non-test modules first, then by id, so the list is deterministic."""
+    return (_is_test_module(mid), mid)
+
 
 
 def _next_forest_cut(entries: list[ForestEntry], all_ids: set[str],
@@ -242,7 +255,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         if not owners:
             notes.append("no module owns the --for paths")
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
-                     - set(owners))
+                     - set(owners), key=_hop_key)
     trees = [trees_by[o] for o in owners]
     if trees:
         idx = call_index(m.trees, _code_sources(repo, sha), focus=trees)
@@ -284,10 +297,33 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
             trimmed.append(f"forest:{entries.pop(idx).id}")
             continue
         raise UsageError(f"--budget {budget} is too small for this pack's header and footer")
+    # leftover budget: put hop lines back, last cut first, while they still fit
+    hop_cuts = [t for t in trimmed if t.startswith("hop:")]
+    other_cuts = [t for t in trimmed if not t.startswith("hop:")]
+    kept_cuts: list[str] = []
+    trimmed = other_cuts[:]  # trial measure must not still list the hop as trimmed
+    for item in reversed(hop_cuts):
+        mid = item[4:]
+        hop.append(HopLine(mid, _one_line(by_id[mid])))
+        if _measure(current(), label) <= budget:
+            continue
+        hop.pop()
+        kept_cuts.append(item)
+    kept_cuts.reverse()  # original cut order
+    trimmed = kept_cuts + other_cuts
+    hop.sort(key=lambda h: _hop_key(h.id))
     p = current()
     shown = {e.id for e in p.forest}
     p = replace(p, stale=tuple(s for s in stale if s in shown))
     return replace(p, used=_measure(p, label))
+
+
+def empty_pack(budget: int = DEFAULT_BUDGET) -> Pack:
+    """A pack for a git repo that has no commits yet (empty Forest, exit 0)."""
+    if budget < MIN_BUDGET:
+        raise UsageError(f"--budget must be at least {MIN_BUDGET}")
+    p = Pack("HEAD", budget, 0, (), (), (), (), (), ())
+    return replace(p, used=_measure(p, ""))
 
 
 @dataclass(frozen=True)
