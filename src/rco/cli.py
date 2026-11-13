@@ -107,6 +107,11 @@ def make_parser() -> argparse.ArgumentParser:
     n.add_argument("--head", default=None, help="this PR's head (default: HEAD)")
     _common(n)
 
+    pl = sub.add_parser("plan", help="merge plan: what each branch changes that another uses")
+    pl.add_argument("branches", nargs="*", metavar="BRANCH")
+    pl.add_argument("--base", default=None, help="common base (default: merge-base of all BRANCHes)")
+    _common(pl)
+
     f = sub.add_parser("forest", help="print the computed Forest of a commit")
     f.add_argument("sha", nargs="?", default="HEAD")
     _common(f)
@@ -205,6 +210,9 @@ def run(args: argparse.Namespace) -> Exit:
     if args.cmd == "triage":
         from rco import triage
         return emit(triage.triage(repo, args.branches, args.onto), args.format, args.out)
+    if args.cmd == "plan":
+        from rco import plan
+        return emit(plan.plan(repo, args.branches, args.base), args.format, args.out)
     if args.cmd == "notice":
         from rco import triage
         return emit(triage.notice(repo, args.base, args.head, args.others), args.format, args.out)

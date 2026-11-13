@@ -66,6 +66,7 @@ callable
 called
 calls
 cancel
+cannot
 capability
 card
 cards
@@ -352,6 +353,7 @@ owns
 pack
 package
 page
+pair
 pane
 panel
 paragraph
@@ -473,7 +475,9 @@ shell
 ship
 shipper
 show
+side
 signature
+simple
 since
 skip
 slack
