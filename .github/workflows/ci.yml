@@ -283,8 +283,10 @@ jobs:
             echo "no pins/ directory: no drift report."
             exit 0
           fi
-          PYTHONPATH=src python -m rco drift pins > drift.md
-          code=$?
+          # the step shell is bash -e: catch the exit code, or a drift (1)
+          # would end the step before it can become a warning.
+          code=0
+          PYTHONPATH=src python -m rco drift pins > drift.md || code=$?
           cat drift.md
           cat drift.md >> "$GITHUB_STEP_SUMMARY"
           case "$code" in

@@ -166,6 +166,6 @@ def drift(repo: Path, pins: Sequence[Path], sha: str) -> DriftReport:
         p = read_pin(f)
         now = _pinned_nodes(repo, sha, p.paths)
         rep = diff.diff_maps(_as_map(p.sha, p.nodes), _as_map(sha, now),
-                             diff._python_files(repo, he))
+                             diff.code_sources(repo, he))
         out.append(PinDrift(str(f), p.sha, p.paths, rep.changes))
     return DriftReport(sha=sha, pins=tuple(out))

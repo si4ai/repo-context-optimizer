@@ -11,7 +11,7 @@ import pytest
 from rco import build, canon, fixture
 
 HERE = Path(__file__).parent
-CASES = ["py_basic"]
+CASES = ["py_basic", "polyglot_basic"]
 
 
 def _files(root: Path) -> dict[str, bytes]:

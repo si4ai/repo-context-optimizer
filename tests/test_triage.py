@@ -88,3 +88,47 @@ def test_cli_triage_json_deterministic(tmp_path, capsysbinary):
 def test_cli_triage_needs_a_branch(tmp_path):
     repo, _ = _setup(tmp_path)
     assert cli.main(["triage", "--repo", str(repo)]) == 2
+
+
+POLY = {
+    "web/package.json": '{"name": "web"}',
+    "web/api.ts": "export function fetchUser(id: string) { return id; }\n",
+    "web/page.ts": 'import { fetchUser } from "./api";\nexport function page() { return fetchUser("a"); }\n',
+    "web/noise.ts": "export function fetchUser() { return 1; }\n",
+    "go.mod": "module example.com/x\n",
+    "store/s.go": "package store\n\nfunc Get() int { return 1 }\n",
+    "svc/main.go": 'package main\n\nimport "example.com/x/store"\n\nfunc main() { store.Get() }\n',
+    "ops/lib.sh": "deploy_app() {\n  echo hi\n}\n",
+    "ops/run.sh": '. "$(dirname "$0")/lib.sh"\ndeploy_app\n',
+    "ops/tools.ps1": "function Invoke-Deploy {\n  param($Name)\n}\n",
+    "ops/setup.ps1": ". $PSScriptRoot/tools.ps1\ninvoke-deploy -Name x\n",
+    "pkg/__init__.py": "",
+    "pkg/m.py": "class Box:\n    size: int\n",
+    "pkg/u.py": "from pkg.m import Box\n\n\ndef f(b: Box, cfg):\n    return b.size + cfg.size\n",
+}
+
+
+def test_triage_and_notice_see_callers_in_every_bundled_language(tmp_path):
+    repo, base = fixture.make_repo(tmp_path / "p", POLY)
+    fixture.git(repo, "switch", "-q", "-c", "users")
+    fixture.commit(repo, {
+        "web/page.ts": POLY["web/page.ts"] + "// touched\n",
+        "web/noise.ts": POLY["web/noise.ts"] + "// touched, but defines its own fetchUser\n",
+        "svc/main.go": POLY["svc/main.go"] + "// touched\n",
+        "ops/run.sh": POLY["ops/run.sh"] + "# touched\n",
+        "ops/setup.ps1": POLY["ops/setup.ps1"] + "# touched\n",
+        "pkg/u.py": POLY["pkg/u.py"] + "# touched\n"})
+    fixture.git(repo, "switch", "-q", "main")
+    fixture.commit(repo, {
+        "web/api.ts": "export function fetchUser(id: number) { return id; }\n",
+        "store/s.go": "package store\n\nfunc Get(x int) int { return x }\n",
+        "ops/lib.sh": "deploy_v2() {\n  echo hi\n}\n",  # deploy_app removed
+        "ops/tools.ps1": "function Invoke-Deploy {\n  param($Name, $Force)\n}\n",
+        "pkg/m.py": "class Box:\n    size: float\n"})
+    rep = triage.triage(repo, ["users"], onto="main")
+    got = dict(rep.branches[0].impacted)
+    assert got == {"ops/run.sh": ("deploy_app",), "ops/setup.ps1": ("Invoke-Deploy",),
+                   "pkg/u.py": ("size",),
+                   "svc/main.go": ("Get",), "web/page.ts": ("fetchUser",)}
+    note = triage.notice(repo, base, "main", ["users"])
+    assert dict(note.branches[0].impacted) == got and note.exit_code() is Exit.OK

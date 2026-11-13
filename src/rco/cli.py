@@ -48,9 +48,44 @@ def make_parser() -> argparse.ArgumentParser:
     d = sub.add_parser("diff", help="contract changes between two commits")
     d.add_argument("base", nargs="?", default=None)
     d.add_argument("head", nargs="?", default=None)
+    snap = d.add_mutually_exclusive_group()
+    snap.add_argument("--staged", dest="snapshot", action="store_const", const="staged",
+                      help="HEAD is the index; BASE defaults to HEAD")
+    snap.add_argument("--worktree", dest="snapshot", action="store_const", const="worktree",
+                      help="HEAD is the working tree (tracked and untracked, not ignored); "
+                           "BASE defaults to HEAD")
     _common(d)
 
-    u = sub.add_parser("update", help="publish a commit to the store (.rco/rco.db)")
+    a = sub.add_parser("affected", help="tests that can see the changes between two commits")
+    a.add_argument("base", nargs="?", default=None)
+    a.add_argument("head", nargs="?", default=None)
+    snap = a.add_mutually_exclusive_group()
+    snap.add_argument("--staged", dest="snapshot", action="store_const", const="staged",
+                      help="HEAD is the index; BASE defaults to HEAD")
+    snap.add_argument("--worktree", dest="snapshot", action="store_const", const="worktree",
+                      help="HEAD is the working tree; BASE defaults to HEAD")
+    a.add_argument("--ignore", action="append", default=[], metavar="GLOB",
+                   help="changed paths no test reads (repeatable)")
+    a.add_argument("--list", dest="as_list", action="store_true",
+                   help="print only test paths, one per line (every test when run_all)")
+    _common(a)
+
+    i = sub.add_parser("init", help="set up rco.toml, a CI report job and (with --hooks) a hook")
+    i.add_argument("--hooks", action="store_true", help="also install a post-merge hook")
+    i.add_argument("--remove-hooks", action="store_true", help="remove rco's post-merge hook")
+    i.add_argument("--no-config", dest="config", action="store_false", help="skip rco.toml")
+    i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
+    _common(i)
+
+    lv = sub.add_parser("live", help="check the map against captured real outputs")
+    lv.add_argument("sha", nargs="?", default="HEAD")
+    lv.add_argument("--schema", metavar="FILE", help="a SQL schema dump")
+    lv.add_argument("--openapi", metavar="FILE", help="an OpenAPI or Swagger JSON document")
+    lv.add_argument("--help-text", dest="help_texts", action="append", default=[],
+                    metavar="CMD=FILE", help="a captured `CMD --help` (repeatable)")
+    _common(lv)
+
+    u = sub.add_parser("update", help="publish a commit to the store (rco.toml backend; default .rco/rco.db)")
     u.add_argument("new", nargs="?", default="HEAD")
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
@@ -138,19 +173,32 @@ def run(args: argparse.Namespace) -> Exit:
             return emit(check.check(repo, sha, claimed_forest=claim), args.format, args.out)
         m = claim
         sha = gitread.resolve(repo, args.sha or m.sha)
-        store = None
-        db = repo / ".rco" / "rco.db"
-        if db.exists():  # read only: check never creates a store
-            from rco.store.sqlite import SqliteStore
-            store = SqliteStore(db)
+        from rco.config import open_store
+        store = open_store(repo, create=False)  # read only: check never creates a store
         return emit(check.check(repo, sha, m, store), args.format, args.out)
     if args.cmd == "diff":
-        return emit(diff.diff(repo, args.base, args.head), args.format, args.out)
+        return emit(diff.diff(repo, args.base, args.head, args.snapshot), args.format, args.out)
+    if args.cmd == "affected":
+        from rco import affected, config
+        ignore = (*config.load(repo).affected_ignore, *args.ignore)
+        res = affected.affected(repo, args.base, args.head, args.snapshot, ignore)
+        return emit(affected.AffectedReport(res, args.as_list), args.format, args.out)
+    if args.cmd == "init":
+        from rco import init
+        if args.hooks and args.remove_hooks:
+            raise UsageError("init takes --hooks or --remove-hooks, not both")
+        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks)
+        return emit(rep, args.format, args.out)
+    if args.cmd == "live":
+        from rco import live
+        sha = gitread.resolve(repo, args.sha)
+        rep = live.live(build.build_map(repo, sha), args.schema, args.openapi, args.help_texts)
+        return emit(rep, args.format, args.out)
     if args.cmd == "update":
         from rco import update
         from rco.prose import drain_queue
-        from rco.store.sqlite import open_repo_store
-        store = open_repo_store(repo)
+        from rco.config import open_store
+        store = open_store(repo, create=True)
         res = update.update(repo, store, args.new, args.name)
         drain_queue(repo, store, args.name)  # mined prose: queue is not a separate CLI step
         return emit(update.UpdateReport(res), args.format, args.out)
@@ -167,11 +215,8 @@ def run(args: argparse.Namespace) -> Exit:
     if args.cmd == "pack":
         from rco import pack
         sha = gitread.resolve(repo, args.sha)
-        store = None
-        db = repo / ".rco" / "rco.db"
-        if db.exists():  # read only: pack never creates a store
-            from rco.store.sqlite import SqliteStore
-            store = SqliteStore(db)
+        from rco.config import open_store
+        store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd == "pin":

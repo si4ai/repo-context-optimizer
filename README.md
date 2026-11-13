@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.1 is the current installable release. It adds the phase 3 cold-agent A/B harness (`tools/phase3_ab.py`) and phase 5 notice CI on top of the first 0.1.0 install (phase 2). `pip install repo-context-optimizer` installs the `rco` command. Trees, the map checker, `rco diff`, `rco update`, `rco pack`, and `rco forest` work. Mined prose is on; the LLM path is off. The release is still rough on purpose: Python import edges only, package-grain modules, no override file, no mill backend, and no A/B claim. `rco triage` and `rco notice` are hints only (they never rebase, push, or block). The A/B that counts waits until this install is the one under test. Later phases remain design.
+**Status:** 0.1.2 is the current release. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 is the first install after 0.1.0 and carries both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -12,6 +12,28 @@ Run `rco pack --for <files you will touch>`.
 Read the pack.
 Open raw files only on demand.
 
+## What ships
+
+| Code | Capability | 0.1.2 |
+|---|---|---|
+| TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
+| PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
+| LG | bundled parsers for JavaScript/TypeScript, Go, Rust, shell, and PowerShell | shipped |
+| MO | modules from `rco.toml`, then `package.json` / `Cargo.toml`, then directories | shipped |
+| CF | `rco.toml` settings and backend choice (`sqlite` or an entry point adapter) | shipped |
+| SS | a store cached across CI runs | shipped |
+| SG | `rco diff --staged` / `--worktree` | shipped |
+| TS | `rco affected`: test selection from a diff | shipped |
+| IN | `rco init`: config, CI workflow, and hook setup | shipped |
+| HK | post-merge hook trigger for `rco update` | shipped (a merge webhook needs your own server) |
+| RO | `rco live`: check against a schema dump, OpenAPI, or `--help` | shipped |
+| LP | LLM prose | not shipped; off by design |
+| MB | mill backend extra | not shipped |
+| NM | notices sent by mail through a backend | not shipped |
+| TW | `tw rco update` recorded runs | not shipped |
+| MC | MCP backend | not shipped |
+| MP | merge planning | not shipped; [proposed](#proposed-merge-planning-mill-tool-scope-tbd) |
+
 ## Why
 
 Cold-start agents waste tokens rediscovering a repository: they read too many files, guess at module boundaries, and re-learn contracts that code already knows. Parallel agents on a busy repo pay again in rebase churn, often rereading full diffs when only a contract changed, or waking an agent when no contract they use has moved.
@@ -20,7 +42,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.1:
+The default in 0.1.2:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command
@@ -32,9 +54,9 @@ rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 
 `--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 8000. `--for` is optional. These defaults match the [Planned commands](#planned-commands) section.
 
-Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for common languages come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
+Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
 
-`rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend fails to load, rco falls back to SQLite and prints the exact command to fix it.
+`rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend is not installed, rco exits 2 and names it; it never silently switches to another store.
 
 ### Acceptance tests (zero-config goal)
 
@@ -70,13 +92,25 @@ Detection order:
 2. Import-graph clustering (for example Louvain community detection) when packages are not already explicit.
 3. Directory fallback for whatever remains, with size caps (for example a maximum file count or line count per module) so summaries stay small enough to be useful.
 
-A checked-in override file can pin boundaries; the detector only falls back to heuristics where that file is silent. A check reports any file that belongs to no module. The override file format is still an open question.
+A checked-in override file can pin boundaries; the detector only falls back to heuristics where that file is silent. A check reports any file that belongs to no module.
+
+Shipped today: the override file, then manifests, then the directory fallback. Clustering is not built yet. Python files keep the directory grain (one module per package directory). A `package.json` owns the JS/TS files under it, and a `Cargo.toml` with a `[package]` table owns the Rust files under it. Each manifest stops at the next nested one, and files in other languages there stay at the directory grain. Go packages are already directories. Every file maps to exactly one module, so the "file in no module" check passes by construction.
+
+The override file is `rco.toml` at the repo root, read at the same commit as the code:
+
+```toml
+[[module]]
+id = "frontend"
+paths = ["web/**", "shared/**/*.ts"]
+```
+
+The first rule whose glob matches a path owns it. `*` and `?` stay inside one path segment, and `**` spans segments. A bad entry (no `id`, no `paths`, invalid TOML) becomes a note in the output, never an error.
 
 ### Tree (micro-contracts)
 
 A Tree is a deterministic contract extracted from a module. It is never written by an LLM.
 
-- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and tree-sitter for other languages. Public classes and functions, signatures, type hints, the first docstring line, constants, and `__all__` (or the language's equivalent).
+- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`).
 - **Non-code contracts,** which often matter more across a repo than signatures alone: CLI commands and flags, SQL schema tables and columns, HTTP routes, and message or event shapes.
 
 Output is canonical (sorted JSON, no line numbers), so identical input always yields byte-identical output. The Tree hash is the sha256 of that JSON.
@@ -85,7 +119,7 @@ Output is canonical (sorted JSON, no line numbers), so identical input always yi
 
 A Forest describes how modules fit together. Most of it is computed, not generated: layer; depends-on and used-by, from the import graph; entry points; and the commands, tables, and routes a module owns.
 
-A small, optional LLM prose part may add purpose, invariants, and gotchas. rco works with the prose turned off; generation rules live under [Phase 2](#roadmap). A repo-level Forest can render the module graph (for example as a mermaid diagram) plus a short paragraph per layer.
+Prose is deterministic by default. It is mined first (docstrings, module headers, READMEs). Where nothing can be mined, it is derived from extracted facts: a module line from the names its Tree defines and owns, and, in a pack, a line per class or function with no docstring from its name, signature, the in-repo symbols it calls, and its in-repo callers (resolved through imports, never guessed from a bare method name). Derived lines are marked `derived` and cite only names in the Tree, so the name-in-Tree check holds. A small, optional LLM prose part may add purpose, invariants, and gotchas; it is off, and rco works without it. Generation rules live under [Phase 2](#roadmap). A repo-level Forest can render the module graph (for example as a mermaid diagram) plus a short paragraph per layer.
 
 ## Fingerprints
 
@@ -157,7 +191,7 @@ Properties, checked by the SPIN model in `verify/spin/` (see [Verification](#ver
 - Idempotent and content-addressed: running the same update twice equals running it once. There is no hold: mill holds do not auto-expire, so a lock taken for regeneration could be left stuck.
 - The new SHA's pointer moves as soon as its Trees are complete. Forest prose catches up asynchronously. A stale Forest is shown as stale, not as if it were current.
 
-Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a merge webhook.
+Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a merge webhook. `rco init --hooks` installs the hook, and `rco init` writes the CI job. A webhook needs a server, which rco does not ship: point one at the same `rco update --name BRANCH` call.
 
 ## Planned commands
 
@@ -188,7 +222,7 @@ flowchart LR
 
 #### Pack output (example)
 
-This sample is about 120 estimated tokens (characters / 4; the estimator is approximate).
+This sample is about 150 estimated tokens (characters / 4; the estimator is approximate).
 
 ```markdown
 # rco pack  (SHA=abc1234, budget=8000 estimated tokens)
@@ -200,34 +234,60 @@ This sample is about 120 estimated tokens (characters / 4; the estimator is appr
 
 ## Trees (full, for --for tw/cli.py)
 ### tw
-def run(argv: list[str]) -> int
-def stop_run(run_id: str) -> None
+def run(argv: list[str]) -> int  # Run one tw command and return its exit code.
+def stop_run(run_id: str) -> None  # Stop run. Takes run_id. Calls kill. Called by cli.py:main.
 CLI: tw run, tw stop
 
 ## One hop (name and one line)
 - proc: process supervision for tw runs
 - client: shared client library
 
-# budget used: ~120 / 8000 estimated tokens
+# budget used: ~150 / 8000 estimated tokens
 ```
 
 ### `rco diff [BASE] [HEAD]`
 
 `BASE` defaults to the merge-base of the repository's default branch and `HEAD`. `HEAD` defaults to `HEAD`.
 
-Lists added, removed, and changed signatures, flags, columns, and routes. For each change it lists callers as `file:line` from a reverse index.
+Lists added, removed, and changed signatures, flags, columns, and routes. For each changed class, function, method, field, or constant, it lists callers as `file:line`. A caller counts only when it resolves to that symbol. In Python, that means through imports, `self`, an annotation, an assignment from a constructor or from a function whose declared return type is the class, or a constructor keyword. In JS/TS, Go, Rust, shell, and PowerShell, it means a use in the defining file or in a file that imports it (for Go, also the same package). A field named `base` never picks up every other `.base` in the repo. An attribute on a receiver rco cannot resolve is not counted, so rco can miss a caller but never invents one.
+
+`rco diff --staged [BASE]` diffs the index and `rco diff --worktree [BASE]` diffs the working tree (tracked changes plus untracked files that are not ignored). With either flag, `BASE` defaults to `HEAD`. rco still reads only git objects. It first writes the index or working tree as a commit object with fixed author, committer, and dates, so the same content always gives the same SHA. Only loose objects are written: no ref moves, and the real index is never touched.
+
+### `rco affected [BASE] [HEAD]`
+
+Selects tests from a diff. A test is picked when it changed itself or reaches a changed file through in-repo imports in any supported language. Imports are read at both `BASE` and `HEAD`, so a test that imported a deleted file is still picked. Python imports also resolve from the importing file's own directory, as pytest sees them. A changed `conftest.py` picks every test under its directory.
+
+A changed file that is not code (data, config, fixtures, docs a test reads) sets `run_all`, and the reason is listed. `--ignore GLOB` drops paths that you know no test reads. `--staged` and `--worktree` work as in `rco diff`. `--list` prints only the test paths, one per line, and every test when `run_all` is set. That makes `pytest $(rco affected --list)` safe: with an empty list, pytest runs everything. Imports computed at run time are not seen. Test files are `test_*.py`, `*_test.py`, `*_test.go`, `*.test.*`, `*.spec.*`, anything under `__tests__/`, and `.rs` files directly in a `tests/` directory. Always exits 0.
 
 ### `rco triage`
 
 Triage never rebases, merges, or pushes anyone's branch. For each open branch it reports either `clean: no changed file, no changed contract used` or a structural brief, as a hint. The branch owner or a merge-main step acts on that hint.
 
-Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. In CI (`ci/notice_report.sh`), BASE is the merge-base of the PR base tip and head, and only open PRs into the same base branch are compared. Both see Python callers only; CLI, SQL, and route changes show up as files changed on both sides.
+Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. In CI (`ci/notice_report.sh`), BASE is the merge-base of the PR base tip and head, and only open PRs into the same base branch are compared. Both find callers with the same qualified index as `rco diff`, in Python, JS/TS, Go, Rust, shell, and PowerShell. CLI, SQL, and route changes show up as files changed on both sides.
 
-An unchanged contract can still hide a behavior change, so tests still run. The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
+An unchanged contract can still hide a behavior change, so tests still run (`rco affected` picks which). The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
+
+### `rco live [SHA] [--schema FILE] [--openapi FILE] [--help-text CMD=FILE]...`
+
+Checks the map against real outputs that you captured. rco never runs repo code, so you capture what the running system says and pass in the files:
+
+- `--schema` takes a SQL schema dump (`pg_dump --schema-only`, `sqlite3 db .schema`). Tables, views, and column names are compared; column types are not, because dumps spell them differently.
+- `--openapi` takes an OpenAPI or Swagger JSON document, compared against the routes. Path parameters match in any spelling (`{id}`, `<int:id>`, `:id`), and an `ANY` route matches every method.
+- `--help-text "tool run=run-help.txt"` takes a captured `tool run --help`, compared against that command's long flags.
+
+`missing` means the live output has something the map lacks. `extra` means the map claims something the live output lacks. Exit 1 on any finding.
 
 ### `rco update`
 
 The incremental post-merge updater described above.
+
+### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci]`
+
+One-step setup. It writes only files that don't exist yet, never overwrites one, and reports each file as wrote or kept:
+
+- `rco.toml` with every setting commented out, so nothing changes until you edit it.
+- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, and (when `pins/` exists) `rco drift` into the job summary. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3.
+- With `--hooks`, a `post-merge` hook in git's hooks directory (`core.hooksPath` is honored). After a pull or merge it runs `rco update --name <branch>` in the background, and it always exits 0, even without `rco` on `PATH`. If another post-merge hook is already there, it is kept, and you add the line by hand. `--remove-hooks` deletes the hook only if rco wrote it.
 
 ### Structural brief (example)
 
@@ -300,12 +360,43 @@ The SQLite backend (`sqlite`) is the default: one database under `.rco/`. Tree a
 
 The mill backend is an optional extra (`pip install repo-context-optimizer[mill]`) that talks to the mill (si4ai/the-mill). It calls only existing mill commands; it adds no new mill verbs.
 
+The mill and MCP backends are design only and not shipped. The mill design:
+
 - **Content:** Tree and Forest JSON stay in the SQLite content store. The mill holds only hashes and pointers. There is no mill tree node per module per SHA. Mill trees outline mail and todo. Card text has a 4096-character budget.
 - **label** holds pointers such as `rco/main` or `rco/0.8.11`. A new label needs `mill create label` (Admin) on limited trust.
 - **Staleness** is a score, `stale Forests outstanding`, and optionally one rollup card per repo. Not a card per module. Cards start only when a human asks.
 - **mail** may carry a contract-diff notice. Mapping a PR to a desk requires a per-desk GitHub identity, which is not available while desks share one account. Letters are batched, one per affected PR, and addressed; every wake costs tokens.
 - **tw** is the mill's recorded command runner. From a desk's sitting `mill connect DESK`, `tw rco update` records the run: start, finished, and failed.
 - **score** also tracks LLM tokens rco itself spends (when prose is on) and stale Forests outstanding. Tokens and reads before the first useful action are not produced by rco; see Metrics.
+
+Shipped today: `sqlite`, plus adapters. `mill` and `mcp` are not built yet; naming either one is a usage error (exit 2) that says so. The settings come from `rco.toml` at the top of the working tree, because they describe this checkout, not a commit. The `[[module]]` rules in the same file are read from git at each SHA, so a setting can never change a commit's Tree or Forest.
+
+```toml
+backend = "sqlite"          # or the name of an installed rco.backends entry point
+[store]
+path = ".rco/rco.db"        # sqlite: relative to the working tree top
+[affected]
+ignore = ["docs/**"]        # added to every rco affected --ignore
+```
+
+If the file is missing, the defaults apply. If it is not valid TOML, rco notes that on stderr and ignores it. A wrong type, or a backend that is not installed, is a usage error. An adapter registers a callable `factory(repo, options) -> Store` in the entry point group `rco.backends`; `options` is the `[store]` table. It checks itself with `rco.store.conformance.run_all`. `rco pack` and `rco check` only read a store and never create one.
+
+### A store cached across CI runs
+
+A CI job starts with an empty `.rco/`, so every `rco update` would extract every module. Cache the directory instead. Trees are keyed by ModuleHash, so a restored store only extracts the modules that changed, and a stale cache can only cost time, never correctness. Use one pointer per branch:
+
+```yaml
+- uses: actions/cache@v4   # pin to a full SHA
+  with:
+    path: .rco
+    key: rco-${{ github.ref_name }}-${{ github.sha }}
+    restore-keys: |
+      rco-${{ github.ref_name }}-
+      rco-${{ github.event.repository.default_branch }}-
+- run: rco update --name "${{ github.ref_name }}"
+```
+
+The database is a single file once `rco update` exits, because SQLite checkpoints its WAL on close.
 
 ## Metrics
 
@@ -392,7 +483,6 @@ When `--budget` trims a pack, the pack names what it trimmed.
 
 - **PyPI package name.** Publish as `repo-context-optimizer` (installs the `rco` command). It was unclaimed on PyPI on 2026-11-09; the first release claims it.
 - **Which prose pieces truly need an LLM.** Find out empirically: ship Phase 1 with no LLM, then see what cold agents still ask for or get wrong.
-- **Module override file format.**
 - **Default `--budget`.** 8000 estimated tokens is the design default; confirm against Phase 0 pack sizes.
 
 ## Proposed: merge planning (mill tool, scope TBD)
