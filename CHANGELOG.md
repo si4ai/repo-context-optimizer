@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.1.4 - 2026-11-13
+
+A fix from the 0.1.3 validator recheck. Trees, Forests, and packs stay
+deterministic: no LLM runs, and the same commit gives the same output.
+
+### fixed
+
+- usage errors that start with `rco.toml:` print with the `rco: ` prefix
+  again (`rco: rco.toml: ...`); only argparse errors, which already name
+  `rco` or `rco COMMAND`, skip it (#63)
+
 ## 0.1.3 - 2026-11-13
 
 Fixes from the 0.1.2 validator warnings and the post-ship cold test.

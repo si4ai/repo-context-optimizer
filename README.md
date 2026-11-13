@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** This is 0.1.3. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
+**Status:** This is 0.1.4. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
 
 Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR.
 
@@ -14,7 +14,7 @@ Open raw files only on demand.
 
 ## What ships
 
-| Code | Capability | 0.1.3 |
+| Code | Capability | 0.1.4 |
 |---|---|---|
 | TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
 | PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
@@ -42,7 +42,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.3:
+The default in 0.1.4:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command

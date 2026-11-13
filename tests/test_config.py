@@ -51,6 +51,13 @@ def test_unshipped_and_unknown_backends_are_usage_errors(tmp_path, capsys):
         assert msg in capsys.readouterr().err
 
 
+def test_rco_toml_usage_error_keeps_the_rco_prefix(tmp_path, capsys):
+    repo, sha = _repo(tmp_path)
+    (repo / "rco.toml").write_text('backend = "mill"\n')
+    assert cli.main(["update", "--repo", str(repo)]) == Exit.USAGE
+    assert capsys.readouterr().err.startswith("rco: rco.toml: backend 'mill' needs ")
+
+
 ADAPTER = '''
 from rco.store import MemoryStore
 CALLS = []
