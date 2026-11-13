@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** 0.1.2 is the current release. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 is the first install after 0.1.0 and carries both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
+**Status:** 0.1.2 is the current release. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 is the first install after 0.1.0 and carries both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
 
 **Team:** Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR. A docs desk joins once there is something to document.
 
@@ -32,7 +32,7 @@ Open raw files only on demand.
 | NM | notices sent by mail through a backend | not shipped |
 | TW | `tw rco update` recorded runs | not shipped |
 | MC | MCP backend | not shipped |
-| MP | merge planning | not shipped; [proposed](#proposed-merge-planning-mill-tool-scope-tbd) |
+| MP | `rco plan`: simple merge planning across branches | shipped (simple; a plan only, never merges; [the rest is a proposal](#merge-planning-beyond-rco-plan)) |
 
 ## Why
 
@@ -195,7 +195,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Planned commands
 
-`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed. Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see `docs/design/pin-contract.md`). Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed, and so has `rco plan` (simple merge planning, a plan only). Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see `docs/design/pin-contract.md`). Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
@@ -266,6 +266,18 @@ Triage never rebases, merges, or pushes anyone's branch. For each open branch it
 Usage: `rco triage BRANCH... [--onto TARGET]` (TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]`: it lists which other open branches change files that use a contract this PR changes. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. Both find callers with the same qualified index as `rco diff`, in Python, JS/TS, Go, Rust, shell, and PowerShell. CLI, SQL, and route changes show up as files changed on both sides.
 
 An unchanged contract can still hide a behavior change, so tests still run (`rco affected` picks which). The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
+
+### `rco plan BRANCH BRANCH... [--base BASE]`
+
+Simple merge planning, deterministic and read-only: it never merges, rebases, or pushes. All branches are compared against one BASE, their common merge-base unless `--base` is given. For each branch it reads the changed files, the contract changes (as `rco diff` reports them, without doc-only changes), the modules whose Tree changed, and the Forest of the branch head. Then, for each ordered pair (A, B), it reports what A changes that B uses:
+
+- **files changed on both:** where a textual merge can conflict.
+- **uses:** lines in B's changed files that reference a symbol whose contract A changed or removed, resolved by the same qualified index as `rco diff` (Python, JS/TS, Go, Rust, shell, PowerShell). A symbol A only added is not a use.
+- **module dependencies:** a module B changed that depends, in B's Forest, on a module where A changed or removed a contract, when no use above explains it.
+- **tests:** test files that reach both A's and B's changed files through in-repo imports (the `rco affected` graph at BASE, A, and B). Run them on the merged result.
+- **stacked:** B already has all of A's commits.
+
+The merge order puts B after A when B uses, depends on, or is stacked on A, layered like the Forest. A cycle is listed, and its branches share a layer. Changed files that are not code are listed per branch, because who reads them is unknown. Every report ends with what the plan cannot prove: a function body changed under an unchanged contract (only the shared tests see it), references the index does not resolve (calls across languages, dynamic dispatch, run-time imports, positional constructor arguments), and the fact that a clean pair is no proof the merged result works. Exit 1 when any pair has a finding. The JSON schema is `rco.plan/1`.
 
 ### `rco live [SHA] [--schema FILE] [--openapi FILE] [--help-text CMD=FILE]...`
 
@@ -485,9 +497,9 @@ When `--budget` trims a pack, the pack names what it trimmed.
 - **Which prose pieces truly need an LLM.** Find out empirically: ship Phase 1 with no LLM, then see what cold agents still ask for or get wrong.
 - **Default `--budget`.** 8000 estimated tokens is the design default; confirm against Phase 0 pack sizes.
 
-## Proposed: merge planning (mill tool, scope TBD)
+## Merge planning beyond `rco plan`
 
-**Status:** a proposal. The human and the desks will discuss scope before any work starts.
+**Status:** `rco plan` ships the simple, deterministic part: changed symbols, signatures, calls, module dependencies, shared tests, and a merge order for branches that already exist. Everything below is still a proposal, and its scope is still to be discussed.
 
 **Where it lives:** in the mill, as a host report plus a desk CLI command. The optimizer later feeds it a file- and function-level map in place of the plain diffs.
 
