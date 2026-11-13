@@ -2,6 +2,8 @@
 
 Names each PR as pr-N. Never uses a login or a desk. Reads the GitHub
 pulls JSON list (one array, or several arrays written back to back).
+With --base-ref, keeps only PRs whose base branch is that ref, so a PR
+into main is never compared with a PR into a release branch.
 """
 from __future__ import annotations
 
@@ -47,7 +49,13 @@ def load_pulls(text: str) -> list[dict[str, Any]]:
     return items
 
 
-def other_heads(prs: Sequence[dict[str, Any]], exclude: int | None = None) -> tuple[PrHead, ...]:
+def _base_ref(p: dict[str, Any]) -> str:
+    base = p.get("base") if isinstance(p.get("base"), dict) else {}
+    return str((base or {}).get("ref") or "")
+
+
+def other_heads(prs: Sequence[dict[str, Any]], exclude: int | None = None,
+                base_ref: str | None = None) -> tuple[PrHead, ...]:
     out: list[PrHead] = []
     seen: set[int] = set()
     for p in prs:
@@ -57,6 +65,8 @@ def other_heads(prs: Sequence[dict[str, Any]], exclude: int | None = None) -> tu
         if exclude is not None and number == exclude:
             continue
         if number in seen:
+            continue
+        if base_ref and _base_ref(p) != base_ref:
             continue
         seen.add(number)
         head = p.get("head") if isinstance(p.get("head"), dict) else {}
@@ -79,8 +89,11 @@ def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="list other open PR heads as pr-N SHA lines")
     ap.add_argument("pulls", type=Path, help="GitHub pulls JSON (array, or paged arrays)")
     ap.add_argument("--exclude", type=int, default=None, help="this PR's number, omitted on push")
+    ap.add_argument("--base-ref", default=None,
+                    help="keep only PRs into this base branch (this PR's base, or the pushed branch)")
     args = ap.parse_args(argv)
-    heads = other_heads(load_pulls(args.pulls.read_text(encoding="utf-8")), args.exclude)
+    heads = other_heads(load_pulls(args.pulls.read_text(encoding="utf-8")), args.exclude,
+                        args.base_ref)
     for h in heads:
         print(h.line())
     return 0

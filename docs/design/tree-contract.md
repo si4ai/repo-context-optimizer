@@ -69,6 +69,7 @@ class Kind(str, Enum):
     # order of declaration == sort order (KIND_ORDER)
     FILE = "file"            # outline fallback: unknown language, LFS pointer, parse error
     PYMODULE = "pymodule"    # one per .py file; children below
+    SRCMODULE = "srcmodule"  # one per JS/TS, Go, Rust, shell or PowerShell file
     CLASS = "class"
     FUNCTION = "function"
     METHOD = "method"
@@ -287,6 +288,7 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map
 | Kind | Owner | name | sig | attrs (shape) |
 |---|---|---|---|---|
 | PYMODULE | python | dotted module (`src/` stripped, `__init__` dropped) | `""` | none |
+| SRCMODULE | js, go, rust, shell | the file path | `""` | `lang` (`js`, `ts`, `go`, `rust`, `sh`, `powershell`); `module`=`esm` or `script` (JS/TS); `package` (Go) |
 | CLASS | python | class name | `(Base1, Base2)` from `ast.unparse` of bases and keywords, or `""` | `decorators` = comma-joined unparsed decorators |
 | FUNCTION / METHOD | python | def name | `(args) -> ret` from `ast.unparse(node.args)` and `returns`; a default that is not a literal of 40 chars or fewer becomes `...` | `async`=`1`; `decorators` |
 | FIELD | python | attribute | annotation, unparsed | `value` (literal or `...`) |
@@ -482,3 +484,55 @@ Applied in the steps 2 to 6 fold (card 1167):
   strings, subparser aliases). It changes cli output, the cli golden and
   the parity check against the mill's parser, so it is not a trivial fold
   change; it goes to a later step.
+
+Applied in 0.1.2 (bundled parsers for other languages):
+
+- Applied: Kind `SRCMODULE`, a file container like PYMODULE, for the
+  `js`, `go`, `rust` and `shell` extractors (sections 2 and 6). Their
+  children reuse CLASS (with a `kind` attr: `class`, `interface`, `type`,
+  `enum`, `struct`, `trait`, `impl`, `alias`, `mod`), FUNCTION, METHOD,
+  FIELD, CONSTANT and EXPORT. The extractors share one deterministic
+  scanner (`rco/extract/scan.py`): it masks comments and strings, tracks
+  brace depth, and reads top-level declarations only (plus the body of a
+  top-level IIFE in a JS script). There is no tree-sitter dependency, so
+  `pip install` stays dependency-free and the same bytes come out
+  everywhere. Public means: exported (JS/TS modules) or every top-level
+  name not starting with `_` (JS scripts); capitalized (Go); `pub` (Rust);
+  every function (shell, PowerShell). The doc is the first line of the
+  comment right above a declaration.
+
+Applied in 0.1.2 (modules from manifests and an override file):
+
+- Applied: `module_of(path, layout=None)` and `group(paths, layout=None)`
+  take a `Layout` read from git at the same SHA (`layout_at`), so the same
+  commit always gives the same modules. The order is: `rco.toml`
+  `[[module]]` rules (`id`, `paths` globs, first match wins), then
+  `package.json` (JS/TS files) and `Cargo.toml` with `[package]` (Rust
+  files), each down to the next nested manifest, then the directory
+  grain (section 4). A bad override entry becomes a Map note, never an
+  error. With no `rco.toml` and no such manifest, every module id is
+  unchanged.
+
+Applied in 0.1.2 (staged and working-tree input, test selection):
+
+- Applied: `rco diff --staged|--worktree [BASE]` (section 8). HEAD is a
+  commit object that `gitread.snapshot` writes for the index or the
+  working tree, with fixed author, committer and dates; BASE defaults to
+  HEAD. Readers still see only git objects (section 5).
+- Applied: `rco affected [BASE] [HEAD] [--staged|--worktree] [--ignore
+  GLOB] [--list]` reports `rco.affected/1` (`base`, `head`, `changed`,
+  `files`, `tests`, `run_all`, `reasons`) and always exits 0.
+- Applied: `rco init` reports `rco.init/1` (`steps`: `path`, `action` in
+  wrote, kept, removed or absent, `detail`) and always exits 0. It never
+  overwrites a file; `--remove-hooks` deletes only a hook carrying rco's
+  marker line.
+
+Applied in 0.1.2 (check against real outputs):
+
+- Applied: `rco live [SHA] [--schema FILE] [--openapi FILE] [--help-text
+  CMD=FILE]` reports `rco.live/1` (`sha`, `sources`, `findings` with
+  status `missing` or `extra`), exit 1 on any finding. It compares
+  captured outputs and never runs repo code: a schema dump parsed by the
+  SQL extractor (tables, views, column names), OpenAPI or Swagger JSON
+  paths and methods (path parameters normalized), and a `--help` text's
+  long flags for one COMMAND node.

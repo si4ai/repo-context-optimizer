@@ -55,15 +55,17 @@ class _Plan:
     mods: tuple[Module, ...]
     hashes: dict[str, str]  # module id -> ModuleHash
     entries: dict[str, gitread.Entry]
+    layout: modules.Layout
 
 
 def _plan(repo: Path, sha: str) -> _Plan:
     entries = {e.path: e for e in gitread.ls_tree(repo, sha) if e.mode != gitread.MODE_SUBMODULE}
-    mods = modules.group(entries)
+    layout = modules.layout_at(repo, sha, tuple(entries.values()))
+    mods = layout.group(entries)
     vers = extract.versions()
     hashes = {m.id: canon.module_hash(m, {p: entries[p].blob for p in m.files}, vers)
               for m in mods}
-    return _Plan(mods, hashes, entries)
+    return _Plan(mods, hashes, entries, layout)
 
 
 def _extract(repo: Path, plan: _Plan, mod: Module):
@@ -89,7 +91,7 @@ def update(repo: Path, store: Store, new: str, name: str = DEFAULT_POINTER,
     plan = _plan(repo, new)
     touched: set[str] = set()
     if start is not None:
-        touched = {modules.module_of(p) for p in _changed_paths(repo, start, new)}
+        touched = {plan.layout.module_of(p) for p in _changed_paths(repo, start, new)}
     order = sorted(plan.mods, key=lambda m: (m.id not in touched, m.id))
 
     extracted: list[str] = []

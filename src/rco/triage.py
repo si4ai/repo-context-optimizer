@@ -6,7 +6,7 @@ read the git object store through gitread and rco diff.
 triage BRANCH... --onto TARGET
     Upstream changes are the contract diff merge-base(TARGET, BRANCH) ->
     TARGET. A branch is clean when it changed no file TARGET also changed
-    and none of its changed Python files references a changed name.
+    and none of its changed code files references a changed symbol.
     Otherwise it gets a structural brief. Exit 1 when any brief is emitted.
 
 notice OTHER... [--base BASE] [--head HEAD]
@@ -16,8 +16,10 @@ notice OTHER... [--base BASE] [--head HEAD]
     desk needs a per-desk GitHub identity (see the mail backend in the README).
     Always exit 0, so a CI job running it stays a visible hint, not a block.
 
-References come from the rco diff caller index (Python names only), so a
-CLI, SQL or route change is seen through file overlap, not callers.
+References come from rco.refs, the qualified index rco diff uses: Python,
+JS/TS, Go, Rust, shell and PowerShell, each resolved to the changed
+symbol's file and qualname, never by bare name. A CLI, SQL or route change
+is seen through file overlap, not callers.
 """
 from __future__ import annotations
 
@@ -25,7 +27,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
-from rco import diff, gitread
+from rco import build, diff, gitread, refs
 from rco.output import Exit, UsageError
 
 SCHEMA_TRIAGE = "rco.triage/1"
@@ -102,7 +104,7 @@ class TriageReport:
 
 def _changed(repo: Path, a: str, b: str) -> tuple[list[str], tuple[gitread.Entry, ...]]:
     eb = gitread.ls_tree(repo, b)
-    return diff._changed_paths(gitread.ls_tree(repo, a), eb), eb
+    return diff.changed_paths(gitread.ls_tree(repo, a), eb), eb
 
 
 def _name(c: diff.Change) -> str:
@@ -117,13 +119,16 @@ def _hint(repo: Path, branch: str, base: str, upstream: tuple[diff.Change, ...],
     sha = gitread.resolve(repo, branch)
     mine, entries = _changed(repo, base, sha)
     contract = tuple(c for c in upstream if c.op != "doc")
-    names = {_name(c) for c in contract if c.kind in _PY}
-    files = [(p, d) for p, d in diff._python_files(repo, entries) if p in set(mine)]
-    idx = diff.caller_index(files, names)
+    want = {refs.Target(c.path, c.key.split(":", 2)[2]): _name(c)
+            for c in contract if c.kind in _PY}
     by_file: dict[str, set[str]] = {}
-    for n, locs in idx.items():
-        for loc in locs:
-            by_file.setdefault(loc.rsplit(":", 1)[0], set()).add(n)
+    if want and mine:
+        sources = diff.code_sources(repo, entries)
+        defs_map = build.build_map(repo, sha, sorted({t.path for t in want}))
+        found = refs.references(set(want), defs_map, sources, in_files=mine)
+        for t, locs in found.items():
+            for loc in locs:
+                by_file.setdefault(loc.rsplit(":", 1)[0], set()).add(want[t])
     impacted = tuple((f, tuple(sorted(ns))) for f, ns in sorted(by_file.items()))
     overlap = tuple(sorted(set(mine) & upstream_paths))
     return BranchHint(branch, sha, base, overlap, impacted, contract)

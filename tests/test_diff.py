@@ -172,8 +172,3 @@ def test_cli_exit_codes(tmp_path, capsysbinary):
     capsysbinary.readouterr()
     cli.main(["diff", a, b, "--repo", str(repo), "--format", "json"])
     assert out.read_bytes() == capsysbinary.readouterr().out
-
-
-def test_caller_index_skips_bad_files_and_stores():
-    idx = diff.caller_index([("a.py", b"X = 1\nprint(X)\nobj.X = 2\n"), ("b.py", b"def (:\n")], {"X"})
-    assert idx == {"X": ("a.py:2", "a.py:3")}

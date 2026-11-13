@@ -52,7 +52,7 @@ One entry per module of the Map at the same SHA:
 | `entry_points` | sorted names | `[project.scripts]` names, `__main__` when the module has `__main__.py`, top-level COMMAND names |
 | `owns.commands` / `owns.tables` / `owns.routes` | sorted names | COMMAND qualnames, TABLE and VIEW names, ROUTE names from the module's Tree |
 | `tree_hash` | str | the module's TreeHash (tree-contract section 3) |
-| `prose` | optional | `{text, source: mined or llm, tree_hash, prompt_version, model_id}` |
+| `prose` | optional | `{text, source: mined, derived or llm, tree_hash, prompt_version, model_id}` |
 
 Entries sort by `id`; `notes` (cycles, unresolved relative imports) sort as
 strings. No line numbers and no stored stale flag anywhere. Canonical JSON is
@@ -69,7 +69,7 @@ ForestHash = sha256 of canonical
    "prompt_version", "model_id"}
 ```
 
-Mined prose uses `prompt_version = "mined/1"` and `model_id = ""`. A prompt or
+Mined prose uses `prompt_version = "mined/1"` and `model_id = ""`. Derived prose (`rco/prose/derive.py`, used when nothing can be mined) uses `prompt_version = "derived/1"` and `model_id = ""`. A prompt or
 model change moves ForestHash and so invalidates only the prose (README
 Fingerprints).
 
@@ -208,3 +208,21 @@ step-0 follow-up PR, sent to every open step first.
   #22 call).
 - Open: name-in-Tree flags (`prose.flags`) are not shown in the pack or
   counted in `rco check` yet (step 7).
+
+## Amendments in 0.1.2
+
+- Applied: `depends_on` covers JS/TS, Go, Rust, shell and PowerShell as
+  well as Python (`rco/edges.py`). Only specifiers that resolve to a
+  tracked file count; registry packages, the standard library and
+  computed paths add no edge. Comments and strings are masked first, so a
+  commented-out import adds no edge.
+- Applied: modules come from the layout in tree-contract section 4
+  (amended): `rco.toml`, then manifests, then directories. `rco forest`,
+  `rco pack`, `rco update` and `rco check` all use the layout read at the
+  SHA they work on.
+- Applied: the store comes from `rco.toml` (`backend`, `[store]`), read
+  from the working tree (`rco/config.py`): `sqlite` at `[store] path`
+  (default `.rco/rco.db`) or an `rco.backends` entry point
+  `factory(repo, options) -> Store`. `mill` and `mcp` are usage errors
+  until they ship. The conformance suite moved to `rco.store.conformance`
+  so an installed adapter can run it.

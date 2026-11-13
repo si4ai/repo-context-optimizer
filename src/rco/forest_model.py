@@ -33,6 +33,7 @@ _PACK_KEYS = frozenset({"schema", "sha", "budget", "used", "forest", "trees", "h
 
 class ProseSource(str, Enum):
     MINED = "mined"
+    DERIVED = "derived"  # computed from Tree facts when nothing can be mined
     LLM = "llm"
 
 

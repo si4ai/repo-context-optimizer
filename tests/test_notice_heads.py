@@ -77,3 +77,36 @@ def test_cli_prints_stable_lines(tmp_path, capsys):
     assert capsys.readouterr().out == f"pr-9 {'b' * 40}\n"
     assert main([str(path)]) == 0
     assert capsys.readouterr().out == f"pr-9 {'b' * 40}\npr-34 {'a' * 40}\n"
+
+
+def _pr_into(number, sha, base_ref):
+    p = _pr(number, sha)
+    p["base"] = {"ref": base_ref, "sha": "f" * 40}
+    return p
+
+
+def test_only_prs_into_the_same_base_branch():
+    prs = [
+        _pr_into(9, "b" * 40, "main"),
+        _pr_into(10, "c" * 40, "release/0.1.2"),
+        _pr_into(11, "d" * 40, "main"),
+    ]
+    heads = other_heads(prs, exclude=11, base_ref="main")
+    assert [h.label for h in heads] == ["pr-9"]
+    heads = other_heads(prs, exclude=None, base_ref="release/0.1.2")
+    assert [h.label for h in heads] == ["pr-10"]
+
+
+def test_base_ref_filter_drops_a_pr_with_no_base():
+    prs = [_pr(9, "b" * 40), _pr_into(10, "c" * 40, "main")]
+    assert [h.label for h in other_heads(prs, base_ref="main")] == ["pr-10"]
+
+
+def test_cli_base_ref_flag(tmp_path, capsys):
+    from ci.notice_heads import main
+
+    path = tmp_path / "pulls.json"
+    path.write_text(json.dumps([_pr_into(9, "b" * 40, "main"),
+                                _pr_into(10, "c" * 40, "dev")]), encoding="utf-8")
+    assert main([str(path), "--base-ref", "dev"]) == 0
+    assert capsys.readouterr().out == f"pr-10 {'c' * 40}\n"

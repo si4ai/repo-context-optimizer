@@ -30,11 +30,11 @@ import warnings
 from collections import defaultdict
 from dataclasses import dataclass, field, replace
 from pathlib import Path
-from typing import Iterable, Iterator, Literal
+from typing import Iterable, Iterator, Literal, Mapping
 
 from rco import build, canon, gitread
 from rco.model import Kind, Map, Node, walk
-from rco.output import Exit
+from rco.output import Exit, UsageError
 
 SCHEMA_DIFF = "rco.diff/1"
 
@@ -128,7 +128,8 @@ def _human(js: str) -> str:
 class _Entry:
     kind: Kind
     path: str
-    name: str                  # last qualname part, for the caller index
+    name: str                  # last qualname part
+    qn: str                    # qualname within the file, for qualified callers
     shapes: tuple[str, ...]    # sorted canonical JSON of each node's shape
     docs: tuple[str, ...]      # sorted doc lines
 
@@ -148,8 +149,8 @@ def _index(m: Map) -> dict[str, _Entry]:
                     continue
                 acc[key].append(n)
                 qn = key[len(n.kind.value) + 1 + prefix_len:]
-                meta[key] = (n.kind, top.path, qn.rsplit(".", 1)[-1])
-    return {k: _Entry(meta[k][0], meta[k][1], meta[k][2],
+                meta[key] = (n.kind, top.path, qn)
+    return {k: _Entry(meta[k][0], meta[k][1], meta[k][2].rsplit(".", 1)[-1], meta[k][2],
                       tuple(sorted(_shape_json(n) for n in ns)),
                       tuple(sorted(n.doc for n in ns)))
             for k, ns in acc.items()}
@@ -182,52 +183,39 @@ def compare(base: Map, head: Map) -> tuple[tuple[str, Op, _Entry, _Entry | None]
 
 # ------------------------------------------------------------ callers
 
-def caller_index(files: Iterable[tuple[str, bytes]], names: set[str]) -> dict[str, tuple[str, ...]]:
-    """name -> sorted unique "file:line" of Name (load) and Attribute references."""
-    hits: dict[str, set[tuple[str, int]]] = defaultdict(set)
-    if not names:
-        return {}
-    for path, data in files:
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                tree = ast.parse(data.decode("utf-8", errors="replace"), filename=path)
-        except (SyntaxError, ValueError, RecursionError, MemoryError):
-            continue
-        for node in ast.walk(tree):
-            if isinstance(node, ast.Name) and isinstance(node.ctx, ast.Load):
-                ref = node.id
-            elif isinstance(node, ast.Attribute):
-                ref = node.attr
-            else:
-                continue
-            if ref in names:
-                hits[ref].add((path, node.lineno))
-    return {name: tuple(f"{p}:{ln}" for p, ln in sorted(locs)) for name, locs in hits.items()}
+def code_sources(repo: Path, entries: tuple[gitread.Entry, ...]) -> dict[str, bytes]:
+    """path -> bytes of every code file (Python and the bundled languages) plus manifests."""
+    from rco.edges import MANIFEST_NAMES
+    from rco.extract.langs import lang_of
+    ents = [e for e in entries if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
+            and (e.path.endswith(".py") or lang_of(e.path)
+                 or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
+    data = gitread.read_blobs(repo, [e.blob for e in ents])
+    return {e.path: data[e.blob] for e in ents}
 
 
-def _python_files(repo: Path, entries: tuple[gitread.Entry, ...]) -> Iterator[tuple[str, bytes]]:
-    """(path, bytes) of every Python file; a generator, so nothing is read unless needed."""
-    py = [e for e in entries if e.path.endswith(".py")
-          and e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)]
-    data = gitread.read_blobs(repo, [e.blob for e in py])
-    for e in py:
-        yield e.path, data[e.blob]
+def callers_of(changes: Iterable[tuple[str, _Entry]], head: Map, sources: Mapping[str, bytes],
+               in_files: Iterable[str] | None = None) -> dict[str, tuple[str, ...]]:
+    """key -> qualified "file:line" references at HEAD (rco.refs)."""
+    from rco import refs
+    want = {key: refs.Target(e.path, e.qn) for key, e in changes if e.kind in _PY_KINDS}
+    found = refs.references(set(want.values()), head, sources, in_files)
+    return {key: found.get(t, ()) for key, t in want.items()}
 
 
 # ------------------------------------------------------------ entry point
 
-def _changed_paths(a: tuple[gitread.Entry, ...], b: tuple[gitread.Entry, ...]) -> list[str]:
+def changed_paths(a: tuple[gitread.Entry, ...], b: tuple[gitread.Entry, ...]) -> list[str]:
     sa = {(e.path, e.mode, e.blob) for e in a}
     sb = {(e.path, e.mode, e.blob) for e in b}
     return sorted({p for p, _, _ in sa ^ sb})
 
 
-def diff_maps(base: Map, head: Map, head_files: Iterable[tuple[str, bytes]] = ()) -> DiffReport:
-    """Diff two Maps; head_files are (path, bytes) of the Python files at HEAD for callers."""
+def diff_maps(base: Map, head: Map, head_sources: Mapping[str, bytes] | None = None) -> DiffReport:
+    """Diff two Maps; head_sources (path -> bytes of code files at HEAD) give callers."""
     found = compare(base, head)
-    names = {e.name for _, op, e, _ in found if op != "doc" and e.kind in _PY_KINDS}
-    callers = caller_index(head_files, names)
+    callers = callers_of(((k, e) for k, op, e, _ in found if op != "doc"), head,
+                         head_sources or {})
     changes = []
     for key, op, e, be in found:
         if op == "added":
@@ -238,29 +226,49 @@ def diff_maps(base: Map, head: Map, head_files: Iterable[tuple[str, bytes]] = ()
             before, after = _join(be.shapes), _join(e.shapes)
         else:
             before, after = _docs_json(be.docs), _docs_json(e.docs)
-        cs = callers.get(e.name, ()) if op != "doc" and e.kind in _PY_KINDS else ()
+        cs = callers.get(key, ()) if op != "doc" else ()
         changes.append(Change(op, key, e.kind.value, e.path, before, after, cs))
     changes.sort(key=lambda c: (c.path, c.key, c.op))
     return DiffReport(base=base.sha, head=head.sha, changes=tuple(changes))
 
 
-def diff(repo: Path, base: str | None, head: str | None) -> DiffReport:
+def resolve_range(repo: Path, base: str | None, head: str | None,
+                  snapshot: str | None = None) -> tuple[str, str]:
+    """(base, head) SHAs. HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD).
+
+    With snapshot "staged" or "worktree", HEAD is that snapshot
+    (gitread.snapshot) and BASE defaults to HEAD, like `git diff --cached`
+    and `git diff HEAD`.
+    """
+    if snapshot is not None:
+        if head is not None:
+            raise UsageError(f"--{snapshot} takes at most one commit (BASE)")
+        head_sha = gitread.snapshot(repo, snapshot)
+        base = base or "HEAD"
+    else:
+        head_sha = gitread.resolve(repo, head or "HEAD")
+    if base is None:
+        return gitread.merge_base(repo, gitread.resolve(repo, gitread.default_branch(repo)),
+                                  head_sha), head_sha
+    return gitread.resolve(repo, base), head_sha
+
+
+def diff(repo: Path, base: str | None, head: str | None,
+         snapshot: str | None = None) -> DiffReport:
     """Contract changes from BASE to HEAD.
 
-    HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD).
+    HEAD defaults to HEAD; BASE to merge-base(default branch, HEAD). With
+    snapshot "staged" or "worktree", HEAD is that snapshot
+    (gitread.snapshot) and BASE defaults to HEAD, like `git diff --cached`
+    and `git diff HEAD`.
     """
     t0 = time.perf_counter()
-    head_sha = gitread.resolve(repo, head or "HEAD")
-    if base is None:
-        base_sha = gitread.merge_base(repo, gitread.resolve(repo, gitread.default_branch(repo)),
-                                      head_sha)
-    else:
-        base_sha = gitread.resolve(repo, base)
+    base_sha, head_sha = resolve_range(repo, base, head, snapshot)
     be, he = gitread.ls_tree(repo, base_sha), gitread.ls_tree(repo, head_sha)
-    paths = _changed_paths(be, he)
+    paths = changed_paths(be, he)
     bm = build.build_map(repo, base_sha, paths)
     hm = build.build_map(repo, head_sha, paths)
-    report = diff_maps(bm, hm, _python_files(repo, he))
+    report = diff_maps(bm, hm, code_sources(repo, he))
     print(f"rco diff: {len(paths)} changed files, {len(report.changes)} changes "
           f"in {time.perf_counter() - t0:.3f}s", file=sys.stderr)
     return report
