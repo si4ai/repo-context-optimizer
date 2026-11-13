@@ -55,6 +55,7 @@ cache
 call
 card
 cards
+cargo
 change
 changelog
 changes
@@ -350,6 +351,7 @@ root
 row
 rows
 run
+rust
 safari
 same
 saturday

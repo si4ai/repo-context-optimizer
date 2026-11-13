@@ -1,14 +1,14 @@
 # adopting rco from T0 to TN
 
-Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. PyPI still has only 0.1.0 when this was written, so `pip install repo-context-optimizer` does not give you 0.1.1 yet.
+Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. The [capability legend](#capability-legend) and the "works today?" notes are refreshed for 0.1.2. 0.1.1 was never published, so 0.1.2 is the first install after 0.1.0. The measurements and the repo-type checks below are still the 0.1.1 runs. Where 0.1.2 changed an answer, the note says so.
 
 This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach.
 
 ## bottom line
 
 - rco is a report tool. Every place it goes in a pipeline is advisory: a job that shows facts and never blocks a merge. Exit 1 means "findings", not "failure".
-- What works today: a PR job that runs `rco diff`, `rco notice`, `rco drift` and `rco check`. On top of that, `rco update` and `rco triage` after a merge, and `rco pack` for any agent at any time.
-- What does not work today: commit-time hooks (rco reads commits, not staged files), non-Python contracts (except SQL), one-step setup, and test selection.
+- What works today (0.1.2): a PR job that runs `rco diff`, `rco notice`, `rco drift` and `rco check`, with `rco affected` to pick tests. On top of that, `rco update` and `rco triage` after a merge, `rco plan` across open branches, and `rco pack` for any agent at any time. `rco init` writes the config, a CI job and hooks. `rco diff --staged` works at commit time. JS/TS, Go, Rust, shell and PowerShell contracts are parsed.
+- What does not work today: LLM prose (off by design), the mill and MCP backends, notices sent by mail, and recorded `tw rco update` runs.
 - Always pass an explicit base and head in CI, and check out full history. The default base looks for `origin/HEAD`, `main` or `master`, and a CI checkout often has none of them.
 
 ## How to choose
@@ -23,22 +23,32 @@ Then start from the [stage table](#stages-t0-to-tn) and apply the "what differs"
 
 ## capability legend
 
-Codes are used in every table and diagram. Shipped = in the 0.1.1 CLI (`src/rco/cli.py`). NOT SHIPPED = planned in the README or design docs, or a gap found in this review.
+Codes are used in every table and diagram. Shipped = in the 0.1.2 CLI (`src/rco/cli.py`). NOT SHIPPED = planned in the README or design docs.
 
-### shipped in 0.1.1
+### shipped in 0.1.2
 
 | Code | Command | what it answers | Exit codes |
 |---|---|---|---|
-| TR | `rco tree [SHA]` | what are the public contracts (functions, classes, argparse flags, SQL tables, routes) at this commit? | 0 |
+| TR | `rco tree [SHA]` | what are the public contracts (functions, classes, argparse flags, SQL tables, routes, and the bundled languages) at this commit? | 0 |
 | FO | `rco forest [SHA]` | How do modules depend on each other, and what are the entry points? | 0 |
 | PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget < 64 |
-| DF | `rco diff BASE HEAD` | Which contracts changed between two commits, and who calls them? | 0 none, 1 changes |
+| DF | `rco diff BASE HEAD` | Which contracts changed between two commits, and who calls them (qualified, not by bare name)? | 0 none, 1 changes |
 | CK | `rco check MAP` / `--selftest` | Is this map still true for the code? Does the checker catch planted errors? | 0 ok, 1 findings |
-| UP | `rco update [SHA] --name P` | save a commit's map to the local store `.rco/rco.db` and move pointer P forward | 0; refuses to move backwards |
+| UP | `rco update [SHA] --name P` | save a commit's map to the store and move pointer P forward | 0; refuses to move backwards |
 | PN | `rco pin --for FILES --format json --out pins/NAME.json` | freeze a reviewed contract as a pin file (without `--out`, it prints markdown) | 0 |
 | DR | `rco drift pins` | did any pinned contract change? | 0 none, 1 drift |
 | TG | `rco triage BRANCH... --onto T` | does my branch use anything the target changed? | 0 clean, 1 brief |
 | NT | `rco notice OTHER... --base B --head H` | Which other open branches use what this PR changed? | always 0 |
+| MP | `rco plan BRANCH BRANCH... [--base B]` | what does each branch change that another uses, which tests see both, and in what order should they merge? | 0 clean, 1 findings |
+| TS | `rco affected [BASE] [HEAD]` | which tests can see this change? | 0 |
+| SG | `rco diff --staged` / `--worktree` | which contracts does my uncommitted change touch? | 0 none, 1 changes |
+| IN | `rco init [--hooks]` | set up `rco.toml`, a CI job and hooks in one step | 0 |
+| HK | post-merge hook from `rco init --hooks` | keep the store current after each merge | 0 |
+| RO | `rco live [SHA] --schema/--openapi/--help-text` | does the map match a real schema dump, OpenAPI file or `--help` output? | 0 ok, 1 findings |
+| LG | bundled parsers | JavaScript/TypeScript, Go, Rust, shell and PowerShell contracts | n/a |
+| MO | modules from `rco.toml`, then `package.json` / `Cargo.toml`, then directories | n/a | n/a |
+| CF | `rco.toml` settings and backend choice (`sqlite` or an entry point adapter) | n/a | n/a |
+| SS | a store cached across CI runs | n/a | n/a |
 
 Exit 2 = usage error, exit 3 = internal error, for every command. A CI job should pass on 0 and 1 and fail on 2 and 3.
 
@@ -46,21 +56,13 @@ Exit 2 = usage error, exit 3 = internal error, for every command. A CI job shoul
 
 | Code | Item | source |
 |---|---|---|
-| CF | `rco.toml` config and backend choice | README "storage backends"; no code reads `rco.toml` |
-| LG | parsers for non-Python languages (tree-sitter) | README "Tree"; only `.py` and `.sql` extractors exist |
-| LP | LLM prose | hook exists in `src/rco/prose/llm.py`, off, no config path |
-| MB | mill backend extra | README "storage backends"; no extra in `pyproject.toml` |
+| LP | LLM prose | hook exists in `src/rco/prose/llm.py`, off by design |
+| MB | mill backend extra | README "storage backends"; design only |
 | MC | MCP backend / adapter | README roadmap |
-| MO | module override file, manifest-based module detection | README "Module"; modules are directories today |
-| HK | post-merge hook or webhook trigger for update | README "triggers" |
 | TW | `tw rco update` recorded runs | README slice 5 |
 | NM | notices sent by mail through a backend | README "storage backends" |
-| RO | check against real outputs (`--help`, live schema, routes) | `docs/design/tree-contract.md` |
-| MP | merge planning | README "proposed: merge planning" |
-| IN | `rco init` or a reusable GitHub action (gap) | not designed |
-| SG | diff of staged or working-tree changes (gap) | not designed; rco reads git objects only |
-| TS | test selection from a diff (gap) | not designed; README says tests still run |
-| SS | a shared or cached store for CI (gap) | not designed; the store is local SQLite |
+
+A merge webhook (HK) still needs your own server. Merge planning beyond `rco plan` (planned file lists, lanes) is still a README proposal.
 
 ## stages T0 to TN
 
@@ -76,7 +78,7 @@ flowchart LR
   T6["T6 merge<br/>queue: skip or pass<br/>push: UP, TG open PRs"]
   T7["T7 release<br/>DF last tag..new tag<br/>re-pin with PN"]
   TN["TN steady state<br/>CK selftest, DR every PR,<br/>cache store, TG sweeps"]
-  L["later, NOT SHIPPED:<br/>IN one-step setup, SG staged diff,<br/>TS test selection, HK auto update, MP"]:::ns
+  L["0.1.2 adds:<br/>IN one-step setup, SG staged diff,<br/>TS test selection, HK auto update, MP plan"]
   T0 --> T1 --> T2 --> T3 --> T4 --> T5 --> T6 --> T7 --> TN
   TN -.-> T2
   L -.-> T0
@@ -86,15 +88,15 @@ flowchart LR
 
 | stage | what to do | Where | Required? | Why | works today? |
 |---|---|---|---|---|---|
-| T0 setup | add `repo-context-optimizer` as a dev dependency; add one report job (DF, NT, DR, CK); pin key contracts with PN; add a push job that runs UP | `pyproject.toml` or CI lock file; `.github/workflows/ci.yml`; `pins/*.json` | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes, by hand (IN not shipped) |
+| T0 setup | add `repo-context-optimizer` as a dev dependency; add one report job (DF, NT, DR, CK); pin key contracts with PN; add a push job that runs UP | `pyproject.toml` or CI lock file; `.github/workflows/ci.yml`; `pins/*.json` | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes; `rco init` writes it (IN) |
 | T1 first clone | `pip install`; optionally `rco update` once | contributing doc | advisory | the store adds mined prose to packs; packs work without it | yes; needs Python 3.12+ |
 | T2 start work | `rco pack --for <files>` | contributing doc, agent instructions | advisory | the agent starts from the contracts, not by reading whole modules | yes |
-| T3 local commits | nothing at pre-commit; at pre-push, `rco diff $(git merge-base origin/<base> HEAD) HEAD` and `rco drift pins` | `.githooks/pre-push` | advisory, always exit 0 | catches contract changes before they leave the machine | pre-push yes; pre-commit no (SG) |
+| T3 local commits | nothing at pre-commit; at pre-push, `rco diff $(git merge-base origin/<base> HEAD) HEAD` and `rco drift pins` | `.githooks/pre-push` | advisory, always exit 0 | catches contract changes before they leave the machine | yes; pre-commit can run `rco diff --staged` (SG) |
 | T4 PR CI | DF with base = merge-base of PR base and head; NT against other open PR heads; DR if `pins/` exists; CK | `ci.yml` on `pull_request`, `fetch-depth: 0`, `pull-requests: read` for NT | advisory | reviewers see changed contracts and cross-PR overlap | yes |
 | T5 review | read the report; run your own DF; still read the code | reviewer checklist | advisory | DF lists public contract changes, not every behavior change | yes |
 | T6 merge | merge_group: skip rco jobs (or run them, if you made them required); after merge: UP `--name <branch>` and TG other open PRs `--onto <branch>` | `ci.yml` on `push` to each target branch | advisory | the map follows the branch; open PRs learn what moved under them | yes; store is gone after the job unless cached (SS) |
 | T7 release | DF from the last release tag to the new one as contract notes; DR clean, or re-pin on purpose | release workflow or release checklist | advisory | release notes for contracts at zero tokens | yes |
-| TN steady | CK `--selftest` and a map check on a schedule; DR on every PR; refresh pins; TG sweeps | `ci.yml` (schedule), `actions/cache` for `.rco/` | advisory | keeps the map honest and current | yes; HK, TS, MP not shipped |
+| TN steady | CK `--selftest` and a map check on a schedule; DR on every PR; refresh pins; TG sweeps | `ci.yml` (schedule), `actions/cache` for `.rco/` | advisory | keeps the map honest and current | yes; HK, TS and MP shipped in 0.1.2 |
 
 ### A report job you can copy (T4 and T6)
 
@@ -115,9 +117,7 @@ simulated locally with pull_request and push events, including an all-zero `befo
       - uses: actions/setup-python@<sha> # v5
         with:
           python-version: "3.12"
-      # 0.1.1 is not on PyPI yet; until it is, install from a git SHA:
-      # pip install "repo-context-optimizer @ git+https://github.com/si4ai/repo-context-optimizer@<sha>"
-      - run: pip install repo-context-optimizer==0.1.1
+      - run: pip install repo-context-optimizer==0.1.2
       - env:
           EVENT_NAME: ${{ github.event_name }}
           PR_BASE: ${{ github.event.pull_request.base.sha }}
@@ -150,7 +150,7 @@ The README's zero-config acceptance table, checked against 0.1.1 with fixture re
 | Type | README expects | what 0.1.1 does | verdict | How the pipeline differs |
 |---|---|---|---|---|
 | Small Python | modules from package layout; Trees; pack and diff with defaults | Trees, argparse flags and callers extracted; a signature change shows in DF with its caller. Modules are directories, not read from manifests | verified, with the module caveat | none: use the stage table as is |
-| polyglot | bundled parsers where available; unknown languages fall back to an outline, no error | only Python and SQL are parsed; `.js`, `.ts`, `.go`, `.rs` become file outlines. A JS signature change gives "no contract changes". A SQL column add is caught | outline holds; non-Python parsers NOT SHIPPED (LG) | DF, NT and DR only cover the Python and SQL parts. For other languages, NT reports files changed on both sides. Do not read "no contract changes" as "safe" |
+| polyglot | bundled parsers where available; unknown languages fall back to an outline, no error | only Python and SQL are parsed; `.js`, `.ts`, `.go`, `.rs` become file outlines. A JS signature change gives "no contract changes". A SQL column add is caught | outline holds; non-Python parsers NOT SHIPPED (LG) | DF, NT and DR only cover the Python and SQL parts. For other languages, NT reports files changed on both sides. Do not read "no contract changes" as "safe" In 0.1.2, LG parses JS/TS, Go, Rust, shell and PowerShell, so DF, NT and TG see those contracts and callers. |
 | Large monorepo | pack respects `--budget`; update re-extracts only changed modules | 60-package fixture: first update extracted 60 modules, the next extracted 2. `--budget 500` used 499 and listed what it trimmed. On a real 885-file repo, each command took 2-5 s | verified at that size; cost at larger scale not measured | use `--for` on every pack; cache `.rco/` in CI. Per-package releases are not modeled (MO not shipped) |
 | submodules | skipped, with a note | `tree` prints "note: skipped submodule ..."; `pack` and `diff` print no note; adding a submodule shows "no contract changes" | partly: the note only appears in `tree` | contracts inside submodules are invisible; run rco in the submodule's own repo |
 | LFS | pointer files opaque, not fetched | a pointer shows as `file ... (lfs=pointer)` | verified (pointer committed without git-lfs) | none; no need for `lfs: true` on checkout |
@@ -254,9 +254,9 @@ These are size ratios, not savings. No A/B savings claim exists yet. The harness
 
 ## known issues found in this review
 
-- `ci/notice_report.sh` passes the PR base tip as `--base`, not the merge-base. `rco diff` uses an explicit base as given, so a PR whose base branch moved on shows the base's new changes reversed. Fix: pass `git merge-base`.
-- `ci/notice_heads.py` lists every open PR, whatever its base branch. With branch folding, filter to PRs into the same base.
-- Caller lists match bare names, so a common name such as `label` lists callers that are not related.
+- `ci/notice_report.sh` passes the PR base tip as `--base`, not the merge-base. `rco diff` uses an explicit base as given, so a PR whose base branch moved on shows the base's new changes reversed. Fixed in 0.1.2: the script passes `git merge-base`.
+- `ci/notice_heads.py` lists every open PR, whatever its base branch. Fixed in 0.1.2: `--base-ref` keeps only PRs into the same base.
+- Caller lists match bare names, so a common name such as `label` lists callers that are not related. Fixed in 0.1.2: callers resolve to the defining file and qualname, in every bundled language.
 - After `rco update`, `rco check` adds prose-name findings: 38 on the large repo, 2 on a small one. A map check job should run before update, or treat these as advisory.
 - `rco diff` with no arguments fails in a detached CI checkout that has no `main`, and `HEAD~1` fails in a shallow clone. Use `fetch-depth: 0` and explicit SHAs.
 - The package needs Python 3.12+. Repos that test on 3.10 or 3.11 need a separate 3.12 job for rco.
