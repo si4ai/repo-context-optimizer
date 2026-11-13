@@ -14,6 +14,7 @@ class Kind(str, Enum):
 
     FILE = "file"
     PYMODULE = "pymodule"
+    SRCMODULE = "srcmodule"
     CLASS = "class"
     FUNCTION = "function"
     METHOD = "method"
@@ -34,6 +35,9 @@ KIND_ORDER: dict[Kind, int] = {k: i for i, k in enumerate(Kind)}
 
 # Kinds whose children join the parent qualname with a space (CLI paths).
 _SPACE_JOIN = frozenset({Kind.COMMAND, Kind.FLAG})
+
+# File containers: their children's qualnames do not include the container name.
+CONTAINERS = frozenset({Kind.PYMODULE, Kind.SRCMODULE})
 
 
 @dataclass(frozen=True, slots=True)
@@ -100,14 +104,14 @@ def node_key(path: str, qn: str, kind: Kind) -> str:
 def walk(tree: Tree) -> Iterator[tuple[str, Node]]:
     """Yield (key, node) depth-first; children inherit the top-level path.
 
-    A PYMODULE is a container: its children's qualnames do not include the
-    module name, since the path already names the file.
+    A PYMODULE or SRCMODULE is a container: its children's qualnames do not
+    include the module name, since the path already names the file.
     """
 
     def rec(path: str, parent_qn: str, n: Node) -> Iterator[tuple[str, Node]]:
         qn = qualname(parent_qn, n)
         yield node_key(path, qn, n.kind), n
-        child_parent = "" if n.kind is Kind.PYMODULE else qn
+        child_parent = "" if n.kind in CONTAINERS else qn
         for c in n.children:
             yield from rec(path, child_parent, c)
 

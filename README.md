@@ -32,7 +32,7 @@ rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 
 `--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 8000. `--for` is optional. These defaults match the [Planned commands](#planned-commands) section.
 
-Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for common languages come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
+Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
 
 `rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend fails to load, rco falls back to SQLite and prints the exact command to fix it.
 
@@ -76,7 +76,7 @@ A checked-in override file can pin boundaries; the detector only falls back to h
 
 A Tree is a deterministic contract extracted from a module. It is never written by an LLM.
 
-- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and tree-sitter for other languages. Public classes and functions, signatures, type hints, the first docstring line, constants, and `__all__` (or the language's equivalent).
+- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`).
 - **Non-code contracts,** which often matter more across a repo than signatures alone: CLI commands and flags, SQL schema tables and columns, HTTP routes, and message or event shapes.
 
 Output is canonical (sorted JSON, no line numbers), so identical input always yields byte-identical output. The Tree hash is the sha256 of that JSON.

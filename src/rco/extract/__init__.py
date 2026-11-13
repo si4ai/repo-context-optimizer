@@ -9,6 +9,7 @@ from typing import ClassVar, Protocol
 
 from rco import redact
 from rco.extract.cli import CliExtractor
+from rco.extract.langs import GoExtractor, JsExtractor, RustExtractor, ShellExtractor
 from rco.extract.python import PythonExtractor
 from rco.extract.routes import RoutesExtractor
 from rco.extract.sql import SqlExtractor
@@ -26,8 +27,12 @@ class Extractor(Protocol):
 
 EXTRACTORS: tuple[Extractor, ...] = (
     CliExtractor(),
+    GoExtractor(),
+    JsExtractor(),
     PythonExtractor(),
     RoutesExtractor(),
+    RustExtractor(),
+    ShellExtractor(),
     SqlExtractor(),
 )
 
