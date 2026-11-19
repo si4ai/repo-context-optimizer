@@ -18,7 +18,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
-from rco import build, canon, diff, gitread
+from rco import build, canon, diff, gitread, modules
 from rco.model import Map, Node, Tree
 from rco.output import Exit, UsageError
 
@@ -62,7 +62,7 @@ def _pinned_nodes(repo: Path, sha: str, paths: Sequence[str]) -> tuple[Node, ...
 
 def make_pin(repo: Path, sha: str, paths: Sequence[str]) -> Pin:
     """The pin of paths at sha; every path must be a file at sha."""
-    clean = sorted({p.strip("/") for p in paths})
+    clean = sorted({modules.for_path(p) for p in paths})
     if not clean:
         raise UsageError("pin needs at least one --for FILE")
     files = {e.path for e in gitread.ls_tree(repo, sha) if e.mode != gitread.MODE_SUBMODULE}

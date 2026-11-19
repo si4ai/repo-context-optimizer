@@ -41,6 +41,11 @@ def dir_of(path: str) -> str:
     return head if sep else "."
 
 
+def for_path(path: str) -> str:
+    """A --for path as a repo path: backslashes become /, no leading or trailing /."""
+    return path.replace("\\", "/").strip("/")
+
+
 def glob_regex(glob: str) -> re.Pattern[str]:
     out, i = [], 0
     while i < len(glob):
