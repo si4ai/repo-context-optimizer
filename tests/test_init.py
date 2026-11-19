@@ -1,7 +1,10 @@
 """rco init: config, CI workflow and post-merge hook, never overwriting."""
 import json
 import os
+import shutil
 import subprocess
+
+import pytest
 
 from rco import cli, config, fixture, modules
 from rco.init import HOOK_MARK, WORKFLOW, init, workflow_text
@@ -37,14 +40,11 @@ def test_workflow_is_stable_and_names_the_branch():
             assert "@" in line and len(line.split("@")[1].split()[0]) == 40  # pinned to a SHA
 
 
-def test_hook_install_runs_and_remove_only_touches_ours(tmp_path, capsys):
+def test_hook_install_keep_and_remove_only_touches_ours(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
     assert cli.main(["init", "--repo", str(repo), "--no-config", "--no-ci", "--hooks"]) == Exit.OK
     hook = repo / ".git" / "hooks" / "post-merge"
     assert HOOK_MARK in hook.read_text() and os.access(hook, os.X_OK)
-    p = subprocess.run(["sh", str(hook)], cwd=repo, env={"PATH": "/usr/bin:/bin"},
-                       capture_output=True)
-    assert p.returncode == 0  # no rco on PATH: still exit 0
     assert [s.action for s in init(repo, False, False, hooks=True).steps] == ["kept"]
     assert [s.action for s in init(repo, False, False, remove_hooks=True).steps] == ["removed"]
     assert not hook.exists()
@@ -54,6 +54,17 @@ def test_hook_install_runs_and_remove_only_touches_ours(tmp_path, capsys):
     assert init(repo, False, False, remove_hooks=True).steps[0].action == "kept"
     assert hook.read_text() == "#!/bin/sh\necho mine\n"
     assert cli.main(["init", "--repo", str(repo), "--hooks", "--remove-hooks"]) == Exit.USAGE
+
+
+@pytest.mark.skipif(shutil.which("sh") is None, reason="no sh to run the hook")
+def test_hook_exits_0_without_rco_on_path(tmp_path):
+    repo, sha = _repo(tmp_path)
+    init(repo, False, False, hooks=True)
+    empty = tmp_path / "empty-path"
+    empty.mkdir()  # PATH with no rco on it, on any OS
+    p = subprocess.run([shutil.which("sh"), str(repo / ".git" / "hooks" / "post-merge")], cwd=repo,
+                       env={**os.environ, "PATH": str(empty)}, capture_output=True)
+    assert p.returncode == 0
 
 
 def test_hook_honours_core_hooks_path(tmp_path, capsys):

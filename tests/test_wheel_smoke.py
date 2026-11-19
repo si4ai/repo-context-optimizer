@@ -5,6 +5,7 @@ ci/wheel_smoke.sh on the installed wheel; these tests pin the checker.
 """
 import importlib.util
 import subprocess
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -41,7 +42,7 @@ def test_wheel_must_carry_every_module(tmp_path):
 
 
 def test_check_dist_usage_exit_2(tmp_path):
-    p = subprocess.run(["python3", str(ROOT / "ci" / "check_dist.py"), str(tmp_path)],
+    p = subprocess.run([sys.executable, str(ROOT / "ci" / "check_dist.py"), str(tmp_path)],
                        capture_output=True)
     assert p.returncode == 2
 
