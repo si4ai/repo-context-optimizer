@@ -75,7 +75,7 @@ def _shell_word(text: str, i: int) -> str:
             depth -= 1
         elif ch in "\"'" and depth == 0:
             q = ch
-        elif ch in " \t\n;|&" and depth == 0:
+        elif ch in " \t\r\n;|&" and depth == 0:
             break
         out.append(ch)
         i += 1
