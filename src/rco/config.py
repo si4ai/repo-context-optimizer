@@ -37,6 +37,13 @@ from rco.output import UsageError
 CONFIG_FILE = "rco.toml"
 ENTRY_POINT_GROUP = "rco.backends"
 DEFAULT_DB = ".rco/rco.db"
+# Names reserved for backends not shipped yet: open_store refuses them
+# before it loads any rco.backends entry point, so an rco.toml naming one
+# gets a clear "not shipped" error, and an adapter registered under a
+# reserved name never loads. When a reserved backend ships, remove its
+# name here in the same change (or register it under a name not listed
+# here). tests/test_config.py checks pyproject.toml registers no reserved
+# name.
 NOT_SHIPPED = {"mill": "the mill backend extra", "mcp": "the MCP backend"}
 
 

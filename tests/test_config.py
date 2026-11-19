@@ -86,6 +86,35 @@ def test_entry_point_adapter(tmp_path, monkeypatch, capsys):
     assert not (repo / ".rco").exists()
 
 
+
+def test_reserved_backend_name_blocks_until_unreserved(tmp_path, monkeypatch, capsys):
+    site = tmp_path / "site"
+    (site / "rco_fake_mill-1.0.dist-info").mkdir(parents=True)
+    (site / "rco_fake_mill-1.0.dist-info" / "METADATA").write_text(
+        "Metadata-Version: 2.1\nName: rco-fake-mill\nVersion: 1.0\n")
+    (site / "rco_fake_mill-1.0.dist-info" / "entry_points.txt").write_text(
+        "[rco.backends]\nmill = rco_fake_mill:make\n")
+    (site / "rco_fake_mill.py").write_text(ADAPTER)
+    monkeypatch.syspath_prepend(str(site))
+    repo, sha = _repo(tmp_path)
+    (repo / "rco.toml").write_text('backend = "mill"\n')
+    assert "mill" in config.NOT_SHIPPED
+    assert cli.main(["update", "--repo", str(repo)]) == Exit.USAGE  # still reserved
+    assert "not shipped" in capsys.readouterr().err
+    assert "rco_fake_mill" not in sys.modules
+    monkeypatch.delitem(config.NOT_SHIPPED, "mill")  # the shipping change drops the name
+    assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
+    assert sys.modules["rco_fake_mill"].STORE.get_pointer("main") == sha
+
+
+def test_no_shipped_backend_keeps_a_reserved_name():
+    import tomllib
+    from pathlib import Path
+
+    py = tomllib.loads((Path(__file__).resolve().parents[1] / "pyproject.toml").read_text())
+    shipped = py["project"].get("entry-points", {}).get(config.ENTRY_POINT_GROUP, {})
+    assert not set(shipped) & set(config.NOT_SHIPPED), "remove shipped names from NOT_SHIPPED"
+
 def test_affected_ignore_from_rco_toml(tmp_path, capsys):
     repo, s1 = _repo(tmp_path)
     s2 = fixture.commit(repo, {"README.md": "x\n"})
