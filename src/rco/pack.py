@@ -251,7 +251,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     owners: list[str] = []
     if for_paths:
         layout = modules.layout_at(repo, sha)
-        owners = sorted({layout.module_of(p.strip("/")) for p in for_paths} & set(by_id))
+        owners = sorted({layout.module_of(modules.for_path(p)) for p in for_paths} & set(by_id))
         if not owners:
             notes.append("no module owns the --for paths")
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}

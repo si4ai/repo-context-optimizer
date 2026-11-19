@@ -157,3 +157,9 @@ def test_cli_drift_directory_and_usage(tmp_path):
     bad = tmp_path / "bad.json"
     bad.write_text('{"schema": "rco.map/1"}')
     assert cli.main(["drift", str(bad), "--repo", str(repo)]) == 2
+
+
+def test_pin_backslash_for_paths_store_posix(tmp_path):
+    repo, a = _repo(tmp_path)
+    assert pin.make_pin(repo, a, ["pkg\\core.py"]) == pin.make_pin(repo, a, ["pkg/core.py"])
+    assert pin.make_pin(repo, a, ["pkg\\core.py"]).paths == ("pkg/core.py",)

@@ -78,7 +78,7 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map:
     notes.extend(layout.notes)
     mods = layout.group(e.path for e in entries)
     if only is not None:
-        want = {layout.module_of(p.strip("/")) for p in only}
+        want = {layout.module_of(modules.for_path(p)) for p in only}
         mods = tuple(m for m in mods if m.id in want)
     keep = {p for m in mods for p in m.files}
     entries = [e for e in entries if e.path in keep]

@@ -296,3 +296,20 @@ def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
     assert "rco pack" in out.out and "budget used" in out.out
     assert "not a commit" not in out.err
 
+
+
+def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
+    repo, sha = _repo(tmp_path)
+    fwd, back = "src/app/cli.py", "src\\app\\cli.py"
+    assert pack_to_obj(pack(repo, sha, [back])) == pack_to_obj(pack(repo, sha, [fwd]))
+    assert build.build_map(repo, sha, [back]) == build.build_map(repo, sha, [fwd])
+    for cmd in ("tree", "pack"):
+        assert cli.main([cmd, "--repo", str(repo), "--format", "json", "--for", fwd]) == Exit.OK
+        want = capsys.readouterr()
+        assert cli.main([cmd, "--repo", str(repo), "--format", "json", "--for", back]) == Exit.OK
+        got = capsys.readouterr()
+        assert "no module owns" not in got.err and want.err == got.err
+        if cmd == "tree":
+            assert got.out == want.out
+        else:
+            assert json.loads(got.out)["trees"] == json.loads(want.out)["trees"]

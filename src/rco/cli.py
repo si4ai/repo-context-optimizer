@@ -160,7 +160,7 @@ def _warn_unmatched_for(repo: Path, sha: str | None, for_paths: list[str] | None
     layout = modules.layout_at(repo, sha)
     known = {layout.module_of(e.path) for e in gitread.ls_tree(repo, sha)
              if e.mode != gitread.MODE_SUBMODULE}
-    missed = [p for p in for_paths if layout.module_of(p.strip("/")) not in known]
+    missed = [p for p in for_paths if layout.module_of(modules.for_path(p)) not in known]
     if missed:
         note("no module owns the --for paths: " + ", ".join(missed))
 
