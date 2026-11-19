@@ -32,12 +32,16 @@ import ast
 import json
 import math
 import re
-import resource
 import subprocess
 import sys
 import time
 import tracemalloc
 from pathlib import Path, PurePosixPath
+
+try:
+    import resource  # POSIX only; without it process_max_rss_mb is null
+except ImportError:
+    resource = None
 
 CHARS_PER_TOKEN = 4  # README: estimated tokens = characters / 4
 
@@ -332,7 +336,8 @@ def cmd_extract(repo: str, rev: str) -> dict:
         "parse_plus_skeleton_ms_per_file": {k: (round(v, 3) if isinstance(v, float) else v) for k, v in summarize(skel_ms).items()},
         "tracemalloc_peak_mb_all_trees_held": round(peak_all / 2**20, 1),
         "tracemalloc_peak_mb_one_tree_at_a_time": round(peak_one / 2**20, 1),
-        "process_max_rss_mb": round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1),
+        "process_max_rss_mb": (round(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 1024, 1)
+                               if resource else None),
         "skeleton_est_tokens_total": sum(skel_tokens.values()),
         "skeleton_est_tokens_per_file": summarize(list(skel_tokens.values())),
         "skeleton_est_tokens_per_package": summarize(list(by_pkg.values())),
