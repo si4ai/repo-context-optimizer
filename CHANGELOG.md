@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.1.5 - 2026-11-19
+
+Fixes from a Windows test run. Trees, Forests, and packs stay
+deterministic: no LLM runs, and the same commit gives the same output.
+
+### fixed
+
+- CRLF shell and PowerShell files keep their `source` and dot-source
+  import edges; CR now ends a shell word (card 1217, #65)
+- `--for` paths with backslashes resolve to the same module as
+  forward-slash paths in `tree`, `pack`, and `pin`; pins still store
+  POSIX paths (card 1218, #66)
+- `tools/phase0_baseline.py` imports and extracts where the POSIX-only
+  `resource` module is missing; `process_max_rss_mb` is null there
+  (card 1219, #67)
+- the test suite no longer needs `python3` or `sh` on PATH: it runs the
+  dist checker with the current interpreter and skips only the hook run
+  when `sh` is absent (card 1221, #68)
+- reserved backend names are documented and guarded: a reserved name is
+  refused before any `rco.backends` entry point loads, and a test fails
+  if a reserved name is registered as an entry point (card 1222, #69)
+
 ## 0.1.4 - 2026-11-13
 
 A fix from the 0.1.3 validator recheck. Trees, Forests, and packs stay
