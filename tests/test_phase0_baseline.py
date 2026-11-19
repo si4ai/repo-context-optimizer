@@ -90,3 +90,19 @@ def test_histogram_counts_each_value_once():
     assert p0.histogram([3]) == {"3": 1}
     assert p0.histogram([1, 2, 2, 5, 5, 5]) == {"1": 1, "2": 2, "5": 3}
 
+
+
+def test_imports_and_extracts_without_resource(tmp_path, monkeypatch):
+    import importlib.util
+
+    from rco import fixture
+
+    monkeypatch.setitem(sys.modules, "resource", None)  # import resource raises ImportError
+    path = Path(__file__).resolve().parent.parent / "tools" / "phase0_baseline.py"
+    spec = importlib.util.spec_from_file_location("phase0_baseline_no_resource", path)
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    repo, sha = fixture.make_repo(tmp_path / "r", {"pkg/a.py": "def f() -> int:\n    return 1\n"})
+    out = mod.cmd_extract(str(repo), sha)
+    assert out["process_max_rss_mb"] is None
+    assert out["files"] == 1 and out["skeleton_est_tokens_total"] > 0
