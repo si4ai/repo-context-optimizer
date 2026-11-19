@@ -102,6 +102,18 @@ def test_shell_and_powershell_edges():
     assert _edges(files, "ops/setup.ps1") == ("ops/helpers.ps1", "ops/mods/tools.psm1")
 
 
+def test_shell_and_powershell_edges_survive_crlf():
+    lf = {"ops/deploy.sh": '#!/bin/sh\n. "$(dirname "$0")/lib.sh"\nsource scripts/env.sh\n',
+          "ops/lib.sh": "", "scripts/env.sh": "",
+          "ops/setup.ps1": ". $PSScriptRoot/helpers.ps1\nImport-Module ./mods/tools.psm1\n",
+          "ops/helpers.ps1": "", "ops/mods/tools.psm1": ""}
+    crlf = {k: v.replace("\n", "\r\n") for k, v in lf.items()}
+    for path in ("ops/deploy.sh", "ops/setup.ps1"):
+        assert _edges(crlf, path) == _edges(lf, path)
+    assert _edges(crlf, "ops/deploy.sh") == ("ops/lib.sh", "scripts/env.sh")
+    assert _edges(crlf, "ops/setup.ps1") == ("ops/helpers.ps1", "ops/mods/tools.psm1")
+
+
 POLY = {
     "rco.toml": '[[module]]\nid = "frontend"\npaths = ["web/**", "shared/**/*.ts"]\n',
     "web/package.json": '{"name": "web"}',
