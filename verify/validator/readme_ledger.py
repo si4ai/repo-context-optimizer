@@ -165,10 +165,13 @@ def ci_green_and_selects(t: Path):
     import tomllib
     for r in tomllib.loads((t / "ci/test-select.toml").read_text()).get("rule", []):
         toml_jobs |= set(r.get("jobs", []))
-    gated = {j for j, v in ci["jobs"].items() if "needs.select.outputs" in str(v.get("if", ""))}
+    # Compare the map to the select job's declared outputs, not to every
+    # job gated on those outputs. package is gated on outputs.pytest on
+    # purpose and is kept out of ci/test-select.toml.
+    select_outputs = set((ci["jobs"].get("select") or {}).get("outputs") or {})
     probs = []
     if "ci/test_select.py" not in sel: probs.append("select job does not run ci/test_select.py")
-    if toml_jobs != gated: probs.append(f"map jobs {sorted(toml_jobs)} != selected CI jobs {sorted(gated)}")
+    if toml_jobs != select_outputs: probs.append(f"map jobs {sorted(toml_jobs)} != select outputs {sorted(select_outputs)}")
     token = os.environ.get("GITHUB_TOKEN", "")
     if CTX["offline"] or not CTX["check_runs"] or not token:
         why = "offline" if CTX["offline"] else "check runs not read (pass --check-runs with GITHUB_TOKEN set)"
