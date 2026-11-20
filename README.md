@@ -534,16 +534,11 @@ AST skeletonizers, ctags, tree-sitter, Aider's repo map, and various repo packer
 
 This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md).
 
-## Windows known issues (to be fixed)
+## Windows known issues
 
-These issues are known and will be fixed. This list is the public record until then.
+This section lists open issues. The Windows test-run issues that shipped in 0.1.5 are in the changelog.
 
-- CRLF shell and powershell files: `_shell_word` in `src/rco/edges.py` (line 78) splits on `" \t\n;|&"` and does not treat `\r` as a delimiter. On CRLF files, extracted import paths can keep a trailing `\r`, and those import edges are dropped.
-- `--for` with backslash paths: `rco tree`, `rco pack`, and `rco pin` take `--for` in `src/rco/cli.py` (lines 41, 101, and 134). Module lookup in `src/rco/modules.py` (line 89) compares against `/`, so a path such as `src\rco\cli.py` can resolve to the wrong module. Until this is fixed, pass `--for` paths with forward slashes.
-- `pytest` collection on Windows: `tools/phase0_baseline.py` (line 35) imports `resource` unconditionally. That module is unix-only, so collecting tests on Windows fails.
 - No `.gitattributes`: this repository does not pin line endings. A Windows checkout with `core.autocrlf=true` can change fixture and golden file bytes and fail golden tests. A workaround is to clone with `core.autocrlf=false`.
-- Tests hardcode `python3` (`tests/test_wheel_smoke.py`, line 44) and run `sh` with `PATH=/usr/bin:/bin` (`tests/test_init.py`, line 45).
-- Reserved backend names (not Windows-specific): `NOT_SHIPPED` in `src/rco/config.py` (line 40) reserves the names `mill` and `mcp`. `open_store` checks that set (lines 115-118) before loading an `rco.backends` entry point, so an adapter registered under either name never loads.
 
 ## License
 
