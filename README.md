@@ -532,7 +532,7 @@ AST skeletonizers, ctags, tree-sitter, Aider's repo map, and various repo packer
 
 ## Process and GitHub setup
 
-This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md).
+This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md). Adopting rco in a repo: [`docs/guide/adopting-rco.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/guide/adopting-rco.md).
 
 ## License
 
