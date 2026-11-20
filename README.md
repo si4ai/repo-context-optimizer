@@ -198,7 +198,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
 - `SHA` defaults to `HEAD`. A repository with no commits still yields an empty pack and exit 0.
-- `--for FILE...` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
+- `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
 - `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 8000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits.
 
 The pack is the map; raw files are fetched on demand.
