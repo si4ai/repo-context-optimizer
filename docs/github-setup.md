@@ -24,7 +24,7 @@ On the default branch, prefer these defaults, and adapt them to the repo:
 - Merge commits by default, so commit history is kept (including release or fold branches merged into the default branch). Leave squash and rebase merge on for when a change needs them. Do not require linear history; it blocks merge commits.
 - Enable auto-merge, so Validator can enqueue a passed PR.
 - Delete the head branch on merge.
-- Leave update-branch off, and leave requiring the branch to be up to date optional. The merge queue already tests each PR on top of the latest default branch; turning that setting on costs an update per PR.
+- Leave update-branch off.
 - Require no human code-owner review by default; Validator is the passer.
 
 ## Ruleset on the default branch
@@ -41,7 +41,7 @@ One active ruleset targeting the default branch. Do not allow bypass for desk ap
 
 Report-only jobs belong in this list only when a failure means "the check did not run", not "the check found something". Never wrap a report job in `|| echo`; that hides crashes and makes a dead checker look green.
 
-Add a merge queue only when the repo needs one, that is, when several PRs land on the default branch close together and each must pass against the others. Then: merge commit, group when all required checks are green, a generous check timeout, and a `merge_group` trigger on every workflow that has a required job. Without a queue, leaving requiring the branch to be up to date off is the default; turning it on catches semantic conflicts at the cost of an update per PR.
+Add a merge queue only when the repo needs one, that is, when several PRs land on the default branch close together and each must pass against the others. Then: merge commit, group when all required checks are green, a generous check timeout, and a `merge_group` trigger on every workflow that has a required job. Without a queue, requiring the branch to be up to date is optional: it catches semantic conflicts at the cost of one update per merge.
 
 Keep a second ruleset or tag protection for release tags (`v*`) if you publish them: no updates, no deletions, no force-pushes.
 
@@ -70,7 +70,7 @@ Lessons already learned:
 - Workflow edits and merge-queue setup are easy to miss when an app is first installed. Grant them on purpose, not as a surprise mid-PR.
 - If you add a job that checks a Validator status, it should trust only statuses created by this app's bot login. Anyone with write access can post a status with the same context, so a configurable login (not a hard-coded org name) belongs in the check.
 
-Default: authors, including other desk apps, do not merge, enqueue, auto-merge, or rerun CI on their own PRs, and adapt this when a situation needs a different passer or merger.
+Default: authors, including other desk apps, do not merge, enqueue, auto-merge, or rerun CI on their own PRs.
 
 ## Files to copy
 
