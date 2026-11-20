@@ -1,13 +1,13 @@
 # adopting rco from T0 to TN
 
-Written against rco 0.1.6. Every command, flag and file named here is in the 0.1.6 wheel. If you install a different version, check its CHANGELOG first.
+Written against rco 0.1.6. Commands, flags and files named here are in the 0.1.6 wheel. If you install a different version, check its CHANGELOG first.
 
 This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach. For the repository around rco (settings, rulesets, pinned Actions, reports), see [GitHub setup](../github-setup.md).
 
 ## bottom line
 
 - rco is a report tool. Every place it goes in a pipeline is advisory: a job that shows facts and never blocks a merge. Exit 1 means "findings", not "failure". Exit 2 (usage error) and 3 (internal error) fail the job.
-- Setup is one command: `pip install repo-context-optimizer==0.1.6`, then `rco init` at the top of your checkout. It writes `rco.toml` and `.github/workflows/rco.yml`. On a pull request that workflow puts `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice into the job summary. On a push to the default branch it runs `rco update`. Nothing needs copying from the rco repository.
+- Setup is one command: `pip install repo-context-optimizer==0.1.6`, then `rco init` at the top of your checkout. It writes `rco.toml` and `.github/workflows/rco.yml`. On a pull request that workflow puts `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice into the job summary. On a push to the default branch it runs `rco update`. rco itself needs nothing copied from the rco repository; the Files to copy list in github-setup.md is optional CI hardening.
 - Not in the `rco init` workflow: `rco check`, `rco triage` and `rco plan`. Add them by hand if you want them (see the stage table).
 - What does not work today: LLM prose (off by design), the mill and MCP backends, notices sent by mail, and recorded `tw rco update` runs.
 - Always pass an explicit base and head in CI, and check out full history. The default base looks for `origin/HEAD`, `main` or `master`, and a CI checkout often has none of them. The `rco init` workflow already does both.
@@ -40,7 +40,7 @@ rco init            # add --hooks for the post-merge hook
   - On `push` to the default branch: `rco update --name <branch>`, with `.rco/` kept in `actions/cache`.
 - With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
 
-Then commit the two files, open a PR, and read the job summary. Keep the `rco` job out of your required checks.
+Then commit the two files, open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
 
 Limits of the generated workflow:
 
@@ -55,7 +55,7 @@ Limits of the generated workflow:
 
 ## capability legend
 
-Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI (`src/rco/cli.py`) or wheel. NOT SHIPPED = planned in the README or design docs.
+Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI or wheel. NOT SHIPPED = planned in the README or design docs.
 
 ### shipped in 0.1.6
 
@@ -88,7 +88,7 @@ Exit 2 = usage error, exit 3 = internal error, for every command. A CI job shoul
 
 | Code | Item | source |
 |---|---|---|
-| LP | LLM prose | hook exists in `src/rco/prose/llm.py`, off by design |
+| LP | LLM prose | hook exists, off by design |
 | MB | mill backend extra | README "storage backends"; design only |
 | MC | MCP backend / adapter | README roadmap |
 | TW | `tw rco update` recorded runs | README slice 5 |
@@ -115,7 +115,7 @@ flowchart LR
 
 | stage | what to do | Where | Required? | Why | in the `rco init` workflow? |
 |---|---|---|---|---|---|
-| T0 setup | install rco; run `rco init` (IN); commit `rco.toml` and the workflow; pin key contracts with PN | `rco.toml`, `.github/workflows/rco.yml`, `pins/*.json`; repo settings per [GitHub setup](../github-setup.md) | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes, except PN: pins are your choice |
+| T0 setup | install rco; run `rco init` (IN); commit `rco.toml` and the workflow; pin key contracts with PN. Pin the files most others import, one pin file per area. | `rco.toml`, `.github/workflows/rco.yml`, `pins/*.json`; repo settings per [GitHub setup](../github-setup.md) | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes, except PN: pins are your choice |
 | T1 first clone | `pip install`; optionally `rco update` once | contributing doc | advisory | the store adds mined prose to packs; packs work without it | n/a; needs Python 3.12+ |
 | T2 start work | `rco pack --for <files>` | contributing doc, agent instructions | advisory | the agent starts from the contracts, not by reading whole modules | n/a |
 | T3 local commits | nothing at pre-commit; at pre-push, `rco diff $(git merge-base origin/<base> HEAD) HEAD` and `rco drift pins` | `.githooks/pre-push` | advisory, always exit 0 | catches contract changes before they leave the machine | no; you write the hook. `rco diff --staged` (SG) works at commit time |
