@@ -36,7 +36,6 @@ paths = [
   "tests/fixtures/**",
   "tests/golden/**",
   "pyproject.toml",
-  ".gitattributes",
 ]
 jobs = ["pytest"]
 
