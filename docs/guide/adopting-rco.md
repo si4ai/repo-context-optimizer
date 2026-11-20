@@ -94,7 +94,7 @@ Exit 2 = usage error, exit 3 = internal error, for every command. A CI job shoul
 | TW | `tw rco update` recorded runs | README slice 5 |
 | NM | notices sent by mail through a backend | README "storage backends" |
 
-A merge webhook (HK) still needs your own server. Merge planning beyond `rco plan` (planned file lists, lanes) is still a README proposal.
+A merge webhook still needs your own server. Merge planning beyond `rco plan` (planned file lists, lanes) is still a README proposal.
 
 ## stages T0 to TN
 
@@ -142,7 +142,7 @@ Every approach uses the same rule for pull requests: base = `git merge-base <PR 
 
 | Approach | PR run | After merge (push) | Merge queue | Main caveat |
 |---|---|---|---|---|
-| trunk + squash (GitHub flow) | DF NT DR CK | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
+| trunk + squash (GitHub flow) | DF TS DR NT | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
 | trunk + merge commits | same | same; before..after spans the merge | n/a | none for rco |
 | trunk + rebase merge | same | same; before..after spans the rebased commits | n/a | PR-time SHAs never reach main; cite main SHAs in notes and pins |
 | Merge queue (any method) | same | push after the queue lands | merge_group: base_sha..head_sha. Skip rco jobs there, or run them if required | a required job that skips blocks the queue |
@@ -160,14 +160,14 @@ Every approach uses the same rule for pull requests: base = `git merge-base <PR 
 flowchart LR
   subgraph fold["branch folding"]
     direction LR
-    c1["feature branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(release/X, feature)"| r1["release/X"]
+    c1["feature branch"] -->|"PR: DF TS DR NT<br/>base = merge-base(release/X, feature)"| r1["release/X"]
     r1 -->|"push: UP --name release-X<br/>TG other feature PRs --onto release/X"| r1
     r1 -->|"release PR: DF merge-base(main, release/X)..release/X<br/>= contract notes for the release; PN re-pin"| m1["main"]
     m1 -->|"push: UP --name main<br/>TG next release --onto main"| t1["tag"]
   end
   subgraph trunk["no folding"]
     direction LR
-    f2["feature branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(main, head)"| m2["main"]
+    f2["feature branch"] -->|"PR: DF TS DR NT<br/>base = merge-base(main, head)"| m2["main"]
     m2 -->|"push: UP, TG open PRs"| t2["tag"]
   end
 ```
@@ -176,7 +176,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  f["feature"] -->|"PR: DF NT DR CK, base develop"| d["develop"]
+  f["feature"] -->|"PR: DF TS DR NT, base develop"| d["develop"]
   d -->|"push: UP --name develop"| d
   d --> r["release/X"] -->|"PR: DF = release contract notes"| m["main"]
   h["hotfix"] -->|"PR: DF, base main"| m
