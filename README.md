@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** This is 0.1.5. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
+**Status:** This is 0.1.6. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
 
 Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR.
 
@@ -14,7 +14,7 @@ Open raw files only on demand.
 
 ## What ships
 
-| Code | Capability | 0.1.5 |
+| Code | Capability | 0.1.6 |
 |---|---|---|
 | TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
 | PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
@@ -42,7 +42,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.5:
+The default in 0.1.6:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command
@@ -273,7 +273,7 @@ A changed file that is not code (data, config, fixtures, docs a test reads) sets
 
 Triage never rebases, merges, or pushes anyone's branch. For each open branch it reports either `clean: no changed file, no changed contract used` or a structural brief, as a hint. The branch owner or a merge-main step acts on that hint.
 
-Usage: `rco triage BRANCH... [--onto TARGET]` (at least one BRANCH; TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]` (at least one other BRANCH): it lists this PR's contract changes once, then, per other branch, the files that branch changed that use one of those contracts and the files changed on both sides. The wording is a neutral hint about this PR, not an upstream structural brief. The JSON schema is `rco.notice/2`. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. In CI ([`ci/notice_report.sh`](https://github.com/si4ai/repo-context-optimizer/blob/main/ci/notice_report.sh)), BASE is the merge-base of the PR base tip and head, and only open PRs into the same base branch are compared. Both find callers with the same qualified index as `rco diff`, in Python, JS/TS, Go, Rust, shell, and PowerShell. CLI, SQL, and route changes show up as files changed on both sides.
+Usage: `rco triage BRANCH... [--onto TARGET]` (at least one BRANCH; TARGET defaults to the default branch). The cross-PR contract notice is `rco notice BRANCH... [--base BASE] [--head HEAD]` (at least one other BRANCH): it lists this PR's contract changes once, then, per other branch, the files that branch changed that use one of those contracts and the files changed on both sides. The wording is a neutral hint about this PR, not an upstream structural brief. The JSON schema is `rco.notice/2`. It names branches, not desks, and always exits 0, so a CI job running it is a visible hint, never a block. In CI (`python -m rco.notice_report`, shipped in the wheel and written into the `rco init` workflow), BASE is the merge-base of the PR base tip and head, and only open PRs into the same base branch are compared. Both find callers with the same qualified index as `rco diff`, in Python, JS/TS, Go, Rust, shell, and PowerShell. CLI, SQL, and route changes show up as files changed on both sides.
 
 An unchanged contract can still hide a behavior change, so tests still run (`rco affected` picks which). The hypothesis, to be measured in Phase 5, is that many branches are contract-clean and need no structural update.
 
@@ -308,7 +308,7 @@ The incremental post-merge updater described above.
 One-step setup. It writes only files that don't exist yet, never overwrites one, and reports each file as wrote or kept:
 
 - `rco.toml` with every setting commented out, so nothing changes until you edit it.
-- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, and (when `pins/` exists) `rco drift` into the job summary. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3.
+- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, (when `pins/` exists) `rco drift`, and the cross-PR notice into the job summary. The notice step is `python -m rco.notice_report`, which ships in the wheel: it lists the other open PRs into the same base with `gh api` (the job asks for `pull-requests: read`), fetches their heads, and runs `rco notice`. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3.
 - With `--hooks`, a `post-merge` hook in git's hooks directory (`core.hooksPath` is honored). After a pull or merge it runs `rco update --name <branch>` in the background, and it always exits 0, even without `rco` on `PATH`. If another post-merge hook is already there, it is kept, and you add the line by hand. `--remove-hooks` deletes the hook only if rco wrote it.
 
 ### Structural brief (example)

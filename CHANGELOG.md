@@ -1,5 +1,29 @@
 # Changelog
 
+## 0.1.6 - 2026-11-20
+
+Setup for a new repository is `rco init` alone. Trees, Forests, and
+packs stay deterministic: no LLM runs, and the same commit gives the
+same output.
+
+### added
+
+- the cross-PR notice ships in the wheel as `python -m rco.notice_report`
+  (with its lister, `rco.notice_heads`), so a repository no longer copies
+  `ci/notice_report.sh` and `ci/notice_heads.py`; the wheel smoke test runs
+  it from an install with no rco repo tree
+- the `rco init` workflow runs that notice on pull requests and asks for
+  `pull-requests: read`; it still fails only on exit 2 or 3
+
+### changed
+
+- this repo's `notice_report` CI job runs `python -m rco.notice_report`
+  from the tree under test; `ci/notice_report.sh` and `ci/notice_heads.py`
+  are gone
+- `docs/guide/adopting-rco.md` is rewritten for 0.1.6: setup is
+  `rco init`, the local store is per checkout, and the 0.1.1 measurements
+  and fixed known issues are removed
+
 ## 0.1.5 - 2026-11-19
 
 Fixes from a Windows test run. Trees, Forests, and packs stay
