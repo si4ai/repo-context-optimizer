@@ -327,4 +327,5 @@ jobs:
           PUSH_BEFORE: ${{ github.event.before }}
           PUSH_SHA: ${{ github.sha }}
           PUSH_REF_NAME: ${{ github.ref_name }}
-        run: bash ci/notice_report.sh
+        # the tree under test, not the published wheel (rco init runs the wheel)
+        run: PYTHONPATH=src python -m rco.notice_report
