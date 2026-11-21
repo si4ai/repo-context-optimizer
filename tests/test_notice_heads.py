@@ -1,14 +1,9 @@
-"""ci/notice_heads.py: other open PR heads, named as pr-N, never a desk."""
+"""rco.notice_heads: other open PR heads, named as pr-N, never a desk."""
 import json
-import sys
-from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
-
-from ci.notice_heads import PrHead, fetch_spec, load_pulls, other_heads  # noqa: E402
+from rco.notice_heads import PrHead, fetch_spec, load_pulls, other_heads
 
 
 def _pr(number, sha, ref="card/x", state="open", user="some-bot[bot]"):
@@ -69,7 +64,7 @@ def test_load_pulls_accepts_paged_arrays_and_empty():
 
 
 def test_cli_prints_stable_lines(tmp_path, capsys):
-    from ci.notice_heads import main
+    from rco.notice_heads import main
 
     path = tmp_path / "pulls.json"
     path.write_text(json.dumps([_pr(34, "a" * 40), _pr(9, "b" * 40)]), encoding="utf-8")
@@ -103,7 +98,7 @@ def test_base_ref_filter_drops_a_pr_with_no_base():
 
 
 def test_cli_base_ref_flag(tmp_path, capsys):
-    from ci.notice_heads import main
+    from rco.notice_heads import main
 
     path = tmp_path / "pulls.json"
     path.write_text(json.dumps([_pr_into(9, "b" * 40, "main"),

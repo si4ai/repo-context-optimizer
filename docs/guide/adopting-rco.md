@@ -1,15 +1,16 @@
 # adopting rco from T0 to TN
 
-Written against rco 0.1.1 (main at `f9c415f`). Every claim below was checked by running the 0.1.1 CLI on this repo, on a large Python repo, and on small fixture repos. The [capability legend](#capability-legend) and the "works today?" notes are refreshed for 0.1.2. 0.1.1 was never published, so 0.1.2 is the first install after 0.1.0. The measurements and the repo-type checks below are still the 0.1.1 runs. Where 0.1.2 changed an answer, the note says so.
+Written against rco 0.1.6. Commands, flags and files named here are in the 0.1.6 wheel. If you install a different version, check its CHANGELOG first.
 
-This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach.
+This guide answers three questions for any repository: what to set up, where it goes, and why. It covers each stage of a repo's life, from setup (T0) to steady state (TN), for each repo type and each release approach. For the repository around rco (settings, rulesets, pinned Actions, reports), see [GitHub setup](../github-setup.md).
 
 ## bottom line
 
-- rco is a report tool. Every place it goes in a pipeline is advisory: a job that shows facts and never blocks a merge. Exit 1 means "findings", not "failure".
-- What works today (0.1.2): a PR job that runs `rco diff`, `rco notice`, `rco drift` and `rco check`, with `rco affected` to pick tests. On top of that, `rco update` and `rco triage` after a merge, `rco plan` across open branches, and `rco pack` for any agent at any time. `rco init` writes the config, a CI job and hooks. `rco diff --staged` works at commit time. JS/TS, Go, Rust, shell and PowerShell contracts are parsed.
+- rco is a report tool. Every place it goes in a pipeline is advisory: a job that shows facts and never blocks a merge. Exit 1 means "findings", not "failure". Exit 2 (usage error) and 3 (internal error) fail the job.
+- Setup is one command: `pip install repo-context-optimizer==0.1.6`, then `rco init` at the top of your checkout. It writes `rco.toml` and `.github/workflows/rco.yml`. On a pull request that workflow puts `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice into the job summary. On a push to the default branch it runs `rco update`. rco itself needs nothing copied from the rco repository; the Files to copy list in github-setup.md is optional CI hardening.
+- Not in the `rco init` workflow: `rco check`, `rco triage` and `rco plan`. Add them by hand if you want them (see the stage table).
 - What does not work today: LLM prose (off by design), the mill and MCP backends, notices sent by mail, and recorded `tw rco update` runs.
-- Always pass an explicit base and head in CI, and check out full history. The default base looks for `origin/HEAD`, `main` or `master`, and a CI checkout often has none of them.
+- Always pass an explicit base and head in CI, and check out full history. The default base looks for `origin/HEAD`, `main` or `master`, and a CI checkout often has none of them. The `rco init` workflow already does both.
 
 ## How to choose
 
@@ -21,11 +22,42 @@ Answer three questions, then read your rows off the tables below.
 
 Then start from the [stage table](#stages-t0-to-tn) and apply the "what differs" notes for your type and approach.
 
+## setup (T0): `rco init`
+
+Check first: rco needs Python 3.12 or newer. The workflow it writes runs on GitHub Actions.
+
+```
+pip install repo-context-optimizer==0.1.6
+cd your-repo
+rco init            # add --hooks for the post-merge hook
+```
+
+`rco init` writes only files that are not there yet, and reports each one as wrote or kept:
+
+- `rco.toml`: every setting commented out, so the defaults apply until you edit a line.
+- `.github/workflows/rco.yml`: one job, `ubuntu-latest`, Python 3.12, actions pinned to full SHAs, `fetch-depth: 0`, and `permissions: contents: read, pull-requests: read`. It installs `repo-context-optimizer==` the version that wrote it.
+  - On `pull_request`: base = `git merge-base` of the PR base and head. It runs `rco diff`, `rco affected`, `rco drift pins` (when `pins/` exists), then `python -m rco.notice_report`, the cross-PR notice that ships in the wheel. The notice lists the other open PRs into the same base branch with `gh api`, fetches each head as `pr-N`, and runs `rco notice`. The step fails only if one of them exits 2 or 3.
+  - On `push` to the default branch: `rco update --name <branch>`, with `.rco/` kept in `actions/cache`.
+- With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
+
+Then commit the two files, open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
+
+Limits of the generated workflow:
+
+- It has no `merge_group` trigger, so a merge queue does not run it. That is right while it is advisory.
+- The notice needs the `gh` CLI (present on GitHub-hosted runners) and `GH_TOKEN`, which the workflow sets to `github.token`.
+- The checkout drops its token (`persist-credentials: false`). On a private repository, fetching another PR's head then fails and the notice exits 3. Either let the checkout keep its token or delete the notice lines from the step.
+- If your repo already has a CI workflow and you want rco inside it, copy the `rco` job from the generated `rco.yml` instead of keeping two files.
+
+## The local store
+
+`rco update` writes a SQLite store at `.rco/rco.db` (the default; `rco.toml` can move it). It is per checkout and rebuilt from git, so nothing is shared or synced between people or agents. First use adds `.rco/` to `.git/info/exclude`, never to `.gitignore`. The store runs in WAL mode, which needs every process on one machine: never put it on a network share or on a host that several users share. Cross-checkout views come from GitHub instead: the CI cache of `.rco/` and the notice, which reads open PR heads. A shared store would be a backend adapter, which is designed but not shipped.
+
 ## capability legend
 
-Codes are used in every table and diagram. Shipped = in the 0.1.2 CLI (`src/rco/cli.py`). NOT SHIPPED = planned in the README or design docs.
+Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI or wheel. NOT SHIPPED = planned in the README or design docs.
 
-### shipped in 0.1.2
+### shipped in 0.1.6
 
 | Code | Command | what it answers | Exit codes |
 |---|---|---|---|
@@ -38,11 +70,11 @@ Codes are used in every table and diagram. Shipped = in the 0.1.2 CLI (`src/rco/
 | PN | `rco pin --for FILES --format json --out pins/NAME.json` | freeze a reviewed contract as a pin file (without `--out`, it prints markdown) | 0 |
 | DR | `rco drift pins` | did any pinned contract change? | 0 none, 1 drift |
 | TG | `rco triage BRANCH... --onto T` | does my branch use anything the target changed? | 0 clean, 1 brief |
-| NT | `rco notice OTHER... --base B --head H` | Which other open branches use what this PR changed? | always 0 |
+| NT | `rco notice OTHER... --base B --head H`; in CI, `python -m rco.notice_report` | Which other open branches use what this PR changed? | always 0; the CI module exits 3 if it cannot list or fetch the other PRs |
 | MP | `rco plan BRANCH BRANCH... [--base B]` | what does each branch change that another uses, which tests see both, and in what order should they merge? | 0 clean, 1 findings |
 | TS | `rco affected [BASE] [HEAD]` | which tests can see this change? | 0 |
 | SG | `rco diff --staged` / `--worktree` | which contracts does my uncommitted change touch? | 0 none, 1 changes |
-| IN | `rco init [--hooks]` | set up `rco.toml`, a CI job and hooks in one step | 0 |
+| IN | `rco init [--hooks]` | set up `rco.toml`, a CI workflow (DF, TS, DR, NT on PRs; UP on push) and hooks in one step | 0 |
 | HK | post-merge hook from `rco init --hooks` | keep the store current after each merge | 0 |
 | RO | `rco live [SHA] --schema/--openapi/--help-text` | does the map match a real schema dump, OpenAPI file or `--help` output? | 0 ok, 1 findings |
 | LG | bundled parsers | JavaScript/TypeScript, Go, Rust, shell and PowerShell contracts | n/a |
@@ -56,105 +88,53 @@ Exit 2 = usage error, exit 3 = internal error, for every command. A CI job shoul
 
 | Code | Item | source |
 |---|---|---|
-| LP | LLM prose | hook exists in `src/rco/prose/llm.py`, off by design |
+| LP | LLM prose | hook exists, off by design |
 | MB | mill backend extra | README "storage backends"; design only |
 | MC | MCP backend / adapter | README roadmap |
 | TW | `tw rco update` recorded runs | README slice 5 |
 | NM | notices sent by mail through a backend | README "storage backends" |
 
-A merge webhook (HK) still needs your own server. Merge planning beyond `rco plan` (planned file lists, lanes) is still a README proposal.
+A merge webhook still needs your own server. Merge planning beyond `rco plan` (planned file lists, lanes) is still a README proposal.
 
 ## stages T0 to TN
 
 ```mermaid
 flowchart LR
-  classDef ns stroke-dasharray:6 4,color:#666;
-  T0["T0 repo setup<br/>install: dev dependency,<br/>report job DF NT DR CK,<br/>pins via PN, push job UP"]
+  T0["T0 repo setup<br/>IN: rco.toml and rco.yml<br/>(DF TS DR NT, push UP),<br/>pins via PN"]
   T1["T1 first clone<br/>install rco, Python 3.12+<br/>optional UP to seed store"]
   T2["T2 start work<br/>use PK on the files<br/>you will touch"]
   T3["T3 local commits<br/>pre-commit: none<br/>pre-push: DF DR"]
-  T4["T4 PR CI<br/>DF NT DR CK in the<br/>job summary"]
+  T4["T4 PR CI<br/>DF TS DR NT in the<br/>job summary"]
   T5["T5 review<br/>reviewer reads the report,<br/>runs own DF"]
   T6["T6 merge<br/>queue: skip or pass<br/>push: UP, TG open PRs"]
   T7["T7 release<br/>DF last tag..new tag<br/>re-pin with PN"]
   TN["TN steady state<br/>CK selftest, DR every PR,<br/>cache store, TG sweeps"]
-  L["0.1.2 adds:<br/>IN one-step setup, SG staged diff,<br/>TS test selection, HK auto update, MP plan"]
   T0 --> T1 --> T2 --> T3 --> T4 --> T5 --> T6 --> T7 --> TN
   TN -.-> T2
-  L -.-> T0
-  L -.-> T3
-  L -.-> TN
 ```
 
-| stage | what to do | Where | Required? | Why | works today? |
+| stage | what to do | Where | Required? | Why | in the `rco init` workflow? |
 |---|---|---|---|---|---|
-| T0 setup | add `repo-context-optimizer` as a dev dependency; add one report job (DF, NT, DR, CK); pin key contracts with PN; add a push job that runs UP | `pyproject.toml` or CI lock file; `.github/workflows/ci.yml`; `pins/*.json` | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes; `rco init` writes it (IN) |
-| T1 first clone | `pip install`; optionally `rco update` once | contributing doc | advisory | the store adds mined prose to packs; packs work without it | yes; needs Python 3.12+ |
-| T2 start work | `rco pack --for <files>` | contributing doc, agent instructions | advisory | the agent starts from the contracts, not by reading whole modules | yes |
-| T3 local commits | nothing at pre-commit; at pre-push, `rco diff $(git merge-base origin/<base> HEAD) HEAD` and `rco drift pins` | `.githooks/pre-push` | advisory, always exit 0 | catches contract changes before they leave the machine | yes; pre-commit can run `rco diff --staged` (SG) |
-| T4 PR CI | DF with base = merge-base of PR base and head; NT against other open PR heads; DR if `pins/` exists; CK | `ci.yml` on `pull_request`, `fetch-depth: 0`, `pull-requests: read` for NT | advisory | reviewers see changed contracts and cross-PR overlap | yes |
-| T5 review | read the report; run your own DF; still read the code | reviewer checklist | advisory | DF lists public contract changes, not every behavior change | yes |
-| T6 merge | merge_group: skip rco jobs (or run them, if you made them required); after merge: UP `--name <branch>` and TG other open PRs `--onto <branch>` | `ci.yml` on `push` to each target branch | advisory | the map follows the branch; open PRs learn what moved under them | yes; store is gone after the job unless cached (SS) |
-| T7 release | DF from the last release tag to the new one as contract notes; DR clean, or re-pin on purpose | release workflow or release checklist | advisory | release notes for contracts at zero tokens | yes |
-| TN steady | CK `--selftest` and a map check on a schedule; DR on every PR; refresh pins; TG sweeps | `ci.yml` (schedule), `actions/cache` for `.rco/` | advisory | keeps the map honest and current | yes; HK, TS and MP shipped in 0.1.2 |
-
-### A report job you can copy (T4 and T6)
-
-simulated locally with pull_request and push events, including an all-zero `before`. It has not been run in GitHub Actions yet. Pin the actions to full SHAs.
-
-```yaml
-  rco_report:
-    if: github.event_name != 'merge_group'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    permissions:
-      contents: read
-    steps:
-      - uses: actions/checkout@<sha> # v4
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - uses: actions/setup-python@<sha> # v5
-        with:
-          python-version: "3.12"
-      - run: pip install repo-context-optimizer==0.1.2
-      - env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          PUSH_BEFORE: ${{ github.event.before }}
-          PUSH_SHA: ${{ github.sha }}
-        run: |
-          set -uo pipefail
-          if [ "$EVENT_NAME" = pull_request ]; then
-            head="$PR_HEAD"; base=$(git merge-base "$PR_BASE" "$PR_HEAD")
-          else
-            head="$PUSH_SHA"; base="$PUSH_BEFORE"
-          fi
-          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
-            base=$(git rev-parse --verify --quiet "$head^1" || true)
-          fi
-          [ -n "$base" ] || { echo "no base: no rco report"; exit 0; }
-          rco diff "$base" "$head" > rco.md; code=$?
-          if [ -d pins ]; then rco drift pins --at "$head" >> rco.md; d=$?; [ "$d" -le 1 ] || code=$d; fi
-          cat rco.md >> "$GITHUB_STEP_SUMMARY"
-          case "$code" in 0|1) exit 0 ;; *) exit "$code" ;; esac
-```
-
-For `rco notice`, use the pattern in this repo's `ci/notice_report.sh` and `ci/notice_heads.py`. They are not in the wheel, so copy them. See [known issues](#known-issues-found-in-this-review) before you copy.
+| T0 setup | install rco; run `rco init` (IN); commit `rco.toml` and the workflow; pin key contracts with PN. Pin the files most others import, one pin file per area. | `rco.toml`, `.github/workflows/rco.yml`, `pins/*.json`; repo settings per [GitHub setup](../github-setup.md) | advisory; keep rco jobs out of required checks | the job shows contract facts on every PR without blocking anyone | yes, except PN: pins are your choice |
+| T1 first clone | `pip install`; optionally `rco update` once | contributing doc | advisory | the store adds mined prose to packs; packs work without it | n/a; needs Python 3.12+ |
+| T2 start work | `rco pack --for <files>` | contributing doc, agent instructions | advisory | the agent starts from the contracts, not by reading whole modules | n/a |
+| T3 local commits | nothing at pre-commit; at pre-push, `rco diff $(git merge-base origin/<base> HEAD) HEAD` and `rco drift pins` | `.githooks/pre-push` | advisory, always exit 0 | catches contract changes before they leave the machine | no; you write the hook. `rco diff --staged` (SG) works at commit time |
+| T4 PR CI | DF with base = merge-base of PR base and head; TS; DR if `pins/` exists; NT against other open PR heads; optionally CK on a map you keep | `rco.yml` on `pull_request`, `fetch-depth: 0`, `pull-requests: read` for NT | advisory | reviewers see changed contracts and cross-PR overlap | yes for DF, TS, DR, NT; add CK by hand |
+| T5 review | read the report; run your own DF; still read the code | reviewer checklist | advisory | DF lists public contract changes, not every behavior change | n/a |
+| T6 merge | merge_group: skip rco jobs (or run them, if you made them required); after merge: UP `--name <branch>` and TG other open PRs `--onto <branch>` | `rco.yml` on `push` to each target branch | advisory | the map follows the branch; open PRs learn what moved under them | UP on the default branch, with the store cached (SS); add TG and other branches by hand |
+| T7 release | DF from the last release tag to the new one as contract notes; DR clean, or re-pin on purpose | release workflow or release checklist | advisory | release notes for contracts at zero tokens | no; add by hand |
+| TN steady | CK `--selftest` and a map check on a schedule; DR on every PR; refresh pins; TG sweeps | a scheduled workflow, `actions/cache` for `.rco/` | advisory | keeps the map honest and current | DR and the cache yes; the rest by hand |
 
 ## repo types
 
-The README's zero-config acceptance table, checked against 0.1.1 with fixture repos.
-
-| Type | README expects | what 0.1.1 does | verdict | How the pipeline differs |
-|---|---|---|---|---|
-| Small Python | modules from package layout; Trees; pack and diff with defaults | Trees, argparse flags and callers extracted; a signature change shows in DF with its caller. Modules are directories, not read from manifests | verified, with the module caveat | none: use the stage table as is |
-| polyglot | bundled parsers where available; unknown languages fall back to an outline, no error | only Python and SQL are parsed; `.js`, `.ts`, `.go`, `.rs` become file outlines. A JS signature change gives "no contract changes". A SQL column add is caught | outline holds; LG shipped in 0.1.2 | DF, NT and DR only cover the Python and SQL parts. For other languages, NT reports files changed on both sides. Do not read "no contract changes" as "safe". In 0.1.2, LG parses JS/TS, Go, Rust, shell and PowerShell, so DF, NT and TG see those contracts and callers. |
-| Large monorepo | pack respects `--budget`; update re-extracts only changed modules | 60-package fixture: first update extracted 60 modules, the next extracted 2. `--budget 500` used 499 and listed what it trimmed. On a real 885-file repo, each command took 2-5 s | verified at that size; cost at larger scale not measured | use `--for` on every pack; cache `.rco/` in CI. Per-package releases are not modeled (MO reads package.json / cargo.toml in 0.1.2; per-package releases are still not modeled) |
-| submodules | skipped, with a note | `tree` prints "note: skipped submodule ..."; `pack` and `diff` print no note; adding a submodule shows "no contract changes" | partly: the note only appears in `tree` | contracts inside submodules are invisible; run rco in the submodule's own repo |
-| LFS | pointer files opaque, not fetched | a pointer shows as `file ... (lfs=pointer)` | verified (pointer committed without git-lfs) | none; no need for `lfs: true` on checkout |
-| Empty | empty pack, exit 0 | repo with no commits: commands that resolve HEAD exit 2 (`check --selftest` exits 0) "not a commit: HEAD". Repo with an empty commit: empty pack, exit 0 | differs for a repo with no commits | at T0, make the first commit before adding rco jobs, or guard the job on `git rev-parse HEAD` |
+| Type | what rco does | How the pipeline differs |
+|---|---|---|
+| Small Python | modules from the package layout; Trees with functions, classes, argparse flags and callers | none: use the stage table as is |
+| polyglot | bundled parsers (LG) for Python, SQL, JS/TS, Go, Rust, shell and PowerShell; other languages become file outlines, with no error | DF, NT and DR only see contracts in the parsed languages. For other languages, NT reports files changed on both sides. Do not read "no contract changes" as "safe" there |
+| Large monorepo | pack respects `--budget`; update re-extracts only changed modules; modules come from `rco.toml`, then `package.json` / `Cargo.toml`, then directories (MO) | use `--for` on every pack; cache `.rco/` in CI. Per-package releases are not modeled |
+| submodules | skipped | contracts inside submodules are invisible; run rco in the submodule's own repo |
+| LFS | pointer files are opaque and not fetched | none; no need for `lfs: true` on checkout |
+| Empty | a repo with no commits gives an empty pack, tree and forest, exit 0 | make the first commit before the PR job means anything |
 
 ## Release approaches
 
@@ -162,7 +142,7 @@ Every approach uses the same rule for pull requests: base = `git merge-base <PR 
 
 | Approach | PR run | After merge (push) | Merge queue | Main caveat |
 |---|---|---|---|---|
-| trunk + squash (GitHub flow) | DF NT DR CK | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
+| trunk + squash (GitHub flow) | DF TS DR NT | DF before..after (one squash commit), UP `--name main`, TG open PRs `--onto main` | n/a | per-commit history is gone; fine for rco, which compares trees |
 | trunk + merge commits | same | same; before..after spans the merge | n/a | none for rco |
 | trunk + rebase merge | same | same; before..after spans the rebased commits | n/a | PR-time SHAs never reach main; cite main SHAs in notes and pins |
 | Merge queue (any method) | same | push after the queue lands | merge_group: base_sha..head_sha. Skip rco jobs there, or run them if required | a required job that skips blocks the queue |
@@ -180,14 +160,14 @@ Every approach uses the same rule for pull requests: base = `git merge-base <PR 
 flowchart LR
   subgraph fold["branch folding"]
     direction LR
-    c1["feature branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(release/X, feature)"| r1["release/X"]
+    c1["feature branch"] -->|"PR: DF TS DR NT<br/>base = merge-base(release/X, feature)"| r1["release/X"]
     r1 -->|"push: UP --name release-X<br/>TG other feature PRs --onto release/X"| r1
     r1 -->|"release PR: DF merge-base(main, release/X)..release/X<br/>= contract notes for the release; PN re-pin"| m1["main"]
     m1 -->|"push: UP --name main<br/>TG next release --onto main"| t1["tag"]
   end
   subgraph trunk["no folding"]
     direction LR
-    f2["feature branch"] -->|"PR: DF NT DR CK<br/>base = merge-base(main, head)"| m2["main"]
+    f2["feature branch"] -->|"PR: DF TS DR NT<br/>base = merge-base(main, head)"| m2["main"]
     m2 -->|"push: UP, TG open PRs"| t2["tag"]
   end
 ```
@@ -196,7 +176,7 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-  f["feature"] -->|"PR: DF NT DR CK, base develop"| d["develop"]
+  f["feature"] -->|"PR: DF TS DR NT, base develop"| d["develop"]
   d -->|"push: UP --name develop"| d
   d --> r["release/X"] -->|"PR: DF = release contract notes"| m["main"]
   h["hotfix"] -->|"PR: DF, base main"| m
@@ -232,7 +212,7 @@ flowchart LR
 
 ## Agents on demand: the map without LLM tokens
 
-Outside any pipeline, an agent can ask rco at any time. answers are computed from git objects with no model, no keys and no network. The LLM prose path is off; prose is mined from docstrings and READMEs.
+Outside any pipeline, an agent can ask rco at any time. Answers are computed from git objects with no model, no keys and no network. The LLM prose path is off; prose is mined from docstrings and READMEs.
 
 | question the agent has | Command |
 |---|---|
@@ -243,21 +223,9 @@ Outside any pipeline, an agent can ask rco at any time. answers are computed fro
 | Is the map I was handed still true? | `rco check <map.json>` |
 | Will my branch break against the target? | `rco triage <branch> --onto <target>` |
 
-Sizes measured on two repos (tokens = characters / 4, the estimate rco uses):
+## known issues
 
-| repo | All .py read raw | `rco tree` (full map) | `rco forest` | `rco pack --for` one file | raw files in that file's module |
-|---|---|---|---|---|---|
-| repo-context-optimizer (101 .py) | 127,115 | 13,603 | 760 | 4,062 (after `rco update`; 3,850 without a store) | 26,898 (21 files) |
-| a large Python repo (885 .py) | 1,519,485 | 138,279 | 3,269 | 5,292 | 21,238 (11 files) |
-
-These are size ratios, not savings. No A/B savings claim exists yet. The harness is in `tools/phase3_ab.py`, but the counting run waits for a released install. The README says to claim no savings until they are measured against a baseline.
-
-## known issues found in this review
-
-- `ci/notice_report.sh` passes the PR base tip as `--base`, not the merge-base. `rco diff` uses an explicit base as given, so a PR whose base branch moved on shows the base's new changes reversed. Fixed in 0.1.2: the script passes `git merge-base`.
-- `ci/notice_heads.py` lists every open PR, whatever its base branch. Fixed in 0.1.2: `--base-ref` keeps only PRs into the same base.
-- Caller lists match bare names, so a common name such as `label` lists callers that are not related. Fixed in 0.1.2: callers resolve to the defining file and qualname, in every bundled language.
-- After `rco update`, `rco check` adds prose-name findings: 38 on the large repo, 2 on a small one. A map check job should run before update, or treat these as advisory.
-- `rco diff` with no arguments fails in a detached CI checkout that has no `main`, and `HEAD~1` fails in a shallow clone. Use `fetch-depth: 0` and explicit SHAs.
-- The package needs Python 3.12+. Repos that test on 3.10 or 3.11 need a separate 3.12 job for rco.
-- A repo with no commits exits 2, where the README table says exit 0.
+- After `rco update`, `rco check` can add prose-name findings. Run a map check before update, or treat these as advisory.
+- `rco diff` with no arguments fails in a detached CI checkout that has no `main`, and `HEAD~1` fails in a shallow clone. Use `fetch-depth: 0` and explicit SHAs, as the `rco init` workflow does.
+- The package needs Python 3.12+. Repos that test on 3.10 or 3.11 need a separate 3.12 job for rco. The `rco init` workflow is one.
+- On a private repository, the notice in the `rco init` workflow cannot fetch other PR heads while the checkout drops its token; see [setup](#setup-t0-rco-init).

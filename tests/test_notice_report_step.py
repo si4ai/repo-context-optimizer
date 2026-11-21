@@ -1,30 +1,37 @@
-"""ci/notice_report.sh: a dead lister must fail the job, not look like a quiet repo."""
+"""rco.notice_report: a dead lister must fail the job, not look like a quiet repo.
+
+Runs the module the way a CI step does, from a checkout with no RCO tree in it.
+"""
 
 import os
+import shutil
 import stat
 import subprocess
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
-SCRIPT = ROOT / "ci" / "notice_report.sh"
+SRC = ROOT / "src"
 WORKFLOW = ROOT / ".github" / "workflows" / "ci.yml"
 QUIET = "no other open PRs: no cross-PR contract notice."
 
 
-def test_workflow_runs_the_script_not_an_inline_copy():
+def test_workflow_runs_the_module_not_an_inline_copy():
     text = WORKFLOW.read_text(encoding="utf-8")
-    assert "bash ci/notice_report.sh" in text
+    assert "PYTHONPATH=src python -m rco.notice_report" in text
     assert "gh api --paginate" not in text
 
 
-def test_notice_report_sh_change_selects_pytest():
+def test_notice_module_change_selects_pytest():
     sys.path.insert(0, str(ROOT))
     from ci.test_select import load_map, select_jobs
 
     rules, jobs = load_map(ROOT / "ci" / "test-select.toml")
     assert "pytest" in jobs
-    assert select_jobs(["ci/notice_report.sh"], rules) == {"pytest"}
+    for rel in ("src/rco/notice_report.py", "src/rco/notice_heads.py"):
+        assert select_jobs([rel], rules) == {"pytest"}
 
 
 def _write_exec(path: Path, text: str) -> None:
@@ -71,19 +78,16 @@ def _repo(tmp_path: Path) -> dict:
 def _run(tmp_path: Path, gh_script: str, extra_env=None, repo=None):
     repo = repo or _repo(tmp_path)
     work = repo["work"]
-    (work / "ci").mkdir()
-    (work / "ci" / "notice_heads.py").symlink_to(ROOT / "ci" / "notice_heads.py")
-    (work / "src").symlink_to(ROOT / "src")
     summary = tmp_path / "summary.md"
     summary.write_text("", encoding="utf-8")
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     _write_exec(bin_dir / "gh", gh_script)
-    _write_exec(bin_dir / "python", f"#!/bin/sh\nexec {sys.executable} \"$@\"\n")
     env = os.environ.copy()
     env.update(
         {
             "PATH": str(bin_dir) + os.pathsep + env.get("PATH", ""),
+            "PYTHONPATH": str(SRC),
             "GITHUB_REPOSITORY": "example/repo",
             "GITHUB_STEP_SUMMARY": str(summary),
             "EVENT_NAME": "pull_request",
@@ -99,7 +103,7 @@ def _run(tmp_path: Path, gh_script: str, extra_env=None, repo=None):
     if extra_env:
         env.update(extra_env)
     proc = subprocess.run(
-        ["bash", str(SCRIPT)],
+        [sys.executable, "-m", "rco.notice_report"],
         cwd=work,
         env=env,
         check=False,
@@ -187,3 +191,28 @@ def test_workflow_passes_the_base_ref_and_pushed_ref():
     text = WORKFLOW.read_text(encoding="utf-8")
     assert "PR_BASE_REF: ${{ github.event.pull_request.base.ref }}" in text
     assert "PUSH_REF_NAME: ${{ github.ref_name }}" in text
+
+
+def test_missing_gh_fails_the_job_not_a_quiet_repo(tmp_path):
+    repo = _repo(tmp_path)
+    env = {**os.environ, "PATH": str(Path(sys.executable).parent) + os.pathsep
+           + str(Path(shutil.which("git")).parent), "PYTHONPATH": str(SRC),
+           "EVENT_NAME": "pull_request", "PR_NUMBER": "35", "PR_BASE": repo["tip"],
+           "PR_BASE_REF": "main", "PR_HEAD": repo["head"], "GITHUB_REPOSITORY": "example/repo"}
+    env.pop("GITHUB_STEP_SUMMARY", None)
+    if shutil.which("gh", path=env["PATH"]):
+        pytest.skip("gh sits beside python or git here")
+    proc = subprocess.run([sys.executable, "-m", "rco.notice_report"], cwd=repo["work"], env=env,
+                          capture_output=True, text=True)
+    assert proc.returncode == 3, (proc.returncode, proc.stdout, proc.stderr)
+    assert "gh not found" in proc.stderr
+    assert QUIET not in proc.stdout
+
+
+def test_notice_leaves_the_work_tree_clean(tmp_path):
+    repo = _repo(tmp_path)
+    pulls = [{"number": 9, "state": "open", "base": {"ref": "main"},
+              "head": {"sha": repo["other"], "ref": "other"}}]
+    proc, _ = _run(tmp_path, _pulls_gh(pulls), repo=repo)
+    assert proc.returncode == 0, (proc.returncode, proc.stdout, proc.stderr)
+    assert _git(repo["work"], "status", "--porcelain", "--untracked-files=all") == ""
