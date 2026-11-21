@@ -536,7 +536,7 @@ This repository dogfoods a portable process: checks over rules, report-only CI r
 
 ## Windows known issues
 
-This section lists open issues. Fixes from the 0.1.5 Windows test run are in the [changelog](CHANGELOG.md).
+This section lists open issues. Fixes from the 0.1.5 Windows test run are in the [changelog](https://github.com/si4ai/repo-context-optimizer/blob/main/CHANGELOG.md).
 
 - No `.gitattributes`: this repository does not pin line endings. A Windows checkout with `core.autocrlf=true` can change fixture and golden file bytes and fail golden tests. A workaround is `git clone -c core.autocrlf=false URL`. A line-ending pin is in [#71](https://github.com/si4ai/repo-context-optimizer/pull/71).
 
