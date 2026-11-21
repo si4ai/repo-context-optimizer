@@ -47,5 +47,39 @@ if "$rco" drift --help > /dev/null 2>&1; then
   expect 1 "$rco" drift "$work/core.pin.json"            # run() gained a parameter
   expect 0 "$rco" drift "$work/core.pin.json" --at HEAD~1
 fi
+# 0.1.6: the cross-PR notice runs from the wheel alone, with no RCO repo
+# tree: one other open PR (pr-7) uses run(), whose signature this head
+# changed. gh is a stub that lists that PR; origin is a local bare repo.
+py="$(dirname "$rco")/python"
+git init -q --bare "$work/origin.git"
+git remote add origin "$work/origin.git"
+git checkout -q -b other HEAD~1
+printf 'from pkg.core import run\n\nrun(1)\n' > pkg/use.py
+git add pkg/use.py && git commit -q -m other
+other=$(git rev-parse HEAD)
+git push -q origin "$other:refs/pull/7/head"
+git checkout -q main
+mkdir "$work/bin"
+cat > "$work/bin/gh" <<EOF
+#!/bin/sh
+cat <<'JSON'
+[{"number": 7, "state": "open", "base": {"ref": "main"}, "head": {"sha": "$other", "ref": "other"}}]
+JSON
+EOF
+chmod +x "$work/bin/gh"
+expect 0 env PATH="$work/bin:$PATH" EVENT_NAME=pull_request PR_NUMBER=8 \
+  PR_BASE="$(git rev-parse HEAD~1)" PR_BASE_REF=main PR_HEAD="$(git rev-parse HEAD)" \
+  GITHUB_REPOSITORY=example/repo GITHUB_STEP_SUMMARY="$work/summary.md" "$py" -m rco.notice_report
+grep -q '## pr-7' out.txt
+grep -q 'pkg/use.py' out.txt
+grep -q 'pkg/use.py' "$work/summary.md"
 test -z "$(git status --porcelain --untracked-files=all -- . ':!out.txt' ':!err.txt')"
+# rco init writes the workflow that runs that notice step from the wheel
+git init -q -b main "$work/fresh"
+cd "$work/fresh"
+printf 'def f():\n    pass\n' > a.py
+git add a.py && git commit -q -m one
+expect 0 "$rco" init
+grep -q 'python -m rco.notice_report' .github/workflows/rco.yml
+grep -q 'pull-requests: read' .github/workflows/rco.yml
 echo "smoke: passed"

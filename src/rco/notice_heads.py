@@ -1,9 +1,12 @@
-"""Select other open PR heads for the cross-PR contract notice CI job.
+"""Select other open PR heads for the cross-PR contract notice in CI.
 
 Names each PR as pr-N. Never uses a login or a desk. Reads the GitHub
 pulls JSON list (one array, or several arrays written back to back).
 With --base-ref, keeps only PRs whose base branch is that ref, so a PR
 into main is never compared with a PR into a release branch.
+
+Ships in the wheel; `python -m rco.notice_report` uses it, and
+`python -m rco.notice_heads PULLS.json` prints the `pr-N SHA` lines.
 """
 from __future__ import annotations
 

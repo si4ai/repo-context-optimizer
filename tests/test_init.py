@@ -72,3 +72,12 @@ def test_hook_honours_core_hooks_path(tmp_path, capsys):
     fixture.git(repo, "config", "core.hooksPath", ".githooks")
     rep = init(repo, False, False, hooks=True)
     assert rep.steps[0].path == ".githooks/post-merge" and (repo / ".githooks/post-merge").exists()
+
+
+def test_workflow_runs_the_shipped_notice_with_read_access_to_prs():
+    a = workflow_text("main")
+    assert "  pull-requests: read\n" in a
+    assert "python -m rco.notice_report || code=$?" in a
+    for var in ("GH_TOKEN", "EVENT_NAME", "PR_NUMBER", "PR_BASE", "PR_BASE_REF", "PR_HEAD"):
+        assert f"          {var}: ${{{{ " in a, var
+    assert "ci/notice_report.sh" not in a and "ci/notice_heads.py" not in a

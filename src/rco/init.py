@@ -4,9 +4,10 @@ Writes, only where nothing is there yet:
 
 - `rco.toml`: every setting, commented out, so it changes nothing until edited.
 - `.github/workflows/rco.yml`: on a pull request, a job summary with
-  `rco diff`, `rco affected` and (when pins/ exists) `rco drift`; on a push
-  to the default branch, `rco update` with the store cached across runs.
-  It fails only on exit 2 or 3, never on findings.
+  `rco diff`, `rco affected`, (when pins/ exists) `rco drift`, and the
+  cross-PR notice (`python -m rco.notice_report`, which ships in the
+  wheel); on a push to the default branch, `rco update` with the store
+  cached across runs. It fails only on exit 2 or 3, never on findings.
 - `--hooks`: a post-merge hook that runs `rco update --name <branch>` in
   the background after every pull or merge, and always exits 0.
 
@@ -78,6 +79,7 @@ name: rco
 
 permissions:
   contents: read
+  pull-requests: read
 
 jobs:
   rco:
@@ -103,7 +105,11 @@ jobs:
       - name: Contract report
         if: github.event_name == 'pull_request'
         env:
+          GH_TOKEN: ${{{{ github.token }}}}
+          EVENT_NAME: ${{{{ github.event_name }}}}
+          PR_NUMBER: ${{{{ github.event.pull_request.number }}}}
           PR_BASE: ${{{{ github.event.pull_request.base.sha }}}}
+          PR_BASE_REF: ${{{{ github.event.pull_request.base.ref }}}}
           PR_HEAD: ${{{{ github.event.pull_request.head.sha }}}}
         run: |
           set -u
@@ -117,6 +123,11 @@ jobs:
           run rco diff "$base" "$PR_HEAD"
           run rco affected "$base" "$PR_HEAD"
           if [ -d pins ]; then run rco drift pins --at "$PR_HEAD"; fi
+          # cross-PR notice: other open PRs into the same base that use a
+          # contract this PR changes. It writes its own summary section.
+          code=0
+          python -m rco.notice_report || code=$?
+          if [ "$code" -ge 2 ]; then worst=$code; fi
           exit "$worst"
       - name: Update the store
         if: github.event_name == 'push'
