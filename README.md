@@ -534,6 +534,12 @@ AST skeletonizers, ctags, tree-sitter, Aider's repo map, and various repo packer
 
 This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md). Adopting rco in a repo: [`docs/guide/adopting-rco.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/guide/adopting-rco.md).
 
+## Windows known issues
+
+This section lists open issues. Fixes from the 0.1.5 Windows test run are in the [changelog](https://github.com/si4ai/repo-context-optimizer/blob/main/CHANGELOG.md).
+
+- No `.gitattributes`: this repository does not pin line endings. A Windows checkout with `core.autocrlf=true` can change fixture and golden file bytes and fail golden tests. A workaround is `git clone -c core.autocrlf=false URL`. A line-ending pin is in [#71](https://github.com/si4ai/repo-context-optimizer/pull/71).
+
 ## License
 
 MIT. See [LICENSE](https://github.com/si4ai/repo-context-optimizer/blob/main/LICENSE).
