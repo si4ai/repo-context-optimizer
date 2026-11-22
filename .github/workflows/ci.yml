@@ -329,3 +329,77 @@ jobs:
           PUSH_REF_NAME: ${{ github.ref_name }}
         # the tree under test, not the published wheel (rco init runs the wheel)
         run: PYTHONPATH=src python -m rco.notice_report
+
+  # contract diff and affected-test report: public contract changes
+  # and which tests rco would select, written to the job summary. a
+  # visible hint, never a block: exit 1 (findings) passes the job; a
+  # usage error or crash (2/3) fails it. pull requests only, so it is
+  # skipped in the merge queue and on push. kept out of
+  # ci/test-select.toml so it is not product-gated. runs the tree
+  # under test, like drift_report and notice_report, not a published
+  # wheel.
+  diff_affected_report:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - name: Contract diff and affected tests
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -u
+          base=$(git merge-base "$PR_BASE" "$PR_HEAD")
+          worst=0
+          run() {
+            out=$1
+            shift
+            code=0
+            PYTHONPATH=src python -m rco "$@" > "$out" || code=$?
+            cat "$out"
+            cat "$out" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$code" -ge 2 ]; then worst=$code; fi
+          }
+          run diff.md diff "$base" "$PR_HEAD"
+          run affected.md affected "$base" "$PR_HEAD"
+          exit "$worst"
+
+  # after a push to main, refresh the cached rco store. skipped on
+  # pull requests and in the merge queue. kept out of
+  # ci/test-select.toml. a usage error or crash (2/3) fails the job.
+  # runs the tree under test, like the other rco jobs in this file.
+  update_store:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .rco
+          key: rco-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            rco-${{ github.ref_name }}-
+            rco-main-
+      - name: Update the store
+        run: |
+          set -u
+          code=0
+          PYTHONPATH=src python -m rco update --name "${{ github.ref_name }}" || code=$?
+          case "$code" in
+            0|1) exit 0 ;;
+            *) exit "$code" ;;
+          esac
