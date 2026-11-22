@@ -51,7 +51,7 @@ These jobs are report-only: keep them off the required checks and out of the mer
 
 - `rco init` writes `.github/workflows/rco.yml` with one job, `rco`. On a pull request it writes `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice (`python -m rco.notice_report`) to the job summary. On a push to the default branch it runs `rco update --name <branch>`. It has no `merge_group` trigger, so a queue does not wait for it.
 - The notice ships in the wheel; there is nothing to copy. Its private-repository limit (the checkout drops its token) is in [adopting rco](guide/adopting-rco.md#setup-t0-rco-init).
-- Do not copy this repository's `drift_report` and `notice_report` jobs; the `rco` job covers both.
+- Do not copy this repository's `drift_report`, `notice_report`, `diff_affected_report` and `update_store` jobs; the `rco` job covers them.
 
 ## Validator GitHub App
 
