@@ -23,6 +23,12 @@
 
 ### changed
 
+- the default `rco pack --budget` is 12000 estimated tokens, raised from
+  8000 so current packs fit with headroom (Phase 0 sizes). A pack that is
+  still over its budget after every cut is a warning on stderr, in the
+  pack notes, and as `pack_overrun` in `rco-metrics.json`; the command
+  exits 0 (exit 1 remains stale prose). The `rco init --metrics` workflow
+  writes that warning to the job summary and does not fail the job
 - `rco affected`: docs no code file names select nothing instead of
   setting `run_all`; test config and infra (`pyproject.toml`, a top-level
   `conftest.py`, lock files, CI workflows, ...) set `run_all` even when

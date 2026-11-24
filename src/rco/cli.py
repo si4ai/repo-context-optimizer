@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Sequence
 
 from rco import __version__, build, canon, check, diff, gitread
-from rco.forest_model import Forest
+from rco.forest_model import DEFAULT_BUDGET, Forest
 from rco.model import Map
 from rco.output import Exit, UsageError, emit, note
 
@@ -102,7 +102,7 @@ def make_parser() -> argparse.ArgumentParser:
     k.add_argument("sha", nargs="?", default="HEAD", help="commit (default: HEAD)")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE",
                    help="paths whose owning modules get full Trees and one import hop")
-    k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
+    k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"estimated tokens (default: {DEFAULT_BUDGET})")
     _common(k)
 
     r = sub.add_parser("triage", help="hint per branch: clean or a structural brief (never rebases)")
@@ -153,7 +153,7 @@ def make_parser() -> argparse.ArgumentParser:
     mm.add_argument("--head", required=True, help="head commit")
     mm.add_argument("--pr", type=int, required=True, help="pull request number")
     mm.add_argument("--pack", default=None, help="rco pack markdown for the changed files")
-    mm.add_argument("--budget", type=int, default=8000, help="pack budget recorded in the file")
+    mm.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"pack budget recorded in the file (default: {DEFAULT_BUDGET})")
     _common(mm)
     ck = ms.add_parser("check", help="exit 1 unless the metrics file is present and complete")
     ck.add_argument("file", help="rco-metrics.json to check")
@@ -276,6 +276,9 @@ def run(args: argparse.Namespace) -> Exit:
             name, count = metrics.counter()
             doc = metrics.write_metrics(repo, args.base, args.head, args.pr,
                                         pack_text, args.budget, count, name)
+            if doc.get("pack_overrun"):
+                note(f"pack used ~{doc.get('pack_used')} estimated tokens, "
+                     f"over the budget of {doc.get('pack_budget')}")
             return emit(metrics.MetricsReport(doc), args.format, args.out)
         raise UsageError(f"unknown command metrics {args.metrics_cmd}")
     if args.cmd == "live":
@@ -311,11 +314,15 @@ def run(args: argparse.Namespace) -> Exit:
         sha = _resolve_sha(repo, args.sha)
         _warn_unmatched_for(repo, sha, args.for_paths)
         if sha is None:
-            return emit(pack.PackReport(pack.empty_pack(args.budget),
-                                       " ".join(args.for_paths or ())), args.format, args.out)
+            p = pack.empty_pack(args.budget)
+            if p.used > p.budget:
+                note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
+            return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
         from rco.config import open_store
         store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
+        if p.used > p.budget:
+            note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd == "pin":
         from rco import pin

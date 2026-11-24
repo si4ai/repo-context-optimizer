@@ -100,6 +100,10 @@ def test_metrics_workflow_writes_and_uploads_the_artifact():
     assert "name: rco-report" in a
     assert "path: rco-report/" in a
     assert "if-no-files-found: error" in a
+    # an overrun or pack findings must not fail the job
+    assert "xargs -0 rco pack" not in a
+    assert '"$code" -gt 1' in a
+    assert "::warning title=rco pack budget::" in a
     for line in a.splitlines():
         if "uses:" in line:
             sha = line.split("@")[1].split()[0]

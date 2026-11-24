@@ -190,3 +190,45 @@ def test_measure_cli_writes_schema_1(tmp_path, capsys):
     assert doc["without_rco"]["files"] >= 2
     assert doc["with_rco"]["bytes"] == pack.read_bytes().__len__()
     assert doc["ratio_tokens"] is not None
+
+
+def test_pack_footer_and_overrun_field():
+    used, budget = metrics.pack_footer(
+        "# rco pack  (SHA=abc1234, budget=8000 estimated tokens)\n\n"
+        "# budget used: ~8008 / 8000 estimated tokens\n"
+    )
+    assert (used, budget) == (8008, 8000)
+    assert metrics.pack_footer("") == (None, None)
+    assert metrics.pack_footer("not a pack") == (None, None)
+
+
+def test_measure_records_pack_overrun_and_check_stays_optional(tmp_path, capsys):
+    repo, base = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n",
+    })
+    fixture.commit(repo, {"pkg/a.py": "X = 2\n"})
+    head = fixture.git(repo, "rev-parse", "HEAD").strip()
+    pack = tmp_path / "pack.md"
+    pack.write_text(
+        "# rco pack  (SHA=abc1234, budget=8000 estimated tokens)\n\n"
+        "hello\n\n"
+        "# budget used: ~8008 / 8000 estimated tokens\n",
+        encoding="utf-8",
+    )
+    out = tmp_path / "rco-metrics.json"
+    assert cli.main([
+        "metrics", "measure", "--repo", str(repo), "--base", base, "--head", head,
+        "--pr", "81", "--pack", str(pack), "--out", str(out), "--format", "json",
+    ]) == Exit.OK
+    err = capsys.readouterr()
+    doc = json.loads(out.read_text())
+    assert metrics.check(doc) == []
+    assert doc["pack_budget"] == 8000
+    assert doc["pack_used"] == 8008
+    assert doc["pack_overrun"] == 8
+    assert "over the budget of 8000" in err.err
+    # older files without pack_overrun still check out
+    old = {k: doc[k] for k in doc if k not in ("pack_overrun", "pack_used")}
+    assert metrics.check(old) == []
+

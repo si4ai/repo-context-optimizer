@@ -218,7 +218,7 @@ Outside any pipeline, an agent can ask rco at any time. Answers are computed fro
 |---|---|
 | what are the public contracts of this module? | `rco tree --for <path>` |
 | How is the repo put together, and what depends on what? | `rco forest` |
-| what do I need before editing these files? | `rco pack --for <files> --budget 8000` |
+| what do I need before editing these files? | `rco pack --for <files>` |
 | what did this branch change in contracts, and who calls them? | `rco diff <merge-base> HEAD` |
 | Is the map I was handed still true? | `rco check <map.json>` |
 | Will my branch break against the target? | `rco triage <branch> --onto <target>` |

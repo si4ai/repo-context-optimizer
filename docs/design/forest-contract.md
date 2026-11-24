@@ -82,7 +82,7 @@ changes, and prose is copied forward on equal TreeHash only.
 ## 4. Pack (`rco.pack/1`) and update (`rco.update/1`)
 
 `rco pack [SHA] [--for FILE...] [--budget N]`. Budget is estimated tokens,
-characters / 4 rounded up (`forest_model.estimate_tokens`), default 8000,
+characters / 4 rounded up (`forest_model.estimate_tokens`), default 12000,
 measured on the rendered markdown.
 
 JSON keys: `schema, sha, budget, used, forest[], trees[], hop[{id,line}],
@@ -93,7 +93,7 @@ prose.
 Markdown follows the README example, plus a trimmed line:
 
 ```markdown
-# rco pack  (SHA=abc1234, budget=8000 estimated tokens)
+# rco pack  (SHA=abc1234, budget=12000 estimated tokens)
 
 ## Forest
 - <id>: <one line> (depends on: a, b) (used by: c)
@@ -113,8 +113,7 @@ Without `--for` the pack is the Forest only. Cut order when over budget: one
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
 no prose) from the deepest level up, then Tree nodes from the end of each
 full Tree, then the remaining Forest entries. A parent Forest line is kept
-until all of its children are cut. Nothing is cut silently. Exit 1 when the pack shows a stale entry,
-else 0 (README Output contract).
+until all of its children are cut. Nothing is cut silently. A pack that is still over budget after every cut is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:
 `name, old, new, swapped, extracted[], queued[], notes[]`. A refused swap is

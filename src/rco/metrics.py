@@ -16,6 +16,7 @@ already uploads, so a roll-up can mix sources.
 from __future__ import annotations
 
 import json
+import re
 import statistics
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,6 +33,16 @@ FIELDS = ("schema", "pr", "base_sha", "head_sha", "rco_version", "tokenizer",
           "changed_files", "without_rco", "with_rco", "ratio_tokens")
 SIDE_FIELDS = ("files", "bytes", "tokens")
 METRICS_NAME = "rco-metrics.json"
+_PACK_USED = re.compile(r"^# budget used: ~(\d+) / (\d+) estimated tokens", re.M)
+
+
+def pack_footer(text: str) -> tuple[int | None, int | None]:
+    """used and budget from a pack markdown footer; (None, None) if absent."""
+    m = _PACK_USED.search(text or "")
+    if not m:
+        return None, None
+    return int(m.group(1)), int(m.group(2))
+
 
 
 def estimate(text: str) -> int:
@@ -99,16 +110,23 @@ def write_metrics(repo: Path, base: str, head: str, pr: int, pack_text: str,
     want = [p for p in read_set(present, graph) if p in tree]
     raw = gitread.read_blobs(repo, (tree[p] for p in want))
     blobs = {p: raw[tree[p]] for p in want}
-    return {
+    used, footer_budget = pack_footer(pack_text)
+    pack_budget = budget if footer_budget is None else footer_budget
+    overrun = 0 if used is None else max(0, used - pack_budget)
+    doc = {
         "schema": SCHEMA,
         "pr": pr,
         "base_sha": base_sha,
         "head_sha": head_sha,
         "rco_version": __version__,
         "tokenizer": tokenizer,
-        "pack_budget": budget,
+        "pack_budget": pack_budget,
+        "pack_overrun": overrun,
         **measure(changed, graph, blobs, pack_text, count),
     }
+    if used is not None:
+        doc["pack_used"] = used
+    return doc
 
 
 def check(doc: object) -> list[str]:
@@ -296,16 +314,25 @@ class MetricsReport:
     def to_markdown(self) -> str:
         pr = self.doc.get("pr")
         ratio = self.doc.get("ratio_tokens")
-        return (
-            f"# rco metrics\n\n"
-            f"- pr: {pr}\n"
-            f"- changed files: {self.doc.get('changed_files')}\n"
+        lines = [
+            "# rco metrics",
+            "",
+            f"- pr: {pr}",
+            f"- changed files: {self.doc.get('changed_files')}",
             f"- bytes without / with: "
-            f"{self.doc['without_rco']['bytes']} / {self.doc['with_rco']['bytes']}\n"
+            f"{self.doc['without_rco']['bytes']} / {self.doc['with_rco']['bytes']}",
             f"- tokens without / with: "
-            f"{self.doc['without_rco']['tokens']} / {self.doc['with_rco']['tokens']}\n"
-            f"- ratio: {_fmt_ratio(ratio if isinstance(ratio, (int, float)) else None)}\n"
-        )
+            f"{self.doc['without_rco']['tokens']} / {self.doc['with_rco']['tokens']}",
+            f"- ratio: {_fmt_ratio(ratio if isinstance(ratio, (int, float)) else None)}",
+        ]
+        overrun = self.doc.get("pack_overrun") or 0
+        if overrun:
+            used = self.doc.get("pack_used")
+            budget = self.doc.get("pack_budget")
+            lines.append(
+                f"- warning: pack used ~{used} / {budget} estimated tokens (over budget)"
+            )
+        return "\n".join(lines) + "\n"
 
     def exit_code(self) -> Exit:
         return Exit.OK

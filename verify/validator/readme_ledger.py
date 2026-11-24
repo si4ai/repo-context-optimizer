@@ -41,13 +41,13 @@ def no_rco_code(t: Path):
 
 def defaults_consistent(t: Path):
     r = CTX["readme"]
-    need = {"quick start budget 8000": "--budget 8000" in r, "planned default 8000": "Design default: 8000." in r,
-            "open question 8000": "8000 estimated tokens is the design default" in r,
+    need = {"quick start budget 12000": "--budget 12000" in r, "planned default 12000": "Design default: 12000." in r,
+            "open question 12000": "12000 estimated tokens is the interim design default" in r,
             "SHA=HEAD quick start": "SHA=HEAD" in r, "SHA defaults HEAD": "`SHA` defaults to `HEAD`." in r,
             "--for optional (both)": r.count("`--for` is optional") >= 2,
             "diff BASE=merge-base (both)": "BASE=merge-base(default branch, HEAD)" in r and "`BASE` defaults to the merge-base" in r}
     bad = [k for k, v in need.items() if not v]
-    return ("PASS", "budget 8000, SHA=HEAD, --for optional, diff base agree") if not bad else ("FAIL", f"mismatch: {bad}")
+    return ("PASS", "budget 12000, SHA=HEAD, --for optional, diff base agree") if not bad else ("FAIL", f"mismatch: {bad}")
 
 
 def sample_pack_tokens(t: Path):
