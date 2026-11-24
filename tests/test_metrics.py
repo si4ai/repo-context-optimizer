@@ -202,7 +202,10 @@ def test_pack_footer_and_overrun_field():
     assert metrics.pack_footer("not a pack") == (None, None)
 
 
-def test_measure_records_pack_overrun_and_check_stays_optional(tmp_path, capsys):
+def test_measure_records_pack_overrun_and_check_stays_optional(tmp_path, capsys, monkeypatch):
+    # CI sets these, which would emit a workflow warning from this pack footer
+    monkeypatch.delenv("GITHUB_STEP_SUMMARY", raising=False)
+    monkeypatch.delenv("GITHUB_ACTIONS", raising=False)
     repo, base = fixture.make_repo(tmp_path / "r", {
         "pkg/__init__.py": "",
         "pkg/a.py": "X = 1\n",
