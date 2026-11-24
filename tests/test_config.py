@@ -117,10 +117,10 @@ def test_no_shipped_backend_keeps_a_reserved_name():
 
 def test_affected_ignore_from_rco_toml(tmp_path, capsys):
     repo, s1 = _repo(tmp_path)
-    s2 = fixture.commit(repo, {"README.md": "x\n"})
+    s2 = fixture.commit(repo, {"data.csv": "x\n"})
     assert cli.main(["affected", "--repo", str(repo), s1, s2, "--format", "json"]) == Exit.OK
     assert '"run_all":true' in capsys.readouterr().out
-    (repo / "rco.toml").write_text('[affected]\nignore = ["*.md"]\n')
+    (repo / "rco.toml").write_text('[affected]\nignore = ["*.csv"]\n')
     assert cli.main(["affected", "--repo", str(repo), s1, s2, "--format", "json"]) == Exit.OK
     assert '"run_all":false' in capsys.readouterr().out
 
