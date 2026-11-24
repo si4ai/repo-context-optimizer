@@ -287,6 +287,7 @@ lose
 mail
 main
 make
+makefile
 mapping
 maps
 march
@@ -372,6 +373,7 @@ performant
 performance
 personal
 ping
+pipfile
 placeholder
 plan
 plans
@@ -460,6 +462,7 @@ scripted
 secret
 see
 select
+selection
 self
 send
 senior
@@ -557,6 +560,7 @@ typed
 typical
 under
 unit
+unreleased
 until
 unplanned
 update

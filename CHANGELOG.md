@@ -1,5 +1,22 @@
 # Changelog
 
+## Unreleased
+
+### added
+
+- `rco affected` maps a changed file to the tests that run or read it by
+  path: a code file that names the file counts as a reader (the planted
+  `ci/notice_report.sh` miss from the 0.1.4 audit)
+- `rco affected --format json` adds `select` (`all`, `tests` or `none`),
+  `by_path` and `docs`, so a CI job can skip tests on a docs-only change
+
+### changed
+
+- `rco affected`: docs no code file names select nothing instead of
+  setting `run_all`; test config and infra (`pyproject.toml`, a top-level
+  `conftest.py`, lock files, CI workflows, ...) set `run_all` even when
+  they are code
+
 ## 0.1.6 - 2026-11-20
 
 Setup for a new repository is `rco init` alone. Trees, Forests, and
