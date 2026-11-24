@@ -1,9 +1,20 @@
 # Changelog
 
-## Unreleased
+## unreleased
 
 ### added
 
+- `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
+  request (bytes and tokens without rco versus the pack); `rco metrics check`
+  exits 1 if that file is missing or incomplete
+- `rco metrics summary` rolls many of those files into a trend: count, mean
+  and median ratio, total bytes and tokens saved, and the best and worst PRs,
+  in text or `--json`
+- `rco init --metrics` is an opt-in that packs changed files, writes
+  `rco-metrics.json`, and uploads the `rco-report` artifact; default `rco init`
+  is unchanged
+- `tools/fetch_rco_metrics.py` downloads recent `rco-report` artifacts with
+  the GitHub CLI already authenticated in the environment
 - `rco affected` maps a changed file to the tests that run or read it by
   path: a code file that names the file counts as a reader (the planted
   `ci/notice_report.sh` miss from the 0.1.4 audit)
