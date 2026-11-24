@@ -83,7 +83,7 @@ def _metrics_steps() -> str:
           git diff --name-only -z --no-renames "$base" "$PR_HEAD" --diff-filter=d > rco-report/changed.z
           if [ -s rco-report/changed.z ]; then
             # Exit 1 is findings (stale prose), not an error; xargs would fold it
-            # into 123. An over-budget pack exits 0 and is reported below.
+            # into 123. An over-budget pack exits 0; rco metrics measure reports it.
             mapfile -d '' changed < rco-report/changed.z
             code=0
             rco pack "$PR_HEAD" --out rco-report/pack.md --for "${{changed[@]}}" || code=$?
@@ -91,7 +91,7 @@ def _metrics_steps() -> str:
           else
             : > rco-report/pack.md
           fi
-          python3 -c 'import os, pathlib, re, sys\np = pathlib.Path("rco-report/pack.md")\ntext = p.read_text(encoding="utf-8") if p.is_file() else ""\nm = re.search(r"^# budget used: ~(\\d+) / (\\d+) estimated tokens", text, re.M)\nif not m:\n    sys.exit(0)\nline = m.group(0)\nsummary = os.environ.get("GITHUB_STEP_SUMMARY")\nif summary:\n    open(summary, "a", encoding="utf-8").write(line + "\\n")\nif int(m.group(1)) > int(m.group(2)):\n    print("::warning title=rco pack budget::" + line)'\n          rco metrics measure --base "$base" --head "$PR_HEAD" --pr "$PR_NUMBER" --pack rco-report/pack.md --out rco-report/rco-metrics.json --format json
+          rco metrics measure --base "$base" --head "$PR_HEAD" --pr "$PR_NUMBER" --pack rco-report/pack.md --out rco-report/rco-metrics.json --format json
           rco metrics check rco-report/rco-metrics.json
       - uses: {_UPLOAD}
         if: ${{{{ !cancelled() && github.event_name == 'pull_request' }}}}

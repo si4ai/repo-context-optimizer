@@ -10,7 +10,7 @@ the end of each full Tree, then the remaining Forest entries. After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
-are cut. Every cut is named in `trimmed`. A pack that is still over budget after every cut is emitted anyway: the footer reports used / budget, a note records the overrun, and the command exits 0 (exit 1 remains stale prose).
+are cut. Every cut is named in `trimmed`. A pack that is still over budget after every cut is emitted anyway: the footer reports used / budget, a note records the overrun, and the command exits 0 (exit 1 still means stale prose).
 """
 from __future__ import annotations
 

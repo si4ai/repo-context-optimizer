@@ -228,7 +228,65 @@ def test_measure_records_pack_overrun_and_check_stays_optional(tmp_path, capsys)
     assert doc["pack_used"] == 8008
     assert doc["pack_overrun"] == 8
     assert "over the budget of 8000" in err.err
+    # no CI env in this test: the GitHub warning stays off
+    assert "::warning title=rco pack budget::" not in err.err
     # older files without pack_overrun still check out
     old = {k: doc[k] for k in doc if k not in ("pack_overrun", "pack_used")}
     assert metrics.check(old) == []
 
+
+def test_measure_writes_job_summary_and_warns_on_overrun(tmp_path, capsys, monkeypatch):
+    repo, base = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n",
+    })
+    fixture.commit(repo, {"pkg/a.py": "X = 2\n"})
+    head = fixture.git(repo, "rev-parse", "HEAD").strip()
+    pack = tmp_path / "pack.md"
+    pack.write_text(
+        "# rco pack  (SHA=abc1234, budget=8000 estimated tokens)\n\n"
+        "hello\n\n"
+        "# budget used: ~8008 / 8000 estimated tokens\n",
+        encoding="utf-8",
+    )
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    out = tmp_path / "rco-metrics.json"
+    assert cli.main([
+        "metrics", "measure", "--repo", str(repo), "--base", base, "--head", head,
+        "--pr", "81", "--pack", str(pack), "--out", str(out), "--format", "json",
+    ]) == Exit.OK
+    err = capsys.readouterr()
+    line = "# budget used: ~8008 / 8000 estimated tokens"
+    assert line in summary.read_text(encoding="utf-8")
+    assert f"::warning title=rco pack budget::{line}" in err.err
+
+
+def test_measure_summary_has_no_warning_when_under_budget(tmp_path, capsys, monkeypatch):
+    repo, base = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n",
+    })
+    fixture.commit(repo, {"pkg/a.py": "X = 2\n"})
+    head = fixture.git(repo, "rev-parse", "HEAD").strip()
+    pack = tmp_path / "pack.md"
+    pack.write_text(
+        "# rco pack  (SHA=abc1234, budget=8000 estimated tokens)\n\n"
+        "hello\n\n"
+        "# budget used: ~100 / 8000 estimated tokens\n",
+        encoding="utf-8",
+    )
+    summary = tmp_path / "summary.md"
+    monkeypatch.setenv("GITHUB_STEP_SUMMARY", str(summary))
+    monkeypatch.setenv("GITHUB_ACTIONS", "true")
+    out = tmp_path / "rco-metrics.json"
+    assert cli.main([
+        "metrics", "measure", "--repo", str(repo), "--base", base, "--head", head,
+        "--pr", "81", "--pack", str(pack), "--out", str(out), "--format", "json",
+    ]) == Exit.OK
+    err = capsys.readouterr()
+    line = "# budget used: ~100 / 8000 estimated tokens"
+    assert line in summary.read_text(encoding="utf-8")
+    assert "::warning title=rco pack budget::" not in err.err
+    assert "over the budget" not in err.err

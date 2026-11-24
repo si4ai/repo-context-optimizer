@@ -279,6 +279,7 @@ def run(args: argparse.Namespace) -> Exit:
             if doc.get("pack_overrun"):
                 note(f"pack used ~{doc.get('pack_used')} estimated tokens, "
                      f"over the budget of {doc.get('pack_budget')}")
+            metrics.announce_pack_budget(doc.get("pack_used"), int(doc["pack_budget"]))
             return emit(metrics.MetricsReport(doc), args.format, args.out)
         raise UsageError(f"unknown command metrics {args.metrics_cmd}")
     if args.cmd == "live":

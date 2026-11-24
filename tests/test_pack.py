@@ -364,3 +364,29 @@ def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
     assert estimate_tokens(pack_markdown(p, "pkg/mod.py")) == p.used
     assert not any(n.startswith("over budget:") for n in p.notes)
 
+
+def test_pack_stays_under_budget_on_seeded_sweep(tmp_path):
+    """A larger synthetic repo stays at or under 3000, 5000 and 11000.
+
+    80 hop modules and 550 files in the focus tree, built the same way
+    every time (no RNG). The case is sized so both pack.py budget fixes
+    (the trial trimmed list, and the recut after hop restore) are
+    required: reverting both together overruns at each of these budgets.
+    """
+    n_hops, n_parts, part_lines = 80, 550, 8
+    init = "\n".join(f"import m{i:02d}.a" for i in range(n_hops)) + "\n"
+    files = {"focus/__init__.py": init}
+    body = "\n".join(f"    x = x + {j}" for j in range(part_lines))
+    for i in range(n_parts):
+        files[f"focus/p{i:03d}.py"] = (
+            f"def f{i:03d}(x: int) -> int:\n{body}\n    return x + {i}\n"
+        )
+    for i in range(n_hops):
+        files[f"m{i:02d}/__init__.py"] = ""
+        files[f"m{i:02d}/a.py"] = f"def h{i:02d}() -> int:\n    return {i}\n"
+    repo, sha = fixture.make_repo(tmp_path / "sweep", files)
+    paths = ["focus/__init__.py"]
+    for budget in (3000, 5000, 11000):
+        p = pack(repo, sha, paths, budget)
+        assert p.used <= budget, (budget, p.used, p.notes)
+        assert estimate_tokens(pack_markdown(p, "focus/__init__.py")) <= budget

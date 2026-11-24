@@ -16,8 +16,10 @@ already uploads, so a roll-up can mix sources.
 from __future__ import annotations
 
 import json
+import os
 import re
 import statistics
+import sys
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
@@ -43,6 +45,27 @@ def pack_footer(text: str) -> tuple[int | None, int | None]:
         return None, None
     return int(m.group(1)), int(m.group(2))
 
+
+def announce_pack_budget(used: int | None, budget: int) -> None:
+    """Write the pack footer to the job summary, and warn in CI on overrun.
+
+    When GITHUB_STEP_SUMMARY is set, append the same `# budget used:` line
+    pack.md already ends with. An overrun also prints a GitHub workflow
+    warning. `rco metrics measure` calls this so the init --metrics
+    workflow needs no inline python.
+    """
+    if used is None:
+        return
+    line = f"# budget used: ~{used} / {budget} estimated tokens"
+    summary = os.environ.get("GITHUB_STEP_SUMMARY")
+    if summary:
+        try:
+            with open(summary, "a", encoding="utf-8") as fh:
+                fh.write(line + "\n")
+        except OSError as e:
+            note(f"could not write job summary: {e}")
+    if used > budget and (summary or os.environ.get("GITHUB_ACTIONS")):
+        print(f"::warning title=rco pack budget::{line}", file=sys.stderr, flush=True)
 
 
 def estimate(text: str) -> int:
