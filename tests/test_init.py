@@ -130,9 +130,28 @@ def test_init_metrics_flag_writes_the_opt_in_workflow(tmp_path, capsys):
                      "--metrics"]) == Exit.USAGE
 
 
+def _yaml_module():
+    """PyYAML, installing the pinned wheel if this environment lacks it.
+
+    The pytest CI job only installs pytest, and ci.yml is a watched
+    file, so the test installs pyyaml==6.0.3 when import fails.
+    """
+    try:
+        import yaml
+        return yaml
+    except ImportError:
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pyyaml==6.0.3"],
+            stdout=subprocess.DEVNULL,
+        )
+        import yaml
+        return yaml
+
+
 def test_init_workflows_parse_as_yaml():
     """both default and --metrics rco.yml workflows parse as YAML."""
-    import yaml
+    yaml = _yaml_module()
 
     lint = shutil.which("actionlint")
     for metrics in (False, True):
