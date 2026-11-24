@@ -77,12 +77,17 @@ def _metrics_steps() -> str:
           PR_BASE: ${{{{ github.event.pull_request.base.sha }}}}
           PR_HEAD: ${{{{ github.event.pull_request.head.sha }}}}
         run: |
-          set -eu
+          set -u
           mkdir -p rco-report
           base=$(git merge-base "$PR_BASE" "$PR_HEAD")
           git diff --name-only -z --no-renames "$base" "$PR_HEAD" --diff-filter=d > rco-report/changed.z
           if [ -s rco-report/changed.z ]; then
-            xargs -0 rco pack "$PR_HEAD" --out rco-report/pack.md --for < rco-report/changed.z
+            # Exit 1 is findings (stale prose), not an error; xargs would fold it
+            # into 123. An over-budget pack exits 0; rco metrics measure reports it.
+            mapfile -d '' changed < rco-report/changed.z
+            code=0
+            rco pack "$PR_HEAD" --out rco-report/pack.md --for "${{changed[@]}}" || code=$?
+            if [ "$code" -gt 1 ]; then exit "$code"; fi
           else
             : > rco-report/pack.md
           fi

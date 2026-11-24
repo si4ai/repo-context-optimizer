@@ -10,7 +10,7 @@ the end of each full Tree, then the remaining Forest entries. After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
-are cut. Every cut is named in `trimmed`.
+are cut. Every cut is named in `trimmed`. A pack that is still over budget after every cut is emitted anyway: the footer reports used / budget, a note records the overrun, and the command exits 0 (exit 1 still means stale prose).
 """
 from __future__ import annotations
 
@@ -191,9 +191,14 @@ def pack_markdown(p: Pack, for_label: str = "") -> str:
 
 
 def _measure(p: Pack, label: str) -> int:
-    # `used` is part of the text; two passes settle its own digits
-    used = estimate_tokens(pack_markdown(replace(p, used=0), label))
-    return estimate_tokens(pack_markdown(replace(p, used=used), label))
+    # `used` is part of the text; repeat until the digit length settles
+    used = 0
+    for _ in range(4):
+        nxt = estimate_tokens(pack_markdown(replace(p, used=used), label))
+        if nxt == used:
+            return used
+        used = nxt
+    return used
 
 
 def _code_sources(repo: Path, sha: str) -> dict[str, bytes]:
@@ -270,20 +275,22 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
                     stale, tuple(sorted(notes)))
 
     all_ids = {e.id for e in entries}
-    while _measure(current(), label) > budget:
+
+    def cut_one() -> bool:
+        """Cut one item. False when nothing is left to cut."""
         if hop:
             trimmed.append(f"hop:{hop.pop().id}")
-            continue
+            return True
         idx = _next_forest_cut(entries, all_ids, empty_only=True)
         if idx is not None:
             trimmed.append(f"forest:{entries.pop(idx).id}")
-            continue
+            return True
         cut = len(trees) - 1 if trees else None
         if cut is not None:
             t = trees[cut]
             if not t.nodes:
                 del trees[cut]
-                continue
+                return True
             last = t.nodes[-1]
             trimmed.append(f"node:{t.module}|{node_key(last.path, last.name, last.kind)}")
             t = Tree(t.module, t.module_hash, t.extractors, t.nodes[:-1])
@@ -291,31 +298,47 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
                 trees[cut] = t
             else:
                 del trees[cut]  # every node is named in trimmed; drop the empty heading
-            continue
+            return True
         idx = _next_forest_cut(entries, all_ids, empty_only=False)
         if idx is not None:
             trimmed.append(f"forest:{entries.pop(idx).id}")
-            continue
-        raise UsageError(f"--budget {budget} is too small for this pack's header and footer")
-    # leftover budget: put hop lines back, last cut first, while they still fit
+            return True
+        return False
+
+    while _measure(current(), label) > budget:
+        if not cut_one():
+            break
+    # leftover budget: put hop lines back, last cut first, while they still fit.
+    # The trial measure uses the trimmed list that would actually be emitted, so
+    # putting a hop back cannot hide a longer # trimmed line.
     hop_cuts = [t for t in trimmed if t.startswith("hop:")]
     other_cuts = [t for t in trimmed if not t.startswith("hop:")]
-    kept_cuts: list[str] = []
-    trimmed = other_cuts[:]  # trial measure must not still list the hop as trimmed
+    pending = list(hop_cuts)
     for item in reversed(hop_cuts):
         mid = item[4:]
         hop.append(HopLine(mid, _one_line(by_id[mid])))
+        pending.remove(item)
+        trimmed = pending + other_cuts
         if _measure(current(), label) <= budget:
             continue
         hop.pop()
-        kept_cuts.append(item)
-    kept_cuts.reverse()  # original cut order
-    trimmed = kept_cuts + other_cuts
+        pending.append(item)
+        trimmed = pending + other_cuts
+    pending = [t for t in hop_cuts if t in pending]  # original cut order
+    trimmed = pending + other_cuts
     hop.sort(key=lambda h: _hop_key(h.id))
+    while _measure(current(), label) > budget:
+        if not cut_one():
+            break
     p = current()
     shown = {e.id for e in p.forest}
     p = replace(p, stale=tuple(s for s in stale if s in shown))
-    return replace(p, used=_measure(p, label))
+    p = replace(p, used=_measure(p, label))
+    if p.used > p.budget:
+        note = f"over budget: {p.used} / {p.budget}"
+        if note not in p.notes:
+            p = replace(p, notes=tuple(sorted((*p.notes, note))))
+    return p
 
 
 def empty_pack(budget: int = DEFAULT_BUDGET) -> Pack:

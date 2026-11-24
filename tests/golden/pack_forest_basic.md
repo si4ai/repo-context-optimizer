@@ -1,4 +1,4 @@
-# rco pack  (SHA=46ac956, budget=8000 estimated tokens)
+# rco pack  (SHA=46ac956, budget=12000 estimated tokens)
 
 ## Forest
 - .: layer 0
@@ -21,4 +21,4 @@ CLI: app
 ## One hop (name and one line)
 - src/app/core: layer 1; Defines function run.
 
-# budget used: ~223 / 8000 estimated tokens
+# budget used: ~223 / 12000 estimated tokens

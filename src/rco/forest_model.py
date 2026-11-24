@@ -19,7 +19,7 @@ SCHEMA_UPDATE = "rco.update/1"
 MINED_PROMPT_VERSION = "mined/1"
 MINED_MODEL_ID = ""
 PROSE_CAP = 300  # characters, every prose source
-DEFAULT_BUDGET = 8000  # estimated tokens (characters / 4)
+DEFAULT_BUDGET = 12000  # estimated tokens (characters / 4); interim, see README
 DEFAULT_POINTER = "main"
 
 _FOREST_KEYS = frozenset({"schema", "sha", "notes", "modules"})

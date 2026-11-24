@@ -313,3 +313,80 @@ def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
             assert got.out == want.out
         else:
             assert json.loads(got.out)["trees"] == json.loads(want.out)["trees"]
+
+
+def test_over_budget_note_is_warning_exit_0():
+    """An over-budget pack is a warning, not findings or a usage error."""
+    from rco.forest_model import Pack
+    from rco.pack import PackReport, pack_markdown
+
+    p = Pack("a" * 40, 8000, 8008, (), (), (), (), (), ("over budget: 8008 / 8000",))
+    assert PackReport(p).exit_code() == Exit.OK
+    assert "~8008 / 8000" in pack_markdown(p)
+
+
+def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
+    """A pack just over the old 8000 default stays within the reported budget."""
+    from rco.forest_model import DEFAULT_BUDGET
+
+    old = 8000
+    assert DEFAULT_BUDGET > old
+    # One module with many functions, grown until an untrimmed pack is just over 8000.
+    def _mod(n: int) -> str:
+        return "\n".join(f"def f{i:04d}(x: int) -> int:\n    return x + {i}\n" for i in range(n))
+
+    lo, hi, n = 50, 800, 200
+    used = 0
+    repo = sha = None
+    for _ in range(12):
+        repo, sha = fixture.make_repo(tmp_path / f"over8000_{n}", {"pkg/mod.py": _mod(n)})
+        full = pack(repo, sha, ["pkg/mod.py"], 10**6)
+        used = full.used
+        if old < used <= old + 800:
+            break
+        if used <= old:
+            lo = n
+            n = min(hi, n * 2 if used < old - 200 else n + max(10, (old + 100 - used) // 8))
+        else:
+            hi = n
+            n = max(lo + 1, (lo + hi) // 2)
+    else:
+        raise AssertionError(f"could not land a pack just over {old}: last used={used} n={n}")
+
+    tight = pack(repo, sha, ["pkg/mod.py"], old)
+    assert tight.used <= old, tight.used
+    assert estimate_tokens(pack_markdown(tight, "pkg/mod.py")) <= old
+
+    p = pack(repo, sha, ["pkg/mod.py"])  # reported default
+    assert p.budget == DEFAULT_BUDGET
+    assert p.used <= p.budget
+    assert p.used > old  # the new default keeps the pack that 8000 would have cut
+    assert estimate_tokens(pack_markdown(p, "pkg/mod.py")) == p.used
+    assert not any(n.startswith("over budget:") for n in p.notes)
+
+
+def test_pack_stays_under_budget_on_seeded_sweep(tmp_path):
+    """A larger synthetic repo stays at or under 3000, 5000 and 11000.
+
+    80 hop modules and 550 files in the focus tree, built the same way
+    every time (no RNG). The case is sized so both pack.py budget fixes
+    (the trial trimmed list, and the recut after hop restore) are
+    required: reverting both together overruns at each of these budgets.
+    """
+    n_hops, n_parts, part_lines = 80, 550, 8
+    init = "\n".join(f"import m{i:02d}.a" for i in range(n_hops)) + "\n"
+    files = {"focus/__init__.py": init}
+    body = "\n".join(f"    x = x + {j}" for j in range(part_lines))
+    for i in range(n_parts):
+        files[f"focus/p{i:03d}.py"] = (
+            f"def f{i:03d}(x: int) -> int:\n{body}\n    return x + {i}\n"
+        )
+    for i in range(n_hops):
+        files[f"m{i:02d}/__init__.py"] = ""
+        files[f"m{i:02d}/a.py"] = f"def h{i:02d}() -> int:\n    return {i}\n"
+    repo, sha = fixture.make_repo(tmp_path / "sweep", files)
+    paths = ["focus/__init__.py"]
+    for budget in (3000, 5000, 11000):
+        p = pack(repo, sha, paths, budget)
+        assert p.used <= budget, (budget, p.used, p.notes)
+        assert estimate_tokens(pack_markdown(p, "focus/__init__.py")) <= budget

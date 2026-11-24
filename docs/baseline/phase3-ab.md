@@ -33,7 +33,7 @@ The script is standard library plus the installed `rco` package (or
 
 ```sh
 python3 tools/phase3_ab.py prepare --repo REPO --sha HEAD \
-    --for path/to/file.py --budget 8000 \
+    --for path/to/file.py --budget 12000 \
     --task-file TASK.md --out ab-run/
 
 python3 tools/phase3_ab.py score \

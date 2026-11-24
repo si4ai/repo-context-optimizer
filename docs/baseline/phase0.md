@@ -12,7 +12,7 @@ The README asks Phase 0 for five things:
 | How many modules a typical merge touches (incremental update) | [B. Modules per merge](#b-modules-per-merge) |
 | Extract cost, and how long a re-extract takes (Roadmap, incremental update) | [C. Extract cost](#c-extract-cost) |
 | Cost and hit rate on a large repo (Just works table) | [B](#b-modules-per-merge) hit rate, [C](#c-extract-cost) cost |
-| Default `--budget` 8000, confirmed against Phase 0 pack sizes (Open questions) | [D. Pack sizes and `--budget`](#d-pack-sizes-and---budget) |
+| Default `--budget` 8000, confirmed against Phase 0 pack sizes (Open questions) | [D. Pack sizes and `--budget`](#d-pack-sizes-and---budget). The interim default is now 12000; the measurements below stay at 8000. |
 
 ## Inputs
 
@@ -254,6 +254,14 @@ packages overall are `tests/server` (35,180), `tests/server/records`
 product code. Tests should be left out of a default pack. Phase 1 should
 split modules by the README's size caps and re-run D before changing the
 default.
+
+**The interim default is 12000.** The 8000 default was left open until this
+re-measure; live `--for` packs later landed just over it (about 8008 and
+8064 estimated tokens). The default is 12000 for now: that leaves
+headroom over those packs and over the 11.3K `agent_coord/server/records`
+package, while the 14.2K `agent_coord/server` package still trims. The
+cold-agent A/B and rco metrics decide the long-term default. A pack over
+its budget is a warning, not a failed check.
 
 ## Not done (by design)
 

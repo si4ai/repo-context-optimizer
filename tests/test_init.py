@@ -100,6 +100,12 @@ def test_metrics_workflow_writes_and_uploads_the_artifact():
     assert "name: rco-report" in a
     assert "path: rco-report/" in a
     assert "if-no-files-found: error" in a
+    # an overrun or pack findings must not fail the job
+    assert "xargs -0 rco pack" not in a
+    assert '"$code" -gt 1' in a
+    # the warning is emitted by rco metrics measure, not inline python
+    assert "python3 -c" not in a
+    assert "rco metrics measure" in a
     for line in a.splitlines():
         if "uses:" in line:
             sha = line.split("@")[1].split()[0]
@@ -122,3 +128,49 @@ def test_init_metrics_flag_writes_the_opt_in_workflow(tmp_path, capsys):
     assert [s.action for s in init(repo, False, True, metrics=True).steps] == ["kept"]
     assert cli.main(["init", "--repo", str(repo), "--no-config", "--no-ci",
                      "--metrics"]) == Exit.USAGE
+
+
+def _yaml_module():
+    """PyYAML, installing the pinned wheel if this environment lacks it.
+
+    The pytest CI job only installs pytest, and ci.yml is a watched
+    file, so the test installs pyyaml==6.0.3 when import fails.
+    """
+    try:
+        import yaml
+        return yaml
+    except ImportError:
+        import sys
+        subprocess.check_call(
+            [sys.executable, "-m", "pip", "install", "pyyaml==6.0.3"],
+            stdout=subprocess.DEVNULL,
+        )
+        import yaml
+        return yaml
+
+
+def test_init_workflows_parse_as_yaml():
+    """both default and --metrics rco.yml workflows parse as YAML."""
+    yaml = _yaml_module()
+
+    lint = shutil.which("actionlint")
+    for metrics in (False, True):
+        text = workflow_text("main", metrics=metrics)
+        data = yaml.safe_load(text)
+        assert data["name"] == "rco"
+        steps = data["jobs"]["rco"]["steps"]
+        runs = [s.get("run", "") for s in steps if isinstance(s, dict)]
+        assert any("rco diff" in r and "rco affected" in r for r in runs)
+        if metrics:
+            assert any("rco pack" in r for r in runs)
+            assert any("rco metrics measure" in r for r in runs)
+            assert any("rco metrics check" in r for r in runs)
+            assert all("python3 -c" not in r for r in runs)
+        else:
+            assert all("rco metrics" not in r for r in runs)
+            assert all("rco pack" not in r for r in runs)
+        if lint:
+            proc = subprocess.run(
+                [lint, "-"], input=text, text=True, capture_output=True)
+            err = (proc.stderr or "") + (proc.stdout or "")
+            assert proc.returncode == 0, err

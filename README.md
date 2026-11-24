@@ -47,12 +47,12 @@ The default in 0.1.6:
 ```
 pip install repo-context-optimizer   # installs the `rco` command
 cd any-git-repo
-rco pack                   # SHA=HEAD; no --for: whole-repo Forest only; --budget 8000
+rco pack                   # SHA=HEAD; no --for: whole-repo Forest only; --budget 12000
 rco pack --for src/cli.py  # Forest + Trees for those modules and one import hop
 rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 ```
 
-`--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 8000. `--for` is optional. These defaults match the [Commands](#commands) section.
+`--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 12000. `--for` is optional. These defaults match the [Commands](#commands) section.
 
 Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
 
@@ -199,7 +199,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 - `SHA` defaults to `HEAD`. A repository with no commits still yields an empty pack and exit 0.
 - `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
-- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 8000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits.
+- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose).
 
 The pack is the map; raw files are fetched on demand.
 
@@ -223,7 +223,7 @@ flowchart LR
 This sample is about 150 estimated tokens (characters / 4; the estimator is approximate).
 
 ```markdown
-# rco pack  (SHA=abc1234, budget=8000 estimated tokens)
+# rco pack  (SHA=abc1234, budget=12000 estimated tokens)
 
 ## Forest
 - tw: desk CLI and process runner (depends on: proc, client)
@@ -240,7 +240,7 @@ CLI: tw run, tw stop
 - proc: process supervision for tw runs
 - client: shared client library
 
-# budget used: ~150 / 8000 estimated tokens
+# budget used: ~150 / 12000 estimated tokens
 ```
 
 ### `rco tree [SHA] [--for PATHS]`
@@ -517,7 +517,7 @@ When `--budget` trims a pack, the pack names what it trimmed.
 
 - **PyPI package name.** The package is on PyPI as `repo-context-optimizer` (installs the `rco` command).
 - **Which prose pieces truly need an LLM.** Find out empirically: ship Phase 1 with no LLM, then see what cold agents still ask for or get wrong.
-- **Default `--budget`.** 8000 estimated tokens is the design default; confirm against Phase 0 pack sizes.
+- **Default `--budget`.** 12000 estimated tokens is the interim design default, raised from 8000 so current packs fit with headroom (Phase 0: a typical code-only merge is 2.3K at p50; `agent_coord/server/records` is 11.3K; live packs were just over 8K). The cold-agent A/B and rco metrics decide the long-term default.
 
 ## Merge planning beyond `rco plan`
 
