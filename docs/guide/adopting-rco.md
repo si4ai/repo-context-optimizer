@@ -7,7 +7,7 @@ This guide answers three questions for any repository: what to set up, where it 
 ## bottom line
 
 - rco is a report tool. Every place it goes in a pipeline is advisory: a job that shows facts and never blocks a merge. Exit 1 means "findings", not "failure". Exit 2 (usage error) and 3 (internal error) fail the job.
-- Setup is one command: `pip install repo-context-optimizer==0.1.6`, then `rco init` at the top of your checkout. It writes `rco.toml` and `.github/workflows/rco.yml`. On a pull request that workflow puts `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice into the job summary. On a push to the default branch it runs `rco update`. rco itself needs nothing copied from the rco repository; the Files to copy list in github-setup.md is optional CI hardening.
+- Setup is one command: `pip install repo-context-optimizer==0.1.6`, then `rco init` at the top of your checkout. It writes `rco.toml` and `.github/workflows/rco.yml`. On a pull request that workflow puts `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice into the job summary. On a push to the default branch it runs `rco update`. Add `--metrics` to also pack the changed files, write `rco-metrics.json`, and upload the `rco-report` artifact (re-init does not overwrite an existing workflow; remove it first if you want the opt-in). rco itself needs nothing copied from the rco repository; the Files to copy list in github-setup.md is optional CI hardening.
 - Not in the `rco init` workflow: `rco check`, `rco triage` and `rco plan`. Add them by hand if you want them (see the stage table).
 - What does not work today: LLM prose (off by design), the mill and MCP backends, notices sent by mail, and recorded `tw rco update` runs.
 - Always pass an explicit base and head in CI, and check out full history. The default base looks for `origin/HEAD`, `main` or `master`, and a CI checkout often has none of them. The `rco init` workflow already does both.
@@ -29,7 +29,7 @@ Check first: rco needs Python 3.12 or newer. The workflow it writes runs on GitH
 ```
 pip install repo-context-optimizer==0.1.6
 cd your-repo
-rco init            # add --hooks for the post-merge hook
+rco init            # add --hooks for the post-merge hook; add --metrics to upload rco-metrics.json
 ```
 
 `rco init` writes only files that are not there yet, and reports each one as wrote or kept:
@@ -74,7 +74,7 @@ Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI or wheel. 
 | MP | `rco plan BRANCH BRANCH... [--base B]` | what does each branch change that another uses, which tests see both, and in what order should they merge? | 0 clean, 1 findings |
 | TS | `rco affected [BASE] [HEAD]` | which tests can see this change? | 0 |
 | SG | `rco diff --staged` / `--worktree` | which contracts does my uncommitted change touch? | 0 none, 1 changes |
-| IN | `rco init [--hooks]` | set up `rco.toml`, a CI workflow (DF, TS, DR, NT on PRs; UP on push) and hooks in one step | 0 |
+| IN | `rco init [--hooks] [--metrics]` | set up `rco.toml`, a CI workflow (DF, TS, DR, NT on PRs; UP on push; optional rco-metrics.json artifact) and hooks in one step | 0 |
 | HK | post-merge hook from `rco init --hooks` | keep the store current after each merge | 0 |
 | RO | `rco live [SHA] --schema/--openapi/--help-text` | does the map match a real schema dump, OpenAPI file or `--help` output? | 0 ok, 1 findings |
 | LG | bundled parsers | JavaScript/TypeScript, Go, Rust, shell and PowerShell contracts | n/a |

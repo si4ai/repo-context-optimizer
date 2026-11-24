@@ -193,7 +193,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Commands
 
-`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco triage` and `rco notice` (phase 5, hints only) have landed, and so has `rco plan` (simple merge planning, a plan only). Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see [the pin contract](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/design/pin-contract.md)). Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco metrics` rolls up token-efficiency numbers from `rco-metrics.json` files. `rco triage` and `rco notice` (phase 5, hints only) have landed, and so has `rco plan` (simple merge planning, a plan only). Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see [the pin contract](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/design/pin-contract.md)). Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
@@ -303,13 +303,21 @@ Checks the map against real outputs that you captured. rco never runs repo code,
 
 The incremental post-merge updater described above.
 
-### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci]`
+### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci] [--metrics]`
 
 One-step setup. It writes only files that don't exist yet, never overwrites one, and reports each file as wrote or kept:
 
 - `rco.toml` with every setting commented out, so nothing changes until you edit it.
-- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, (when `pins/` exists) `rco drift`, and the cross-PR notice into the job summary. The notice step is `python -m rco.notice_report`, which ships in the wheel: it lists the other open PRs into the same base with `gh api` (the job asks for `pull-requests: read`), fetches their heads, and runs `rco notice`. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3.
+- `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, (when `pins/` exists) `rco drift`, and the cross-PR notice into the job summary. The notice step is `python -m rco.notice_report`, which ships in the wheel: it lists the other open PRs into the same base with `gh api` (the job asks for `pull-requests: read`), fetches their heads, and runs `rco notice`. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3. With `--metrics`, the pull-request job also packs the changed files, writes `rco-metrics.json`, and uploads the `rco-report` artifact so you can roll the numbers up later with `rco metrics summary`.
 - With `--hooks`, a `post-merge` hook in git's hooks directory (`core.hooksPath` is honored). After a pull or merge it runs `rco update --name <branch>` in the background, and it always exits 0, even without `rco` on `PATH`. If another post-merge hook is already there, it is kept, and you add the line by hand. `--remove-hooks` deletes the hook only if rco wrote it.
+
+### `rco metrics`
+
+Token-efficiency numbers for one pull request, and a roll-up over many.
+
+- `rco metrics measure --base SHA --head SHA --pr N [--pack pack.md] --out rco-metrics.json --format json` writes one schema-1 file: bytes and tokens an agent would read without rco (changed files at the head, plus the in-repo files those import, one hop) versus the `rco pack --for CHANGED` markdown. The file is the same shape already uploaded by adopters that measure this in CI. `rco metrics check FILE` exits 1 if that file is missing or incomplete, so a CI job can fail instead of uploading nothing.
+- `rco metrics summary PATH...` reads those files (a path may be a file or a directory of `rco-metrics.json` files) and prints a count, the mean and median `ratio_tokens`, total bytes and tokens saved, and the best and worst PRs (lowest and highest ratio). `--json` is the same as `--format json`. Files of the same pull request and head SHA are counted once. A lower ratio is more savings.
+- `python tools/fetch_rco_metrics.py --repo OWNER/NAME --out DIR` downloads recent GitHub `rco-report` artifacts into DIR using the GitHub CLI already authenticated in the environment (`gh auth` or `GH_TOKEN`). It never takes a token flag and never puts a token in a URL or command line. Then run `rco metrics summary DIR`.
 
 ### Structural brief (example)
 
@@ -421,6 +429,8 @@ The database is a single file once `rco update` exits, because SQLite checkpoint
 ## Metrics
 
 Claim no savings until they are measured against a baseline.
+
+`rco metrics summary` rolls up `rco-metrics.json` files (one per pull request, bytes and tokens with and without the pack) into a trend: count, mean and median ratio, total bytes and tokens saved, and the best and worst PRs. Writing and uploading that file is the `rco init --metrics` opt-in. Existing files already produced by a repo's own CI are accepted as schema 1.
 
 - Tokens and reads before the first useful action, and wrong guesses on cold runs, come from cold-agent logs, not from rco itself. Phase 0 uses the mill's cold-test kit and an existing baseline.
 - Branches triage reported clean (hypothesis, measured in Phase 5; see [`docs/baseline/phase5-triage.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/phase5-triage.md)). Tests still run, because an unchanged contract can hide a behavior change.

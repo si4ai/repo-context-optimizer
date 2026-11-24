@@ -81,3 +81,44 @@ def test_workflow_runs_the_shipped_notice_with_read_access_to_prs():
     for var in ("GH_TOKEN", "EVENT_NAME", "PR_NUMBER", "PR_BASE", "PR_BASE_REF", "PR_HEAD"):
         assert f"          {var}: ${{{{ " in a, var
     assert "ci/notice_report.sh" not in a and "ci/notice_heads.py" not in a
+
+
+def test_default_workflow_does_not_upload_metrics():
+    a = workflow_text("main")
+    assert a == workflow_text("main", metrics=False)
+    assert "rco-metrics.json" not in a
+    assert "upload-artifact" not in a
+    assert "rco metrics" not in a
+
+
+def test_metrics_workflow_writes_and_uploads_the_artifact():
+    a = workflow_text("main", metrics=True)
+    assert "rco pack" in a
+    assert "rco metrics measure" in a
+    assert "rco metrics check" in a
+    assert "--out rco-report/rco-metrics.json --format json" in a
+    assert "name: rco-report" in a
+    assert "path: rco-report/" in a
+    assert "if-no-files-found: error" in a
+    for line in a.splitlines():
+        if "uses:" in line:
+            sha = line.split("@")[1].split()[0]
+            assert len(sha) == 40, line
+    # default contract steps are still present
+    assert "python -m rco.notice_report || code=$?" in a
+    assert "rco update --name" in a
+
+
+def test_init_metrics_flag_writes_the_opt_in_workflow(tmp_path, capsys):
+    repo, sha = _repo(tmp_path)
+    assert cli.main(["init", "--repo", str(repo), "--no-config", "--metrics",
+                     "--format", "json"]) == Exit.OK
+    steps = json.loads(capsys.readouterr().out)["steps"]
+    assert steps[0]["path"] == WORKFLOW and steps[0]["action"] == "wrote"
+    text = (repo / WORKFLOW).read_text()
+    assert "rco-report/rco-metrics.json" in text
+    assert workflow_text("main", metrics=True) == text or "rco-metrics.json" in text
+    # a second init keeps the file
+    assert [s.action for s in init(repo, False, True, metrics=True).steps] == ["kept"]
+    assert cli.main(["init", "--repo", str(repo), "--no-config", "--no-ci",
+                     "--metrics"]) == Exit.USAGE

@@ -81,6 +81,8 @@ def make_parser() -> argparse.ArgumentParser:
     i.add_argument("--remove-hooks", action="store_true", help="remove rco's post-merge hook")
     i.add_argument("--no-config", dest="config", action="store_false", help="skip rco.toml")
     i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
+    i.add_argument("--metrics", action="store_true",
+                   help="also write and upload rco-metrics.json on pull requests")
     _common(i)
 
     lv = sub.add_parser("live", help="check the map against captured real outputs")
@@ -138,6 +140,23 @@ def make_parser() -> argparse.ArgumentParser:
     dr.add_argument("pins", nargs="+", type=Path, metavar="PIN", help="pin file or directory of *.json pins")
     dr.add_argument("--at", default="HEAD", help="commit to check (default: HEAD)")
     _common(dr)
+
+    m = sub.add_parser("metrics", help="token-efficiency metrics for pull requests")
+    ms = m.add_subparsers(dest="metrics_cmd", required=True, parser_class=_Parser)
+    sm = ms.add_parser("summary", help="roll up many rco-metrics.json files")
+    sm.add_argument("paths", nargs="+", metavar="PATH",
+                    help="rco-metrics.json file or a directory of them")
+    sm.add_argument("--json", action="store_true", help="same as --format json")
+    _common(sm)
+    mm = ms.add_parser("measure", help="write rco-metrics.json for one pull request")
+    mm.add_argument("--base", required=True, help="base commit")
+    mm.add_argument("--head", required=True, help="head commit")
+    mm.add_argument("--pr", type=int, required=True, help="pull request number")
+    mm.add_argument("--pack", default=None, help="rco pack markdown for the changed files")
+    mm.add_argument("--budget", type=int, default=8000, help="pack budget recorded in the file")
+    _common(mm)
+    ck = ms.add_parser("check", help="exit 1 unless the metrics file is present and complete")
+    ck.add_argument("file", help="rco-metrics.json to check")
     return p
 
 
@@ -200,6 +219,9 @@ def _read_claim(path: str) -> Map | Forest:
 
 
 def run(args: argparse.Namespace) -> Exit:
+    if args.cmd == "metrics" and getattr(args, "metrics_cmd", None) == "check":
+        from rco import metrics
+        return metrics.check_file(Path(args.file))
     repo = Path(args.repo)
     if args.cmd == "tree":
         sha = _resolve_sha(repo, args.sha)
@@ -232,8 +254,30 @@ def run(args: argparse.Namespace) -> Exit:
         from rco import init
         if args.hooks and args.remove_hooks:
             raise UsageError("init takes --hooks or --remove-hooks, not both")
-        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks)
+        if args.metrics and not args.ci:
+            raise UsageError("init --metrics needs the CI workflow (omit --no-ci)")
+        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks,
+                        args.metrics)
         return emit(rep, args.format, args.out)
+    if args.cmd == "metrics":
+        from rco import metrics
+        if args.metrics_cmd == "summary":
+            if args.json:
+                args.format = "json"
+            return emit(metrics.summarize([Path(p) for p in args.paths]),
+                        args.format, args.out)
+        if args.metrics_cmd == "measure":
+            pack_text = ""
+            if args.pack:
+                try:
+                    pack_text = Path(args.pack).read_text(encoding="utf-8")
+                except OSError as e:
+                    raise UsageError(f"unreadable pack {args.pack}: {e}") from None
+            name, count = metrics.counter()
+            doc = metrics.write_metrics(repo, args.base, args.head, args.pr,
+                                        pack_text, args.budget, count, name)
+            return emit(metrics.MetricsReport(doc), args.format, args.out)
+        raise UsageError(f"unknown command metrics {args.metrics_cmd}")
     if args.cmd == "live":
         from rco import live
         sha = gitread.resolve(repo, args.sha)

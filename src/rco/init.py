@@ -8,6 +8,8 @@ Writes, only where nothing is there yet:
   cross-PR notice (`python -m rco.notice_report`, which ships in the
   wheel); on a push to the default branch, `rco update` with the store
   cached across runs. It fails only on exit 2 or 3, never on findings.
+  With `--metrics`, the pull-request job also packs the changed files,
+  writes rco-metrics.json, and uploads the rco-report artifact.
 - `--hooks`: a post-merge hook that runs `rco update --name <branch>` in
   the background after every pull or merge, and always exits 0.
 
@@ -63,9 +65,41 @@ exit 0
 _CHECKOUT = "actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0"
 _PYTHON = "actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0"
 _CACHE = "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0"
+_UPLOAD = "actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2"
 
 
-def workflow_text(default_branch: str) -> str:
+def _metrics_steps() -> str:
+    return f"""\
+      - name: Token metrics
+        if: ${{{{ !cancelled() && github.event_name == 'pull_request' }}}}
+        env:
+          PR_NUMBER: ${{{{ github.event.pull_request.number }}}}
+          PR_BASE: ${{{{ github.event.pull_request.base.sha }}}}
+          PR_HEAD: ${{{{ github.event.pull_request.head.sha }}}}
+        run: |
+          set -eu
+          mkdir -p rco-report
+          base=$(git merge-base "$PR_BASE" "$PR_HEAD")
+          git diff --name-only -z --no-renames "$base" "$PR_HEAD" --diff-filter=d > rco-report/changed.z
+          if [ -s rco-report/changed.z ]; then
+            xargs -0 rco pack "$PR_HEAD" --out rco-report/pack.md --for < rco-report/changed.z
+          else
+            : > rco-report/pack.md
+          fi
+          rco metrics measure --base "$base" --head "$PR_HEAD" --pr "$PR_NUMBER" --pack rco-report/pack.md --out rco-report/rco-metrics.json --format json
+          rco metrics check rco-report/rco-metrics.json
+      - uses: {_UPLOAD}
+        if: ${{{{ !cancelled() && github.event_name == 'pull_request' }}}}
+        with:
+          name: rco-report
+          path: rco-report/
+          if-no-files-found: error
+          retention-days: 14
+"""
+
+
+def workflow_text(default_branch: str, metrics: bool = False) -> str:
+    metrics_steps = _metrics_steps() if metrics else ""
     return f"""\
 # Written by rco init (rco {__version__}). Advisory: it fails only on
 # exit 2 or 3 (usage or internal error), never on contract findings.
@@ -129,7 +163,7 @@ jobs:
           python -m rco.notice_report || code=$?
           if [ "$code" -ge 2 ]; then worst=$code; fi
           exit "$worst"
-      - name: Update the store
+{metrics_steps}      - name: Update the store
         if: github.event_name == 'push'
         run: rco update --name "${{{{ github.ref_name }}}}"
 """
@@ -189,7 +223,7 @@ def _rel(p: Path, top: Path) -> str:
 
 
 def init(repo: Path, config: bool = True, ci: bool = True, hooks: bool = False,
-         remove_hooks: bool = False) -> InitReport:
+         remove_hooks: bool = False, metrics: bool = False) -> InitReport:
     top = worktree_top(repo)
     steps: list[Step] = []
     if config:
@@ -199,7 +233,7 @@ def init(repo: Path, config: bool = True, ci: bool = True, hooks: bool = False,
             branch = gitread.default_branch(top).removeprefix("origin/")
         except UsageError:
             branch = "main"
-        steps.append(_write_new(top, WORKFLOW, workflow_text(branch)))
+        steps.append(_write_new(top, WORKFLOW, workflow_text(branch, metrics=metrics)))
     hook = hooks_dir(repo, top) / "post-merge"
     if hooks:
         if hook.exists():
