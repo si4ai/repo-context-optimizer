@@ -4,6 +4,12 @@
 
 ### added
 
+- every rco run appends one JSON line (run id, UTC start, command, exit
+  code, store pointer, HEAD, duration, and for `rco pack` the `--for` paths)
+  to `.rco/events.jsonl`, but only once `.rco/` exists, so read-only commands
+  in a fresh clone still write nothing. One `O_APPEND` write of at most
+  4096 bytes per run keeps concurrent runs whole on a local disk; a log
+  failure never changes the exit code (README, Events log)
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete

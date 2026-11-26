@@ -356,6 +356,32 @@ Exit codes, so agents can script the commands:
 | 2 | Usage error. |
 | 3 | Internal error. |
 
+### Events log
+
+Once `.rco/` exists in the checkout (the first `rco update` creates it), every
+rco run appends one JSON line to `.rco/events.jsonl`. Without `.rco/`, nothing
+is written, so read-only commands in a fresh clone still leave the tree
+untouched. `--help` and `--version` are not runs and write no line.
+
+| Key | Type | What it holds |
+|---|---|---|
+| `v` | int | line format version, `1` |
+| `run` | string | random id of this run (32 hex) |
+| `ts` | string | UTC start time, `YYYY-MM-DDTHH:MM:SSZ` |
+| `cmd` | string | the command: `update`, `pack`, `metrics measure`, ... |
+| `exit` | int | the exit code the command returned |
+| `store` | string or null | the store's `main` pointer when the run ended |
+| `head` | string or null | `git rev-parse HEAD` when the run ended |
+| `ms` | int | duration in milliseconds |
+| `for` | list or null | `rco pack` only: the `--for` paths (cut to fit the line) |
+
+Each line is one `O_APPEND` write of at most 4096 bytes, so concurrent runs on
+a local disk never tear or mix lines; no lock is taken. On a network
+filesystem `O_APPEND` is not guaranteed atomic, so lines may interleave
+there. A failure to write the log is one note on stderr and never changes
+the exit code. Read it with `cat .rco/events.jsonl` or, for example,
+`jq -c 'select(.cmd == "pack")' .rco/events.jsonl`.
+
 ## Secrets
 
 Before any pack output or storage, rco runs a redaction and hygiene pass over extracted constants, docstrings, and other literals. Redacted values are replaced with a placeholder and are never written through. What is redacted:
