@@ -40,6 +40,8 @@ rco init            # add --hooks for the post-merge hook; add --metrics to uplo
   - On `push` to the default branch: `rco update --name <branch>`, with `.rco/` kept in `actions/cache`.
 - With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
 
+Before or after setup, `pip install "repo-context-optimizer[tokens]"` and `rco replay` print an estimate of what rco saves on your last 10 code commits, with its method and limits. It needs no store and writes nothing.
+
 Then commit the two files, open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
 
 Limits of the generated workflow:

@@ -4,6 +4,14 @@
 
 ### added
 
+- `rco replay` estimates what rco saves on your own repo in one command: it
+  replays the last N code commits and prints tokens and file reads with
+  rco (the pack plus the changed files) and without (the changed files and
+  their imports, one hop), the medians, and its method and limits. It says
+  plainly when rco does not win. No agent, store or file edit; an estimate,
+  not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
+  adds tiktoken for real token counts; without it the counts are labelled
+  chars/4 estimates
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
