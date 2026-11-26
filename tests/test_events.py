@@ -101,10 +101,10 @@ def test_parallel_runs_no_torn_lines(tmp_path):
     repo, _ = _repo(tmp_path)
     env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
     n = 12
-    procs = [subprocess.Popen([sys.executable, "-m", "rco", "update" if i % 2 else "pack",
-                               "--repo", str(repo), "--for", "src/app/cli.py"] if i % 2 == 0
-                              else [sys.executable, "-m", "rco", "update", "--repo", str(repo)],
-                              env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    pack = [sys.executable, "-m", "rco", "pack", "--repo", str(repo), "--for", "src/app/cli.py"]
+    update = [sys.executable, "-m", "rco", "update", "--repo", str(repo)]
+    procs = [subprocess.Popen(update if i % 2 else pack, env=env,
+                              stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
              for i in range(n)]
     for p in procs:
         p.wait(timeout=120)
