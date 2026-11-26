@@ -11,15 +11,15 @@ license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.12"
 dependencies = []
-
-[project.optional-dependencies]
-tokens = ["tiktoken"]
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
   "Operating System :: OS Independent",
   "Development Status :: 2 - Pre-Alpha",
 ]
+
+[project.optional-dependencies]
+tokens = ["tiktoken"]
 
 [project.urls]
 Homepage = "https://github.com/si4ai/repo-context-optimizer"
