@@ -498,7 +498,8 @@ Three layers, the same ones the mill uses for its own protocol.
 ```mermaid
 flowchart LR
     V1["1. Is the design right?<br/>SPIN model, verify/spin/"] --> V2["2. Does the code follow it?<br/>map checker, property tests,<br/>history replay"]
-    V2 --> V3["3. Does it run?<br/>smoke tests, exit codes,<br/>timing, cold-agent A/B"]
+    V2 --> V3["3. Is the running code the protocol?<br/>trace conformance, bypass check"]
+    V3 -.->|evidence of correctness| V4["smoke tests, exit codes,<br/>timing, cold-agent A/B"]
 ```
 
 1. **Is the design right?** A SPIN (or TLA+) model of `rco update` with racing merges, a late update, a crash midway, and a rebased history. Properties: the pointer only moves forward (a new SHA must descend from the current one, checked and written in one atomic compare-and-swap); a published pointer always has its Trees; a stale Forest is never shown as current; an update run twice equals one run; no changed module is skipped; every Forest eventually becomes fresh. Status: modelled in `verify/spin/rco_update.pml` (linear history, two modules, two updaters, one crash, one duplicate). The design as first written failed all seven properties; with the four rules above it passes all seven. Rebased history and a lossy store are not modelled yet.
@@ -509,9 +510,53 @@ flowchart LR
    - Prose names: every name the Forest prose cites exists in the Tree.
    - The checker checks itself: maps with planted errors (a removed flag, a renamed column, a missing edge) must all be flagged.
    Alongside it: property tests (Hypothesis) that mirror the model's properties over random edit and merge sequences; a history replay where incremental updates must equal a full rebuild at every SHA of the default branch; and golden fixture repos with known Trees and Forests.
-3. **Does it run?** The zero-config acceptance table as smoke tests, the exit-code contract, timing and budget on the replay, and the cold-agent A/B, which is the only evidence that the map helps.
+3. **Is the running code the protocol?** A valid protocol means nothing if the code diverges from it or bypasses it. The model says what is allowed; this layer checks that real runs stay inside it, both after an incident (to debug errant behavior) and in flight (to see protocol drift). It has two halves, [divergence](#how-the-events-are-checked-against-the-protocol-divergence) and [bypass](#how-a-bypass-is-found), and a [trigger and effect table](#what-triggers-what). **Status: not built yet.** At present the CLI writes no event log, and no command prints conformance counts; the work is on mill cards `protocol-trace-conformance` (1311) and `protocol-bypass-scan` (1312), which cover the mill's own wake, hold, card and send protocols first. RCO's own events and checks are not carded separately yet.
+
+   The smoke tests, the exit-code contract, timing and budget on the replay, and the cold-agent A/B stay, but they are evidence that RCO is correct, not that it ran when it should have:
+   - The zero-config acceptance table, run as smoke tests: each row's expected behavior holds on a fixture repo.
+   - The exit-code contract: each command exits 0, 1, 2 or 3 exactly as the [Output contract](#output-contract) says.
+   - Timing and budget on the replay: a recorded time limit and `--budget` hold on the history replay.
+   - The cold-agent A/B: the only evidence that the map helps.
+
+   None of these shows that a commit was followed by `rco update`, or that an agent loaded the pack before editing. A run can pass all four and the protocol can still be skipped in practice.
 
 When `--budget` trims a pack, the pack names what it trimmed.
+
+#### How the events are checked against the protocol (divergence)
+
+Planned, not shipped. A CLI has no daemon, so each run is the whole story. Each `rco` invocation would append one event to an append-only `events` table in RCO's store, behind the same `Store` interface as the rest. The default store is SQLite (`.rco/rco.db`, WAL mode, tables `node`, `sha_index`, `pointer`, `prose`, `queue` and `notice`); there is no `events` table today. Each event holds:
+
+- the command and the shape of its arguments (flags and counts, not values),
+- the `rco` version,
+- the exit code and the duration,
+- the map or pack hash it read, and the hash it wrote.
+
+A deterministic replay of that table, with no LLM, then checks the events against the protocol's allowed order, the same way the SPIN model is checked: for example `rco update` runs after each merge to the default branch, the pointer only moves forward, and a pack is read before an agent's first edit. Any step the protocol forbids is reported with its event ids. The table is read the same way after an incident, over a time window, and in flight, where the counts should stay at zero.
+
+Two design points are open, because the store was built as a cache. `rco pack` and `rco check` only read a store and never create one, so logging their runs needs a stated exception to that rule. And a store restored from a CI cache, or deleted, loses its events, so where the events live long enough to survive an incident is not settled. Any other backend would need the same table, and the store conformance suite would need a check for it.
+
+#### How a bypass is found
+
+Planned, not shipped. A CLI cannot see what skips it, because a bypass leaves no event. So the check runs from the artifacts back to the runs:
+
+- A map or pack hash that is on disk or in the store with no `rco` run that wrote it means something wrote it without going through the protocol.
+- An agent session with no pack read means the agent worked without the map.
+- A merge to the default branch with no `rco update` event after it means the update trigger did not fire.
+
+The mill has the same two halves for its own protocols: a replay of real traces against `verify/spin/wake.pml` and `holds.pml`, and a static scan for code paths that write protected state without going through the protocol's entry point.
+
+#### What triggers what
+
+Each row is a trigger and the effect it must produce. A trigger with no effect is a silent no-op, an effect with no trigger is a bypass, and an effect before its trigger is out of order.
+
+| trigger | required effect | evidence in the events | exists today |
+|---|---|---|---|
+| A merge lands on the default branch | `rco update` publishes the pointer for that SHA | an `update` event whose written hash is the new pointer | the command and its [SPIN model](verify/spin/README.md) exist; no event is recorded. |
+| `rco update` starts | The pointer moves forward only, by one compare-and-swap, and only to a complete SHA | the pointer hash read, then the hash written, in one event | as a model in `verify/spin/rco_update.pml`; not observed in real runs. |
+| An agent session starts on a repo with RCO | A pack read before the agent's first edit | a `pack` event, then the first edit | no event is recorded. |
+| A pack or map file changes | A `rco` run wrote that hash | the hash in a `pack` or `update` event | no event is recorded. |
+
+The one command that should print the conformance counts (forbidden steps, silent no-ops, orphans, out-of-order) **does not exist yet**. When it lands it will be named here, and its zero output on a real window of events becomes the evidence for this layer.
 
 ## Open questions
 
