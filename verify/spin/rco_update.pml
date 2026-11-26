@@ -37,7 +37,17 @@
  *          1 staleness is derived at read time: ForestHash's TreeHash != TreeHash
  *   QAFTER 0 prose rewrite queued in step 5 (before the pointer write)
  *          1 prose rewrite queued after the pointer write
- *   PROP   which property this build checks (1..7, see below)
+ *   PCRASH 0 crashes only before the pointer write (as above)
+ *          1 an updater can also crash after the pointer write, before it
+ *            queues prose rewrites (card 1318: kill between swap and queue)
+ *   QFROM  (with QAFTER 1) what the queue after the pointer write holds
+ *          0 modules whose TreeHash differs between the job's OLD and NEW
+ *          1 modules whose TreeHash differs between the pointer this update
+ *            replaced and NEW; nothing when NEW was already published
+ *            (rco 0.1.0 src/rco/update.py)
+ *          2 every module of NEW with no prose for its TreeHash and not
+ *            queued yet, also when NEW was already published (card 1318)
+ *   PROP   which property this build checks (1..8, see below)
  *   MAXCRASH, MAXDUP  bounds on crashes and duplicate deliveries
  */
 
@@ -55,6 +65,12 @@
 #endif
 #ifndef PROP
 #define PROP 1
+#endif
+#ifndef PCRASH
+#define PCRASH 0
+#endif
+#ifndef QFROM
+#define QFROM 0
 #endif
 #ifndef MAXCRASH
 #define MAXCRASH 1
@@ -91,6 +107,15 @@ byte finished = 0;         /* jobs done or crashed */
 bool mergerDone = false;
 bool lastCrashed = false;  /* some run of the job for the latest merge crashed */
 
+#if QFROM == 2
+bool prose[NM*NC];         /* content-addressed prose: module m, TreeHash t */
+bool inq[NM];              /* module m is waiting in the rewrite queue */
+#endif
+#if PROP == 8
+bool rerunSent = false;    /* the rerun of the latest update was queued */
+bool rerunDone = false;    /* the rerun of the latest update has finished */
+#endif
+
 chan jobs = [8] of { byte, byte };   /* (OLD, NEW) */
 chan rq = [16] of { byte };          /* prose rewrite queue: module */
 
@@ -124,7 +149,7 @@ inline extract(mm) {
 }
 
 proctype updater() {
-  byte o, n, m, c;
+  byte o, n, m, c, cur;
 end_idle:
   do
   :: jobs?o,n ->
@@ -177,6 +202,7 @@ end_idle:
        fi;
 #else
        atomic {
+         cur = pointer;
          if
          :: (n >= pointer) ->
               printf("EV updater %d CAS pointer sha%d (was sha%d)\n", _pid, n, pointer);
@@ -185,17 +211,39 @@ end_idle:
          fi
        }
 #endif
+#if PCRASH == 1
+       maybe_crash();
+#endif
 #if QAFTER == 1
        m = 0;
        do
        :: (m < NM) ->
+#if QFROM == 0
             if
             :: (T(m,C(o,m)) != T(m,C(n,m))) -> rq!m
             :: else -> skip
             fi;
+#elif QFROM == 1
+            if
+            :: (n > cur && T(m,C(cur,m)) != T(m,C(n,m))) -> rq!m
+            :: else -> skip
+            fi;
+#else
+            atomic {
+              if
+              :: (n >= cur && !prose[m*NC+TREE_AT(n,m)] && !inq[m]) ->
+                   inq[m] = true; rq!m;
+                   printf("EV updater %d queued m%d (no prose for its TreeHash)\n", _pid, m)
+              :: else -> skip
+              fi
+            };
+#endif
             m++
        :: else -> break
        od;
+#endif
+#if PROP == 8
+       if :: rerunSent -> rerunDone = true :: else -> skip fi;
 #endif
        printf("EV updater %d finished update %d->%d, pointer=sha%d\n", _pid, o, n, pointer);
        finished++;
@@ -212,11 +260,17 @@ proctype rewriter() {
 end_idle:
   do
   :: rq?m ->
+#if QFROM == 2
+       inq[m] = false;
+#endif
        p = pointer;              /* read the published SHA */
        printf("EV rewriter starts prose for m%d at pointer sha%d\n", m, p);
        t = TREE_AT(p, m);        /* Tree it will describe */
        /* ... LLM prose generation happens here (async, slow) ... */
        atomic { forestT[m] = t;
+#if QFROM == 2
+                prose[m*NC+t] = true;
+#endif
 #if STALE == 0
                 stale[m] = false;
 #endif
@@ -247,6 +301,13 @@ proctype merger() {
        s++
   :: else -> break
   od;
+#if PROP == 8
+  /* after every update has finished (one may have crashed), the operator
+   * runs `rco update` again for the latest SHA: OLD is the pointer it finds */
+  atomic { (finished == sent) ->
+    printf("EV rerun of update %d->%d queued\n", pointer, NS);
+    jobs!pointer,NS; sent++; rerunSent = true };
+#endif
   mergerDone = true
 }
 
@@ -289,6 +350,12 @@ ltl p6 { ([] !lastCrashed) -> <> [] (pointer == NS) }
 /* P7 (extra) liveness: with no crashes, every Forest eventually becomes
  * fresh for the published pointer and stays fresh */
 ltl p7 { ([] (crashes == 0)) -> <> [] (FRESH(0) && FRESH(1)) }
+#elif PROP == 8
+/* P8 (card 1318) liveness: an update killed at any point, including after
+ * the pointer write and before the queue, is repaired by running the update
+ * again: once that rerun has finished, every Forest becomes fresh for the
+ * published pointer and stays fresh */
+ltl p8 { <> rerunDone -> <> [] (FRESH(0) && FRESH(1)) }
 #endif
 
 init {
@@ -305,6 +372,9 @@ init {
     store[0*NC+0] = true; store[1*NC+0] = true;
     idx[0] = true; pointer = 0;
     forestT[0] = 0; forestT[1] = 0;
+#if QFROM == 2
+    prose[0*NC+0] = true; prose[1*NC+0] = true;
+#endif
     run merger(); run rewriter();
     run updater(); run updater();
 #if PROP <= 5
