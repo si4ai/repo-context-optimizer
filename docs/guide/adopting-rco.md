@@ -63,7 +63,7 @@ Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI or wheel. 
 |---|---|---|---|
 | TR | `rco tree [SHA]` | what are the public contracts (functions, classes, argparse flags, SQL tables, routes, and the bundled languages) at this commit? | 0 |
 | FO | `rco forest [SHA]` | How do modules depend on each other, and what are the entry points? | 0 |
-| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget is too small (< 64, or below the header and footer) |
+| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget is too small (< 128, or below the header and footer) |
 | DF | `rco diff BASE HEAD` | Which contracts changed between two commits, and who calls them (qualified, not by bare name)? | 0 none, 1 changes |
 | CK | `rco check MAP` / `--selftest` | Is this map still true for the code? Does the checker catch planted errors? | 0 ok, 1 findings |
 | UP | `rco update [SHA] --name P` | save a commit's map to the store and move pointer P forward | 0; refuses to move backwards |
