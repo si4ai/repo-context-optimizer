@@ -2,7 +2,7 @@
 
 This is a model of the update protocol described in `../../README.md`, in the sections "Fingerprints", "Incremental update after each merge" and "Verification". There is no rco code yet, so this checks the design, not an implementation.
 
-- `rco_update.pml`: the model. Variants are chosen with `-D` switches (`GUARD`, `TOUCH`, `STALE`, `QAFTER`), and the property with `-DPROP=n`.
+- `rco_update.pml`: the model. Variants are chosen with `-D` switches (`GUARD`, `TOUCH`, `STALE`, `QAFTER`, and for property 8 `PCRASH` and `QFROM`), and the property with `-DPROP=n`.
 - `run.sh`: runs every property against every variant. Safety properties use `spin -a`, `gcc -DSAFETY`, `./pan`, and then `-DREACH ./pan -i` to get the shortest trail. Liveness properties use `gcc` and `./pan -a`. It writes `results/summary.txt` and `results/<variant>-P<n>/` (`pan.log` plus `trail-events.txt` for each failure). Each cell is compared to the results table below; the script exits nonzero when any cell differs, or when spin or the C compiler fails.
 - Tool: Spin Version 6.5.1 (20 December 2019).
 
@@ -62,6 +62,22 @@ Ablations: each row starts from b-cas and adds one fix, to show which fix closes
 
 So each of the three extra fixes is needed, and each one closes exactly the properties listed.
 
+### A kill after the pointer write (card 1318)
+
+The variants above crash only before the pointer write. Card 1318 found a kill between the pointer write and the prose queue in the real `rco update`, which SPIN never saw. Two switches model it, and the default builds are unchanged (same state counts as before):
+
+- `PCRASH=1`: an updater can also crash after the pointer write, before it queues prose rewrites.
+- `QFROM`: what the queue after the pointer write holds. `1` is rco 0.1.6 (`src/rco/update.py` before card 1318): modules whose TreeHash differs between the pointer this update replaced and NEW, and nothing when NEW was already published. `2` is the card 1318 fix: every module of NEW with no prose for its TreeHash and not queued yet, also when NEW was already published.
+
+P8 adds one more step: once every update has finished (one may have crashed), the operator runs `rco update` again for the latest SHA. P8 is liveness: after that rerun finishes, every Forest becomes fresh and stays fresh. Bounds: 3 merges, 2 updaters, at most 1 crash anywhere, 1 duplicate, then the rerun.
+
+| variant | flags on top of fixed | P8 |
+|---|---|---|
+| **code010** | `PCRASH=1 QFROM=1` (rco 0.1.6) | **FAIL** (1,636,281) |
+| **code1318** | `PCRASH=1 QFROM=2` (card 1318) | PASS (28,582,084) |
+
+Counterexample, code010: the update for sha1 writes the pointer and is killed before it queues m0's rewrite. Every later update diffs from a pointer that already shows sha1, so none of them queues m0, and the rerun finds sha3 already published and queues nothing. m0's Forest stays at its sha0 TreeHash for good. That is the same trail as `test_kill_then_rerun[queue]` in `tests/test_update_process.py`. The fix derives the queue from staleness (rule 3), so any later run repairs it.
+
 The bounds are 3 merges, 2 modules, 2 updaters, at most 1 crash and at most 1 duplicate. P4 and P7 run with no crashes, and P5 runs with no duplicates. No run hit a depth or memory limit.
 
 ## Counterexamples in plain words
@@ -77,7 +93,7 @@ The shortest trail for each failure is in `results/<variant>-P<n>/trail-events.t
 - **P6, variants a and b:** the update for sha3 sets the pointer to sha3, then the late sha2 update overwrites it with sha2. No further work is queued, so the pointer stays behind forever.
 - **P7, variants a, b and b-cas (Forest never refreshes):** the rewrite for m1 is queued in step 5, before the pointer write. The rewriter takes it while the pointer is still sha2 and writes prose for the old TreeHash. Then the pointer moves to sha3, and nothing re-queues m1, so its Forest stays stale for good. Queuing the rewrite after the pointer write fixes this, because the rewriter then always reads a pointer at least as new as the change.
 
-## Note on fairness (P6, P7)
+## Note on fairness (P6, P7, P8)
 
 `run.sh` runs the liveness checks with `./pan -a` and without `-f`. Every process here does a bounded amount of work, so the only infinite runs are the stutter once everything has finished, and weak fairness holds on them trivially. With `-f`, SPIN 6.5.1 drops that final stutter and reported PASS on variant a even though a concrete run ends with the pointer behind (checked by hand). Using `-f` would hide real failures.
 

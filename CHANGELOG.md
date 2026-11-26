@@ -21,6 +21,16 @@
 - `rco affected --format json` adds `select` (`all`, `tests` or `none`),
   `by_path` and `docs`, so a CI job can skip tests on a docs-only change
 
+### fixed
+
+- `rco update` killed after the pointer swap and before the prose queue no
+  longer leaves the store stale for good: the queue is derived from
+  staleness (every module of the published SHA with no prose for its
+  TreeHash), also when the rerun finds the SHA already published.
+  `tests/test_update_process.py` runs the real CLI twice, kills it at each
+  step and reruns it, and races three updates; SPIN property 8 models the
+  kill.
+
 ### changed
 
 - the default `rco pack --budget` is 12000 estimated tokens, raised from
