@@ -4,6 +4,12 @@
 
 ### added
 
+- `rco init --agents` writes one marked block at the top of `AGENTS.md`
+  (created if missing) and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md`
+  and `.github/copilot-instructions.md` when they exist, telling an agent
+  to run `rco pack --for FILE...` before reading code. A second run changes
+  nothing; rco edits only between its markers and keeps line endings.
+  Files over 16 KiB get a size warning. Opt-in; plain `rco init` is unchanged
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
