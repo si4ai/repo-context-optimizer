@@ -9,7 +9,10 @@
   and `.github/copilot-instructions.md` when they exist, telling an agent
   to run `rco pack --for FILE...` before reading code. A second run changes
   nothing; rco edits only between its markers and keeps line endings.
-  Files over 16 KiB get a size warning. Opt-in; plain `rco init` is unchanged
+  Files over 16 KiB get a size warning. It also writes
+  `.cursor/environment.json` when `.cursor/` exists and the file does not,
+  and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
+  Opt-in; plain `rco init` is unchanged.
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
