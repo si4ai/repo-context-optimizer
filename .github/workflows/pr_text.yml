@@ -1,0 +1,32 @@
+# PR and issue text hygiene: calls the shared si4ai/.github pr_text
+# workflow. The edit history keeps every revision of a PR or issue body,
+# so text is scanned when it is posted or edited, plus a daily sweep.
+# The pin is a full commit sha of si4ai/.github; the shared workflow
+# checks its scripts out at that same sha.
+name: pr_text
+
+"on":
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+  issues:
+    types: [opened, edited]
+  issue_comment:
+    types: [created, edited]
+  schedule:
+    - cron: "17 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-text-${{ github.event_name }}-${{ github.event.pull_request.number || github.event.issue.number || github.run_id }}
+  cancel-in-progress: true
+
+jobs:
+  pr_text:
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+    uses: si4ai/.github/.github/workflows/pr_text.yml@32060bdbb068ee6d631d1d335e27e25b124ff3e2

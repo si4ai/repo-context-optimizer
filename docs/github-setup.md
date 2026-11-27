@@ -117,7 +117,9 @@ Flags `--map` and `--control-plane` override the same fields. Defaults match the
 
 ## Hygiene and PR text
 
-`hygiene_report` runs `tools/check_hygiene.py` on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. It is report-only (no `--strict` in CI). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, byte-order marks, and junk files, in the commit range and in the PR title and body. The report names the kind and the path or commit, never the matched text; a crash fails the job. Flags or `ci/hygiene.toml` tune the words file and options.
+`hygiene_report` calls the shared `si4ai/.github` hygiene workflow, pinned to a full commit sha, on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. That workflow runs the same `tools/check_hygiene.py`; this repo keeps its copy for the pre-commit hook. It is report-only (no `--strict` in CI). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, byte-order marks, and junk files, in the commit range and in the PR title and body. The report names the kind and the path or commit, never the matched text; a crash fails the job. Flags or `ci/hygiene.toml` tune the words file and options.
+
+`.github/workflows/pr_text.yml` calls the shared pr_text workflow. It scans PR and issue titles and bodies and comments when they are posted or edited, plus a daily sweep, and fails on a hit, because the edit history keeps every revision. Title-case words this repo uses in headings belong in `tools/hygiene_words.txt`.
 
 Once per checkout, turn on the repo hooks with `git config core.hooksPath .githooks`. `pre-commit` runs `tools/check_hygiene.py --staged --strict` on staged blobs (byte-order marks and typographic marks on the whole blob; the other rules on added lines).
 
