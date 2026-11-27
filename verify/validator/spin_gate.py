@@ -7,6 +7,8 @@
       # gate an existing summary only
 Expected verdicts come from the documented tables in verify/spin/README.md at the same ref,
 plus two hard rules from the top README: `fixed` passes all seven properties; a, b and b-cas fail.
+Card 1318 adds P8 (a kill after the pointer write, then a rerun) for two variants, read from the
+P8 table: code010 (rco 0.1.6) must fail it and code1318 (the fix) must pass it.
 Exit 0 = gate green and self-test green, 1 = mismatch (red), 2 = blocked/error.
 """
 from __future__ import annotations
@@ -20,6 +22,8 @@ PROPS = [f"P{i}" for i in range(1, 8)]
 COL = {"a": "a", "b": "b", "b-cas": "bcas", "fixed": "fixed"}
 ABL = {"check every module": "bcas_touch", "derived staleness": "bcas_derived",
        "queue the rewrite after the pointer": "bcas_qafter"}
+P8 = ("code010", "code1318")  # card 1318 table: variant | flags | P8
+NDOC = 49 + len(P8)
 # summary.txt columns: variant prop expect got states detail; group 3 is run.sh's own expectation,
 # group 4 the measured result the gate uses, group 5 the state count
 ROW = re.compile(r"^(\S+)\s+(P\d)\s+(PASS|FAIL)\s+(PASS|FAIL|ERROR)\s+(\S+)")
@@ -42,14 +46,20 @@ def expected_from_doc(doc: str) -> tuple[dict, dict]:
             if v:
                 for p, cell in zip(PROPS, cells[1:]):
                     exp[(v, p)] = cell
+        elif cells and cells[0].strip("*") in P8 and len(cells) == 3:
+            v = cells[0].strip("*")
+            exp[(v, "P8")] = "FAIL" if "FAIL" in cells[2] else "PASS"
+            n = re.search(r"\(([\d,]+)\)", cells[2])
+            if n:
+                states[(v, "P8")] = int(n.group(1).replace(",", ""))
     return exp, states
 
 
 def gate(summary: str, doc: str) -> tuple[list[str], list[str]]:
     exp, states = expected_from_doc(doc)
     bad, notes = [], []
-    if len(exp) != 49:
-        bad.append(f"could parse only {len(exp)}/49 documented verdicts from verify/spin/README.md")
+    if len(exp) != NDOC:
+        bad.append(f"could parse only {len(exp)}/{NDOC} documented verdicts from verify/spin/README.md")
     got, seen_st = {}, {}
     for line in summary.splitlines():
         if re.search(r"ERROR|spin failed", line):
@@ -74,6 +84,10 @@ def gate(summary: str, doc: str) -> tuple[list[str], list[str]]:
     for v in ("a", "b", "bcas"):
         if not any(got.get((v, p)) == "FAIL" for p in PROPS):
             bad.append(f"top README rule: variant {v} must fail at least one property")
+    if got.get(("code010", "P8")) != "FAIL":
+        bad.append(f"card 1318 rule: code010 (rco 0.1.6) must FAIL P8, got {got.get(('code010', 'P8'))}")
+    if got.get(("code1318", "P8")) != "PASS":
+        bad.append(f"card 1318 rule: code1318 must PASS P8, got {got.get(('code1318', 'P8'))}")
     if any(got.get(("a", p)) != "FAIL" for p in PROPS):
         bad.append("top README: 'the design as first written failed all seven' (variant a) does not hold")
     for k, n in states.items():
@@ -95,6 +109,8 @@ def selftest(summary: str, doc: str) -> list[str]:
             r"^(fixed\s+P1\s+PASS\s+)PASS(\s+\S+)\s*$", r"\1FAIL\2   <-- differs from expectation", summary, count=1, flags=re.M),
         "a P1 -> PASS": flip(summary, "a", "P1", "PASS"),
         "bcas_touch P3 -> PASS": flip(summary, "bcas_touch", "P3", "PASS"),
+        "code1318 P8 -> FAIL": flip(summary, "code1318", "P8", "FAIL"),
+        "code010 P8 -> PASS": flip(summary, "code010", "P8", "PASS"),
         "drop fixed P7 row": re.sub(r"^fixed\s+P7 .*\n", "", summary, flags=re.M),
         "gcc ERROR row": summary + "fixed        P8   ERROR gcc (see x)\n",
         "truncated (no footer)": re.sub(r"^spin: .*\n?", "", summary, flags=re.M),

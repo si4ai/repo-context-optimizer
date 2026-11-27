@@ -15,6 +15,7 @@ import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
+from urllib.parse import quote
 
 from rco.canon import canonical_json
 from rco.forest_model import Prose, prose_from_obj, prose_to_obj
@@ -38,6 +39,27 @@ CREATE TABLE IF NOT EXISTS notice (seq INTEGER PRIMARY KEY, text TEXT NOT NULL);
 DB_RELPATH = ".rco/rco.db"
 EXCLUDE_LINE = "/.rco/"
 _TABLES = ("node", "sha_index", "pointer", "prose", "queue", "notice")
+
+
+def read_pointer(db: Path, name: str) -> str | None:
+    """A pointer's SHA read through a read-only connection, or None.
+
+    For callers that must not take the write lock (SqliteStore.__init__ runs
+    BEGIN IMMEDIATE), such as the events log while an update is running.
+    None on a missing file or any sqlite error.
+    """
+    if not Path(db).is_file():
+        return None
+    try:
+        uri = "file:" + quote(Path(db).resolve().as_posix()) + "?mode=ro"
+        con = sqlite3.connect(uri, uri=True, timeout=1.0)
+        try:
+            row = con.execute("SELECT sha FROM pointer WHERE name=?", (name,)).fetchone()
+        finally:
+            con.close()
+    except sqlite3.Error:
+        return None
+    return None if row is None else row[0]
 
 
 class SqliteStore:

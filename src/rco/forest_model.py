@@ -28,7 +28,8 @@ _ENTRY_KEYS = frozenset({"id", "layer", "depends_on", "used_by", "entry_points",
 _OWNS_KEYS = frozenset({"commands", "tables", "routes"})
 _PROSE_KEYS = frozenset({"text", "source", "tree_hash", "prompt_version", "model_id"})
 _PACK_KEYS = frozenset({"schema", "sha", "budget", "used", "forest", "trees", "hop",
-                        "trimmed", "stale", "notes"})
+                        "trimmed", "stale", "notes", "built"})
+_BUILT_KEYS = frozenset({"source", "head", "behind", "differs"})
 
 
 class ProseSource(str, Enum):
@@ -87,6 +88,22 @@ class HopLine:
 
 
 @dataclass(frozen=True, slots=True)
+class BuiltFrom:
+    """Where a pack came from, computed when it was built (card 1315).
+
+    source is "store" or "git"; head is HEAD at build time (None without a
+    commit); behind counts commits from the pack's SHA to HEAD (None when the
+    SHA is not on HEAD's history); differs lists working-tree paths that
+    differ from the pack's SHA (tracked changes plus untracked files).
+    """
+
+    source: str
+    head: str | None
+    behind: int | None
+    differs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class Pack:
     sha: str
     budget: int  # estimated tokens
@@ -97,6 +114,7 @@ class Pack:
     trimmed: tuple[str, ...]  # every module or node cut for budget, in cut order
     stale: tuple[str, ...]  # module ids whose prose TreeHash != current TreeHash
     notes: tuple[str, ...] = ()
+    built: BuiltFrom | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -221,6 +239,9 @@ def pack_to_obj(p: Pack) -> dict:
         "trimmed": list(p.trimmed),
         "stale": list(p.stale),
         "notes": list(p.notes),
+        "built": None if p.built is None else {
+            "source": p.built.source, "head": p.built.head,
+            "behind": p.built.behind, "differs": list(p.built.differs)},
     }
 
 
@@ -236,4 +257,15 @@ def pack_from_obj(o: object) -> Pack:
         trimmed=tuple(str(x) for x in o["trimmed"]),
         stale=tuple(str(x) for x in o["stale"]),
         notes=tuple(str(x) for x in o.get("notes", [])),
+        built=_built_from_obj(o.get("built")),
     )
+
+
+def _built_from_obj(o: object) -> BuiltFrom | None:
+    if o is None:
+        return None
+    o = _strict(o, _BUILT_KEYS, "pack built")
+    head, behind = o.get("head"), o.get("behind")
+    return BuiltFrom(source=str(o["source"]), head=None if head is None else str(head),
+                 behind=None if behind is None else int(behind),
+                 differs=tuple(str(x) for x in o.get("differs", [])))

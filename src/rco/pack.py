@@ -19,7 +19,7 @@ from pathlib import Path
 from typing import Sequence
 
 from rco import build, canon, forest, gitread, imports, modules
-from rco.forest_model import (DEFAULT_BUDGET, ForestEntry, HopLine, Pack, ProseSource,
+from rco.forest_model import (DEFAULT_BUDGET, BuiltFrom, ForestEntry, HopLine, Pack, ProseSource,
                               estimate_tokens, is_stale, pack_to_obj)
 from rco.model import Kind, Map, Node, Tree, node_key
 from rco.output import Exit, UsageError
@@ -29,8 +29,9 @@ from rco.prose import derived_prose
 from rco.prose.derive import call_index, with_derived_docs
 from rco.store import NodeKind, Store
 
-MIN_BUDGET = 64  # header and footer alone need about this much
+MIN_BUDGET = 128  # header, built line, a short warning and the footer need about this much
 LINE_CAP = 100
+WARN_NAMES = 10  # names shown on the "changed since this pack" line
 
 
 def _is_empty_forest_entry(e: ForestEntry) -> bool:
@@ -171,9 +172,36 @@ def _trimmed_summary(trimmed: Sequence[str]) -> str:
     return f"# trimmed: {len(trimmed)} ({'; '.join(parts)})"
 
 
+def built_lines(p: Pack, named: bool = True) -> list[str]:
+    """The freshness header: where the pack came from and, if named, what changed since.
+
+    Rendered before "## Forest" so budget cuts never remove it.
+    """
+    b = p.built
+    if b is None:
+        return []
+    if b.behind is None:
+        where = "not on HEAD's history"
+    elif b.behind == 0:
+        where = "current"
+    else:
+        where = f"{b.behind} commit{'' if b.behind == 1 else 's'} behind HEAD"
+    n = len(b.differs)
+    tree = "matches" if n == 0 else f"{n} file{'' if n == 1 else 's'} differ{'s' if n == 1 else ''}"
+    head = b.head[:7] if b.head else "none"
+    out = [f"# built from {p.sha[:7]} ({b.source}); HEAD {head}; {where}; working tree {tree}"]
+    if named and b.differs:
+        shown = ", ".join(b.differs[:WARN_NAMES])
+        more = f" (+{n - WARN_NAMES} more)" if n > WARN_NAMES else ""
+        out.append(f"# warning: changed since this pack: {shown}{more}")
+    return out
+
+
 def pack_markdown(p: Pack, for_label: str = "") -> str:
     flagged = _name_flags(p.notes)
-    out = [f"# rco pack  (SHA={p.sha[:7]}, budget={p.budget} estimated tokens)", "", "## Forest"]
+    out = [f"# rco pack  (SHA={p.sha[:7]}, budget={p.budget} estimated tokens)"]
+    out += built_lines(p, named=bool(p.trees) or bool(for_label))
+    out += ["", "## Forest"]
     out += [forest_line(e, flagged.get(e.id, "")) for e in p.forest]
     if p.trees:
         out += ["", f"## Trees (full, for --for {for_label})" if for_label else "## Trees (full)"]
@@ -223,6 +251,18 @@ def _map_from_store(store: Store, sha: str) -> Map | None:
     return Map(sha, tuple(trees))
 
 
+def _built(repo: Path, sha: str, source: str, owners: Sequence[str] | None) -> BuiltFrom:
+    """How fresh a pack at sha is. With --for, only paths in the owning modules count."""
+    head = gitread.resolve(repo, "HEAD") if gitread.has_commit(repo) else None
+    behind = gitread.commits_behind(repo, sha, head) if head else None
+    differs = gitread.worktree_differs(repo, sha)
+    if owners is not None:
+        layout = modules.layout_at(repo, sha)
+        keep = set(owners)
+        differs = tuple(d for d in differs if layout.module_of(modules.for_path(d)) in keep)
+    return BuiltFrom(source, head, behind, differs)
+
+
 def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
          budget: int = DEFAULT_BUDGET, store: Store | None = None) -> Pack:
     """Use the store when it has sha indexed; else build from git, writing nothing."""
@@ -230,9 +270,11 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         raise UsageError(f"--budget must be at least {MIN_BUDGET}")
     m = _map_from_store(store, sha) if store is not None else None
     notes: list[str] = []
+    source = "store"
     if m is None:
         m = build.build_map(repo, sha)
         notes.append("built from git (no published SHA in the store)")
+        source = "git"
     sources = forest.read_sources(repo, sha)
     f = forest.compute_forest(m, imports.module_edges(forest.map_modules(m), sources), sources)
     entries = list(f.entries)
@@ -261,6 +303,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
             notes.append("no module owns the --for paths")
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
                      - set(owners), key=_hop_key)
+    built = _built(repo, sha, source, owners if for_paths else None)
     trees = [trees_by[o] for o in owners]
     if trees:
         idx = call_index(m.trees, _code_sources(repo, sha), focus=trees)
@@ -272,7 +315,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
 
     def current() -> Pack:
         return Pack(sha, budget, 0, tuple(entries), tuple(trees), tuple(hop), tuple(trimmed),
-                    stale, tuple(sorted(notes)))
+                    stale, tuple(sorted(notes)), built)
 
     all_ids = {e.id for e in entries}
 
