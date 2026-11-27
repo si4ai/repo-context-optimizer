@@ -1,0 +1,362 @@
+{
+ "repo": "sqlite-utils",
+ "url": "https://github.com/simonw/sqlite-utils",
+ "sha": "9c66bafa52ae23d40499c74b0db3b635bcddb876",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "sqlite_utils",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "one package dir: cli, db, migrations, plugins, utils"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package facade"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/cli.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command-line interface over the database API"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/create_table_parser.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.lexer",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "parses SQLite CREATE TABLE constraints with tokens"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/db.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Database and Table API"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/hookspecs.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "pluggy hook specifications"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/migrations.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "schema migrations"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/plugins.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "plugin manager loading"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/recipes.py",
+   "concepts": [
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "conversion recipes: dates, json split"
+  },
+  {
+   "kind": "file",
+   "path": "sqlite_utils/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: CSV, column types, file rows"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_cli.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the CLI"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_cli_memory.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests in-memory command over CSV/JSON"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_default_value.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests default values"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_hypothesis.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "property tests with hypothesis"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_introspect.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests introspection"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_lookup.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests lookup"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_rows_from_file.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests reading rows from files"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_sniff.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests sniff"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tracer.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests SQL tracer"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_upsert.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests upsert"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_wal.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests WAL mode"
+  }
+ ]
+}

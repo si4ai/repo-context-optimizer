@@ -1,0 +1,440 @@
+{
+ "repo": "aider",
+ "url": "https://github.com/Aider-AI/aider",
+ "sha": "5dc9490bb35f9729ef2c95d00a19ccd30c26339c",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "aider",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.vcs",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "one package dir: main, args, commands, io, repo, models, linter, analytics side by side"
+  },
+  {
+   "kind": "module",
+   "path": "aider/coders",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "coders: edit-format strategies on a base Coder with prompts per format"
+  },
+  {
+   "kind": "module",
+   "path": "aider/website/_includes",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "website chart and leaderboard includes"
+  },
+  {
+   "kind": "module",
+   "path": "benchmark",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "benchmark harness for model edit performance"
+  },
+  {
+   "kind": "module",
+   "path": "scripts",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "maintenance scripts: version bump, history, blame"
+  },
+  {
+   "kind": "module",
+   "path": "tests/basic",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "basic test suite",
+   "auto_rejected": [
+    "xcut.auth"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "tests/scrape",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "scraper tests"
+  },
+  {
+   "kind": "file",
+   "path": "aider/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package version"
+  },
+  {
+   "kind": "file",
+   "path": "aider/analytics.py",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Analytics: usage telemetry via mixpanel and posthog"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/__init__.py",
+   "concepts": [
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "coders package registry of coder classes"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/architect_coder.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ArchitectCoder subclass"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/base_coder.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "base Coder: chat loop, edit application, API errors"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/editor_editblock_prompts.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "editor edit-block prompt text"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/help_coder.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HelpCoder subclass"
+  },
+  {
+   "kind": "file",
+   "path": "aider/coders/help_prompts.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "help prompt text"
+  },
+  {
+   "kind": "file",
+   "path": "aider/help.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "help index: embeddings over docs via llama_index"
+  },
+  {
+   "kind": "file",
+   "path": "aider/linter.py",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Linter runs language linters and compiles"
+  },
+  {
+   "kind": "file",
+   "path": "aider/reasoning_tags.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "reasoning tag formatting in model output"
+  },
+  {
+   "kind": "file",
+   "path": "aider/website/_includes/code-in-json-benchmark.js",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "chart JS for the website"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/30k-image.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "script generating an SVG image"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/clean_metadata.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "script cleaning model metadata JSON"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/yank-old-versions.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "script yanking old versions from PyPI"
+  },
+  {
+   "kind": "file",
+   "path": "tests/basic/test_editblock.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests edit block parsing"
+  },
+  {
+   "kind": "file",
+   "path": "tests/basic/test_linter.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests linter"
+  },
+  {
+   "kind": "file",
+   "path": "tests/basic/test_models.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests model settings"
+  },
+  {
+   "kind": "file",
+   "path": "tests/basic/test_run_cmd.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests run_cmd"
+  },
+  {
+   "kind": "file",
+   "path": "tests/scrape/test_scrape.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests scraper"
+  }
+ ]
+}

@@ -1,0 +1,465 @@
+{
+ "repo": "scrapy",
+ "url": "https://github.com/scrapy/scrapy",
+ "sha": "d2052b866c35f036d00307b80208b47ba1f9aa6f",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "extras",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "release and benchmark scripts"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.pipeline",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "crawling framework: crawler, engine, spiders, exporters, settings"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/commands",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "crawl, shell, genspider and other commands"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/core",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.pipeline",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "engine, scheduler, scraper, spider middleware"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/core/_http2",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP/2 agent, protocol and stream"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/core/downloader",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.security",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "downloader with middleware and TLS context"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/core/downloader/handlers",
+   "concepts": [
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "download handlers per scheme: http, ftp, file",
+   "auto_rejected": [
+    "layer.api",
+    "pattern.chain"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/downloadermiddlewares",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "downloader middlewares: cookies, retry, redirect, cache, auth"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/extensions",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "extensions: stats, logs, feed export, memory usage"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/http/response",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Response classes: html, json, text, xml"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/spidermiddlewares",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "spider middlewares: depth, referer, url length"
+  },
+  {
+   "kind": "module",
+   "path": "scrapy/utils",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "utilities"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/AsyncCrawlerProcess",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "scripts for async crawler process tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/CrawlerProcess",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "scripts for crawler process tests"
+  },
+  {
+   "kind": "file",
+   "path": "extras/qps-bench-server.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "benchmark server"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/_middleware.py",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "MiddlewareManager loads and orders middlewares"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/contracts/__init__.py",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "spider contracts checked against callbacks"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/core/downloader/handlers/base.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "BaseDownloadHandler"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/core/downloader/handlers/http.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP handler alias with deprecation"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/extensions/periodic_log.py",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "PeriodicLog extension"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/http/request/json_request.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "JsonRequest"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/item.py",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Item and Field"
+  },
+  {
+   "kind": "file",
+   "path": "scrapy/responsetypes.py",
+   "concepts": [
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "chooses the Response class for content"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_command_check.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests check command"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_http_request_form.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests FormRequest"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_scrapy__getattr__.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests deprecated attribute"
+  }
+ ]
+}

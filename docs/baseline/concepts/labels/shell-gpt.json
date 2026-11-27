@@ -1,0 +1,414 @@
+{
+ "repo": "shell-gpt",
+ "url": "https://github.com/TheR1D/shell_gpt",
+ "sha": "a082bd5327ce0c4ef5a0284d9060e833be9444a6",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "sgpt",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "one package dir: app, cache, config, roles, printer"
+  },
+  {
+   "kind": "module",
+   "path": "sgpt/handlers",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "handlers: chat, default and REPL on a base Handler",
+   "auto_rejected": [
+    "layer.api"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "sgpt/llm_functions",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "functions callable by the model"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/app.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "typer app entry point",
+   "auto_rejected": [
+    "arch.mvc",
+    "net.server"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/cache.py",
+   "concepts": [
+    {
+     "id": "xcut.caching",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Cache decorator storing responses"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/config.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Config from env and file"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/function.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Function schema loading for model tools"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/handlers/chat_handler.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ChatHandler with chat sessions on disk"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/handlers/default_handler.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "DefaultHandler"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/handlers/handler.py",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "base Handler calling the model API",
+   "auto_rejected": [
+    "layer.api"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/handlers/repl_handler.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ReplHandler"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/integration.py",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "shell integration snippets"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/llm_functions/common/execute_shell.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "function executing shell commands"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/llm_functions/init_functions.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "installs default functions"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/llm_functions/mac/apple_script.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "AppleScript function"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/printer.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Printer abstract base with markdown and text printers"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/role.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SystemRole and default roles"
+  },
+  {
+   "kind": "file",
+   "path": "sgpt/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: run command, editor prompt, shell integration"
+  },
+  {
+   "kind": "file",
+   "path": "tests/_integration.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "integration tests running real shell commands"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_code.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests code generation mode"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_default.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests default mode"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_roles.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests roles"
+  },
+  {
+   "kind": "file",
+   "path": "tests/utils.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test helpers"
+  }
+ ]
+}

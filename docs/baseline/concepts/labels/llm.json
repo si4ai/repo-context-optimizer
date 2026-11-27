@@ -1,0 +1,401 @@
+{
+ "repo": "llm",
+ "url": "https://github.com/simonw/llm",
+ "sha": "46f0461d9b1ea9e898cac8a1d7333ab9bc6c8f7f",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "llm",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "one package dir: cli, models, embeddings, plugins, migrations, logs"
+  },
+  {
+   "kind": "module",
+   "path": "llm/default_plugins",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "default plugins: OpenAI models and tools"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "file",
+   "path": "llm/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package facade: plugin, model and template discovery"
+  },
+  {
+   "kind": "file",
+   "path": "llm/cli.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "the whole command-line interface"
+  },
+  {
+   "kind": "file",
+   "path": "llm/default_plugins/openai_models.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "OpenAI model plugin"
+  },
+  {
+   "kind": "file",
+   "path": "llm/embeddings.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "embedding Collection stored in SQLite"
+  },
+  {
+   "kind": "file",
+   "path": "llm/embeddings_migrations.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "embeddings database migrations"
+  },
+  {
+   "kind": "file",
+   "path": "llm/errors.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "model error types"
+  },
+  {
+   "kind": "file",
+   "path": "llm/hookspecs.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "pluggy hook specs"
+  },
+  {
+   "kind": "file",
+   "path": "llm/logs.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "auto"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "content-addressed storage of conversation logs"
+  },
+  {
+   "kind": "file",
+   "path": "llm/migrations.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "logs database migrations"
+  },
+  {
+   "kind": "file",
+   "path": "llm/models.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Model, Response, Tool abstractions"
+  },
+  {
+   "kind": "file",
+   "path": "llm/parts.py",
+   "concepts": [
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Part, Message value types"
+  },
+  {
+   "kind": "file",
+   "path": "llm/plugins.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "loads plugins via pluggy"
+  },
+  {
+   "kind": "file",
+   "path": "llm/serialization.py",
+   "concepts": [
+    {
+     "id": "ser.serialization",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "TypedDict wire forms"
+  },
+  {
+   "kind": "file",
+   "path": "llm/tools.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "built-in tools llm_version, llm_time",
+   "auto_rejected": [
+    "layer.build",
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "llm/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "helpers: fragments, mimetypes, tables"
+  },
+  {
+   "kind": "file",
+   "path": "tests/conftest.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "fixtures: db factory, logs db, plugin registration"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_chat.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests chat"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_fragments_cli.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests fragments CLI"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_llm.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the main prompt flow and logging db"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tools.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests tools"
+  }
+ ]
+}

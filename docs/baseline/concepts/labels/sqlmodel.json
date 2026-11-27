@@ -1,0 +1,316 @@
+{
+ "repo": "sqlmodel",
+ "url": "https://github.com/fastapi/sqlmodel",
+ "sha": "8debceb2d5bf1574b92c0d86199767d5efe7028c",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "scripts",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "docs and release scripts"
+  },
+  {
+   "kind": "module",
+   "path": "sqlmodel",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SQL models over pydantic and SQLAlchemy"
+  },
+  {
+   "kind": "module",
+   "path": "sqlmodel/ext/asyncio",
+   "concepts": [
+    {
+     "id": "xcut.concurrency",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "async session"
+  },
+  {
+   "kind": "module",
+   "path": "sqlmodel/orm",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "ORM session"
+  },
+  {
+   "kind": "module",
+   "path": "sqlmodel/sql",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SQL expression and type helpers"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_tutorial/test_one",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tutorial tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_tutorial/test_where",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tutorial tests for where clauses"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/agent_banner.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "docs markdown extension"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/deploy_docs_status.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "docs deploy status script"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/docs.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "docs build and serve CLI"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/generate_select.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "generates select overloads from a template"
+  },
+  {
+   "kind": "file",
+   "path": "sqlmodel/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package facade"
+  },
+  {
+   "kind": "file",
+   "path": "sqlmodel/_compat.py",
+   "concepts": [
+    {
+     "id": "xcut.compat",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "pydantic version compat"
+  },
+  {
+   "kind": "file",
+   "path": "sqlmodel/default.py",
+   "concepts": [
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Default placeholder"
+  },
+  {
+   "kind": "file",
+   "path": "sqlmodel/sql/_expression_select_cls.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Select classes"
+  },
+  {
+   "kind": "file",
+   "path": "sqlmodel/sql/sqltypes.py",
+   "concepts": [
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SQL column types"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_advanced/test_datetime/test_tutorial004.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests datetime tutorial with migrations"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tutorial/test_fastapi/test_teams/test_tutorial001.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests FastAPI tutorial"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tutorial/test_limit_and_offset/test_tutorial004.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests limit/offset"
+  }
+ ]
+}

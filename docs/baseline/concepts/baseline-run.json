@@ -1,0 +1,9754 @@
+{
+ "configs": {
+  "names": {
+   "heldout_flat": {
+    "items": 109,
+    "macro": {
+     "f1": 0.387,
+     "precision": 0.491,
+     "recall": 0.394
+    },
+    "macro_over": 34,
+    "micro": {
+     "f1": 0.489,
+     "fn": 142,
+     "fp": 86,
+     "precision": 0.559,
+     "recall": 0.434,
+     "tp": 109
+    },
+    "per_concept": {
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.6,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 6
+     },
+     "cs.ml": {
+      "f1": 0.543,
+      "fn": 24,
+      "fp": 8,
+      "precision": 0.704,
+      "recall": 0.442,
+      "tp": 19
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.615,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.571,
+      "recall": 0.667,
+      "tp": 4
+     },
+     "layer.cli": {
+      "f1": 0.387,
+      "fn": 17,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.261,
+      "tp": 6
+     },
+     "layer.config": {
+      "f1": 0.621,
+      "fn": 6,
+      "fp": 5,
+      "precision": 0.643,
+      "recall": 0.6,
+      "tp": 9
+     },
+     "layer.domain": {
+      "f1": 0.571,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.333,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.2,
+      "tp": 1
+     },
+     "layer.os": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "layer.persistence": {
+      "f1": 0.412,
+      "fn": 15,
+      "fp": 5,
+      "precision": 0.583,
+      "recall": 0.318,
+      "tp": 7
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.476,
+      "fn": 0,
+      "fp": 11,
+      "precision": 0.312,
+      "recall": 1.0,
+      "tp": 5
+     },
+     "net.client": {
+      "f1": 0.154,
+      "fn": 5,
+      "fp": 17,
+      "precision": 0.105,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.2,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.143,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.182,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.111,
+      "tp": 1
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.concurrency": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.logging": {
+      "f1": 0.8,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_flat_judged_items": {
+    "items": 95,
+    "macro": {
+     "f1": 0.308,
+     "precision": 0.414,
+     "recall": 0.322
+    },
+    "macro_over": 33,
+    "micro": {
+     "f1": 0.466,
+     "fn": 142,
+     "fp": 69,
+     "precision": 0.571,
+     "recall": 0.393,
+     "tp": 92
+    },
+    "per_concept": {
+     "arch.plugin": {
+      "f1": 0.333,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.2,
+      "tp": 2
+     },
+     "cs.ml": {
+      "f1": 0.571,
+      "fn": 24,
+      "fp": 3,
+      "precision": 0.857,
+      "recall": 0.429,
+      "tp": 18
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.545,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.cli": {
+      "f1": 0.345,
+      "fn": 17,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.227,
+      "tp": 5
+     },
+     "layer.config": {
+      "f1": 0.593,
+      "fn": 6,
+      "fp": 5,
+      "precision": 0.615,
+      "recall": 0.571,
+      "tp": 8
+     },
+     "layer.domain": {
+      "f1": 0.4,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.io": {
+      "f1": 0.333,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.2,
+      "tp": 1
+     },
+     "layer.os": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "layer.persistence": {
+      "f1": 0.357,
+      "fn": 15,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.25,
+      "tp": 5
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.5,
+      "fn": 0,
+      "fp": 8,
+      "precision": 0.333,
+      "recall": 1.0,
+      "tp": 4
+     },
+     "net.client": {
+      "f1": 0.19,
+      "fn": 5,
+      "fp": 12,
+      "precision": 0.143,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.2,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.143,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.182,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.111,
+      "tp": 1
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.errors": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_structured": {
+    "items": 116,
+    "macro": {
+     "f1": 0.433,
+     "precision": 0.514,
+     "recall": 0.415
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.602,
+     "fn": 127,
+     "fp": 62,
+     "precision": 0.698,
+     "recall": 0.53,
+     "tp": 143
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.25,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.2,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.615,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.571,
+      "recall": 0.667,
+      "tp": 4
+     },
+     "layer.cli": {
+      "f1": 0.632,
+      "fn": 7,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.462,
+      "tp": 6
+     },
+     "layer.config": {
+      "f1": 0.615,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "layer.domain": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.io": {
+      "f1": 0.857,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.8,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 1.0,
+      "tp": 4
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.524,
+      "fn": 0,
+      "fp": 20,
+      "precision": 0.355,
+      "recall": 1.0,
+      "tp": 11
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.583,
+      "fn": 18,
+      "fp": 2,
+      "precision": 0.875,
+      "recall": 0.438,
+      "tp": 14
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.333,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "ood.value_object": {
+      "f1": 0.2,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.778,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.923,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.857,
+      "tp": 6
+     },
+     "pattern.command": {
+      "f1": 0.857,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 6
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.615,
+      "fn": 8,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.25,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "heldout_structured_judged_items": {
+    "items": 104,
+    "macro": {
+     "f1": 0.404,
+     "precision": 0.484,
+     "recall": 0.389
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.583,
+     "fn": 127,
+     "fp": 56,
+     "precision": 0.696,
+     "recall": 0.502,
+     "tp": 128
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.545,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.cli": {
+      "f1": 0.588,
+      "fn": 7,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.417,
+      "tp": 5
+     },
+     "layer.config": {
+      "f1": 0.333,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.857,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.75,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 1.0,
+      "tp": 3
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.526,
+      "fn": 0,
+      "fp": 18,
+      "precision": 0.357,
+      "recall": 1.0,
+      "tp": 10
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.596,
+      "fn": 18,
+      "fp": 1,
+      "precision": 0.933,
+      "recall": 0.438,
+      "tp": 14
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.2,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.714,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.923,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.857,
+      "tp": 6
+     },
+     "pattern.command": {
+      "f1": 0.833,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.545,
+      "fn": 8,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.429,
+      "tp": 6
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.25,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "threshold": 0.3,
+   "train": {
+    "items": 307,
+    "macro": {
+     "f1": 0.46,
+     "precision": 0.673,
+     "recall": 0.404
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.571,
+     "fn": 353,
+     "fp": 160,
+     "precision": 0.681,
+     "recall": 0.492,
+     "tp": 342
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.545,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.5,
+      "tp": 3
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.381,
+      "fn": 9,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.129,
+      "fn": 21,
+      "fp": 6,
+      "precision": 0.25,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.667,
+      "fn": 3,
+      "fp": 12,
+      "precision": 0.556,
+      "recall": 0.833,
+      "tp": 15
+     },
+     "layer.cli": {
+      "f1": 0.426,
+      "fn": 14,
+      "fp": 13,
+      "precision": 0.435,
+      "recall": 0.417,
+      "tp": 10
+     },
+     "layer.config": {
+      "f1": 0.8,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.8,
+      "recall": 0.8,
+      "tp": 20
+     },
+     "layer.domain": {
+      "f1": 0.643,
+      "fn": 3,
+      "fp": 7,
+      "precision": 0.562,
+      "recall": 0.75,
+      "tp": 9
+     },
+     "layer.io": {
+      "f1": 0.56,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.438,
+      "tp": 7
+     },
+     "layer.os": {
+      "f1": 0.762,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.727,
+      "tp": 8
+     },
+     "layer.persistence": {
+      "f1": 0.381,
+      "fn": 10,
+      "fp": 3,
+      "precision": 0.571,
+      "recall": 0.286,
+      "tp": 4
+     },
+     "layer.tests": {
+      "f1": 0.933,
+      "fn": 12,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.874,
+      "tp": 83
+     },
+     "layer.ui": {
+      "f1": 0.375,
+      "fn": 16,
+      "fp": 4,
+      "precision": 0.6,
+      "recall": 0.273,
+      "tp": 6
+     },
+     "layer.util": {
+      "f1": 0.408,
+      "fn": 3,
+      "fp": 26,
+      "precision": 0.278,
+      "recall": 0.769,
+      "tp": 10
+     },
+     "net.client": {
+      "f1": 0.417,
+      "fn": 11,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.312,
+      "tp": 5
+     },
+     "net.http": {
+      "f1": 0.494,
+      "fn": 39,
+      "fp": 2,
+      "precision": 0.909,
+      "recall": 0.339,
+      "tp": 20
+     },
+     "net.server": {
+      "f1": 0.556,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.417,
+      "tp": 5
+     },
+     "net.transport": {
+      "f1": 0.526,
+      "fn": 6,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.8,
+      "fn": 4,
+      "fp": 3,
+      "precision": 0.824,
+      "recall": 0.778,
+      "tp": 14
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.457,
+      "fn": 10,
+      "fp": 9,
+      "precision": 0.471,
+      "recall": 0.444,
+      "tp": 8
+     },
+     "parse.ast": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.556,
+      "fn": 4,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.353,
+      "fn": 4,
+      "fp": 7,
+      "precision": 0.3,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.69,
+      "fn": 7,
+      "fp": 2,
+      "precision": 0.833,
+      "recall": 0.588,
+      "tp": 10
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.4,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "pattern.visitor": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "scm.packaging": {
+      "f1": 0.706,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.8,
+      "recall": 0.632,
+      "tp": 12
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.667,
+      "fn": 11,
+      "fp": 3,
+      "precision": 0.824,
+      "recall": 0.56,
+      "tp": 14
+     },
+     "xcut.auth": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.5,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 3
+     },
+     "xcut.concurrency": {
+      "f1": 0.667,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.917,
+      "recall": 0.524,
+      "tp": 11
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.667,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "xcut.logging": {
+      "f1": 0.625,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "xcut.security": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 0.316,
+      "fn": 9,
+      "fp": 4,
+      "precision": 0.429,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   },
+   "train_judged_items": {
+    "items": 274,
+    "macro": {
+     "f1": 0.423,
+     "precision": 0.607,
+     "recall": 0.373
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.548,
+     "fn": 353,
+     "fp": 148,
+     "precision": 0.673,
+     "recall": 0.463,
+     "tp": 304
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.545,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.5,
+      "tp": 3
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.381,
+      "fn": 9,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.129,
+      "fn": 21,
+      "fp": 6,
+      "precision": 0.25,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.606,
+      "fn": 3,
+      "fp": 10,
+      "precision": 0.5,
+      "recall": 0.769,
+      "tp": 10
+     },
+     "layer.cli": {
+      "f1": 0.409,
+      "fn": 14,
+      "fp": 12,
+      "precision": 0.429,
+      "recall": 0.391,
+      "tp": 9
+     },
+     "layer.config": {
+      "f1": 0.783,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.783,
+      "recall": 0.783,
+      "tp": 18
+     },
+     "layer.domain": {
+      "f1": 0.615,
+      "fn": 3,
+      "fp": 7,
+      "precision": 0.533,
+      "recall": 0.727,
+      "tp": 8
+     },
+     "layer.io": {
+      "f1": 0.522,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.4,
+      "tp": 6
+     },
+     "layer.os": {
+      "f1": 0.762,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.727,
+      "tp": 8
+     },
+     "layer.persistence": {
+      "f1": 0.316,
+      "fn": 10,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.tests": {
+      "f1": 0.929,
+      "fn": 12,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.867,
+      "tp": 78
+     },
+     "layer.ui": {
+      "f1": 0.286,
+      "fn": 16,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 4
+     },
+     "layer.util": {
+      "f1": 0.35,
+      "fn": 3,
+      "fp": 23,
+      "precision": 0.233,
+      "recall": 0.7,
+      "tp": 7
+     },
+     "net.client": {
+      "f1": 0.417,
+      "fn": 11,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.312,
+      "tp": 5
+     },
+     "net.http": {
+      "f1": 0.481,
+      "fn": 39,
+      "fp": 2,
+      "precision": 0.905,
+      "recall": 0.328,
+      "tp": 19
+     },
+     "net.server": {
+      "f1": 0.556,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.417,
+      "tp": 5
+     },
+     "net.transport": {
+      "f1": 0.556,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.774,
+      "fn": 4,
+      "fp": 3,
+      "precision": 0.8,
+      "recall": 0.75,
+      "tp": 12
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.471,
+      "fn": 10,
+      "fp": 8,
+      "precision": 0.5,
+      "recall": 0.444,
+      "tp": 8
+     },
+     "parse.ast": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.625,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.353,
+      "fn": 4,
+      "fp": 7,
+      "precision": 0.3,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.667,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.889,
+      "recall": 0.533,
+      "tp": 8
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.688,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.786,
+      "recall": 0.611,
+      "tp": 11
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.632,
+      "fn": 11,
+      "fp": 3,
+      "precision": 0.8,
+      "recall": 0.522,
+      "tp": 12
+     },
+     "xcut.auth": {
+      "f1": 0.25,
+      "fn": 3,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.4,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.688,
+      "fn": 10,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.524,
+      "tp": 11
+     },
+     "xcut.errors": {
+      "f1": 0.556,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.385,
+      "tp": 5
+     },
+     "xcut.i18n": {
+      "f1": 0.667,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "xcut.logging": {
+      "f1": 0.625,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "xcut.security": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 0.316,
+      "fn": 9,
+      "fp": 4,
+      "precision": 0.429,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   }
+  },
+  "names+imports": {
+   "heldout_flat": {
+    "items": 109,
+    "macro": {
+     "f1": 0.411,
+     "precision": 0.487,
+     "recall": 0.412
+    },
+    "macro_over": 34,
+    "micro": {
+     "f1": 0.474,
+     "fn": 150,
+     "fp": 74,
+     "precision": 0.577,
+     "recall": 0.402,
+     "tp": 101
+    },
+    "per_concept": {
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.526,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.357,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.517,
+      "fn": 28,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.349,
+      "tp": 15
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.2,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.167,
+      "tp": 1
+     },
+     "layer.cli": {
+      "f1": 0.343,
+      "fn": 17,
+      "fp": 6,
+      "precision": 0.5,
+      "recall": 0.261,
+      "tp": 6
+     },
+     "layer.config": {
+      "f1": 0.19,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "layer.domain": {
+      "f1": 0.571,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.429,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.333,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.625,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.387,
+      "fn": 16,
+      "fp": 3,
+      "precision": 0.667,
+      "recall": 0.273,
+      "tp": 6
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.968,
+      "tp": 30
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.571,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.286,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.logging": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_flat_judged_items": {
+    "items": 95,
+    "macro": {
+     "f1": 0.318,
+     "precision": 0.387,
+     "recall": 0.334
+    },
+    "macro_over": 33,
+    "micro": {
+     "f1": 0.435,
+     "fn": 150,
+     "fp": 68,
+     "precision": 0.553,
+     "recall": 0.359,
+     "tp": 84
+    },
+    "per_concept": {
+     "arch.plugin": {
+      "f1": 0.182,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.1,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.5,
+      "fn": 28,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 14
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.cli": {
+      "f1": 0.303,
+      "fn": 17,
+      "fp": 6,
+      "precision": 0.455,
+      "recall": 0.227,
+      "tp": 5
+     },
+     "layer.config": {
+      "f1": 0.105,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.2,
+      "recall": 0.071,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.4,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.io": {
+      "f1": 0.462,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.375,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.625,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.308,
+      "fn": 16,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.2,
+      "tp": 4
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.968,
+      "tp": 30
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.6,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 7,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.286,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.5,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_structured": {
+    "items": 116,
+    "macro": {
+     "f1": 0.412,
+     "precision": 0.542,
+     "recall": 0.371
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.571,
+     "fn": 146,
+     "fp": 40,
+     "precision": 0.756,
+     "recall": 0.459,
+     "tp": 124
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.25,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.2,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.6,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.5,
+      "tp": 3
+     },
+     "layer.cli": {
+      "f1": 0.375,
+      "fn": 10,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.config": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.571,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "layer.domain": {
+      "f1": 0.75,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.io": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.857,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.951,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.906,
+      "tp": 29
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.833,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.769,
+      "recall": 0.909,
+      "tp": 10
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.545,
+      "fn": 20,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.375,
+      "tp": 12
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.308,
+      "fn": 2,
+      "fp": 7,
+      "precision": 0.222,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "ood.value_object": {
+      "f1": 0.182,
+      "fn": 7,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.778,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.6,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.545,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.375,
+      "tp": 3
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.522,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.857,
+      "recall": 0.375,
+      "tp": 6
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "heldout_structured_judged_items": {
+    "items": 104,
+    "macro": {
+     "f1": 0.384,
+     "precision": 0.523,
+     "recall": 0.342
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.542,
+     "fn": 146,
+     "fp": 38,
+     "precision": 0.741,
+     "recall": 0.427,
+     "tp": 109
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "layer.cli": {
+      "f1": 0.286,
+      "fn": 10,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.167,
+      "tp": 2
+     },
+     "layer.config": {
+      "f1": 0.4,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.8,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.951,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.906,
+      "tp": 29
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.818,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.75,
+      "recall": 0.9,
+      "tp": 9
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.545,
+      "fn": 20,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.375,
+      "tp": 12
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.2,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.143,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ood.value_object": {
+      "f1": 0.182,
+      "fn": 7,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.714,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.6,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.421,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.286,
+      "tp": 4
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "threshold": 0.55,
+   "train": {
+    "items": 307,
+    "macro": {
+     "f1": 0.429,
+     "precision": 0.679,
+     "recall": 0.356
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.515,
+     "fn": 407,
+     "fp": 135,
+     "precision": 0.681,
+     "recall": 0.414,
+     "tp": 288
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.333,
+      "fn": 10,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.074,
+      "fn": 22,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.043,
+      "tp": 1
+     },
+     "layer.build": {
+      "f1": 0.621,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.818,
+      "recall": 0.5,
+      "tp": 9
+     },
+     "layer.cli": {
+      "f1": 0.474,
+      "fn": 15,
+      "fp": 5,
+      "precision": 0.643,
+      "recall": 0.375,
+      "tp": 9
+     },
+     "layer.config": {
+      "f1": 0.727,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.842,
+      "recall": 0.64,
+      "tp": 16
+     },
+     "layer.domain": {
+      "f1": 0.727,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.667,
+      "tp": 8
+     },
+     "layer.io": {
+      "f1": 0.389,
+      "fn": 9,
+      "fp": 13,
+      "precision": 0.35,
+      "recall": 0.438,
+      "tp": 7
+     },
+     "layer.os": {
+      "f1": 0.429,
+      "fn": 5,
+      "fp": 11,
+      "precision": 0.353,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "layer.persistence": {
+      "f1": 0.421,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.286,
+      "tp": 4
+     },
+     "layer.tests": {
+      "f1": 0.848,
+      "fn": 25,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.737,
+      "tp": 70
+     },
+     "layer.ui": {
+      "f1": 0.357,
+      "fn": 17,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.227,
+      "tp": 5
+     },
+     "layer.util": {
+      "f1": 0.533,
+      "fn": 5,
+      "fp": 9,
+      "precision": 0.471,
+      "recall": 0.615,
+      "tp": 8
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.434,
+      "fn": 41,
+      "fp": 6,
+      "precision": 0.75,
+      "recall": 0.305,
+      "tp": 18
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.333,
+      "fn": 8,
+      "fp": 4,
+      "precision": 0.429,
+      "recall": 0.273,
+      "tp": 3
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.571,
+      "fn": 4,
+      "fp": 17,
+      "precision": 0.452,
+      "recall": 0.778,
+      "tp": 14
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.286,
+      "fn": 13,
+      "fp": 12,
+      "precision": 0.294,
+      "recall": 0.278,
+      "tp": 5
+     },
+     "parse.ast": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.615,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.444,
+      "tp": 4
+     },
+     "pattern.chain": {
+      "f1": 0.4,
+      "fn": 4,
+      "fp": 5,
+      "precision": 0.375,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.455,
+      "fn": 12,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.294,
+      "tp": 5
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.8,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.4,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "pattern.visitor": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 8,
+      "fp": 3,
+      "precision": 0.786,
+      "recall": 0.579,
+      "tp": 11
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.526,
+      "fn": 15,
+      "fp": 3,
+      "precision": 0.769,
+      "recall": 0.4,
+      "tp": 10
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.429,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.333,
+      "tp": 3
+     },
+     "xcut.concurrency": {
+      "f1": 0.533,
+      "fn": 13,
+      "fp": 1,
+      "precision": 0.889,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.533,
+      "fn": 6,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.4,
+      "tp": 4
+     },
+     "xcut.logging": {
+      "f1": 0.632,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   },
+   "train_judged_items": {
+    "items": 274,
+    "macro": {
+     "f1": 0.384,
+     "precision": 0.605,
+     "recall": 0.319
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.484,
+     "fn": 407,
+     "fp": 125,
+     "precision": 0.667,
+     "recall": 0.381,
+     "tp": 250
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.333,
+      "fn": 10,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.074,
+      "fn": 22,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.043,
+      "tp": 1
+     },
+     "layer.build": {
+      "f1": 0.421,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "layer.cli": {
+      "f1": 0.444,
+      "fn": 15,
+      "fp": 5,
+      "precision": 0.615,
+      "recall": 0.348,
+      "tp": 8
+     },
+     "layer.config": {
+      "f1": 0.7,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.824,
+      "recall": 0.609,
+      "tp": 14
+     },
+     "layer.domain": {
+      "f1": 0.7,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.io": {
+      "f1": 0.364,
+      "fn": 9,
+      "fp": 12,
+      "precision": 0.333,
+      "recall": 0.4,
+      "tp": 6
+     },
+     "layer.os": {
+      "f1": 0.429,
+      "fn": 5,
+      "fp": 11,
+      "precision": 0.353,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "layer.persistence": {
+      "f1": 0.353,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.tests": {
+      "f1": 0.839,
+      "fn": 25,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.722,
+      "tp": 65
+     },
+     "layer.ui": {
+      "f1": 0.25,
+      "fn": 17,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.15,
+      "tp": 3
+     },
+     "layer.util": {
+      "f1": 0.435,
+      "fn": 5,
+      "fp": 8,
+      "precision": 0.385,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.42,
+      "fn": 41,
+      "fp": 6,
+      "precision": 0.739,
+      "recall": 0.293,
+      "tp": 17
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.353,
+      "fn": 8,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.273,
+      "tp": 3
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.585,
+      "fn": 4,
+      "fp": 13,
+      "precision": 0.48,
+      "recall": 0.75,
+      "tp": 12
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.303,
+      "fn": 13,
+      "fp": 10,
+      "precision": 0.333,
+      "recall": 0.278,
+      "tp": 5
+     },
+     "parse.ast": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.615,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.444,
+      "tp": 4
+     },
+     "pattern.chain": {
+      "f1": 0.4,
+      "fn": 4,
+      "fp": 5,
+      "precision": 0.375,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.333,
+      "fn": 12,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.2,
+      "tp": 3
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.8,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.645,
+      "fn": 8,
+      "fp": 3,
+      "precision": 0.769,
+      "recall": 0.556,
+      "tp": 10
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.471,
+      "fn": 15,
+      "fp": 3,
+      "precision": 0.727,
+      "recall": 0.348,
+      "tp": 8
+     },
+     "xcut.auth": {
+      "f1": 0.333,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.333,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.552,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.556,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.385,
+      "tp": 5
+     },
+     "xcut.i18n": {
+      "f1": 0.533,
+      "fn": 6,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.4,
+      "tp": 4
+     },
+     "xcut.logging": {
+      "f1": 0.632,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   }
+  },
+  "names+imports+clusters": {
+   "heldout_flat": {
+    "items": 109,
+    "macro": {
+     "f1": 0.395,
+     "precision": 0.443,
+     "recall": 0.418
+    },
+    "macro_over": 34,
+    "micro": {
+     "f1": 0.47,
+     "fn": 145,
+     "fp": 94,
+     "precision": 0.53,
+     "recall": 0.422,
+     "tp": 106
+    },
+    "per_concept": {
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.455,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.357,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.533,
+      "fn": 27,
+      "fp": 1,
+      "precision": 0.941,
+      "recall": 0.372,
+      "tp": 16
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.2,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.167,
+      "tp": 1
+     },
+     "layer.cli": {
+      "f1": 0.41,
+      "fn": 15,
+      "fp": 8,
+      "precision": 0.5,
+      "recall": 0.348,
+      "tp": 8
+     },
+     "layer.config": {
+      "f1": 0.19,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "layer.domain": {
+      "f1": 0.571,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.429,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.333,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.588,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.5,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.412,
+      "fn": 15,
+      "fp": 5,
+      "precision": 0.583,
+      "recall": 0.318,
+      "tp": 7
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.571,
+      "fn": 1,
+      "fp": 5,
+      "precision": 0.444,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "net.client": {
+      "f1": 0.286,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.222,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.167,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.logging": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_flat_judged_items": {
+    "items": 95,
+    "macro": {
+     "f1": 0.318,
+     "precision": 0.357,
+     "recall": 0.34
+    },
+    "macro_over": 33,
+    "micro": {
+     "f1": 0.442,
+     "fn": 145,
+     "fp": 80,
+     "precision": 0.527,
+     "recall": 0.38,
+     "tp": 89
+    },
+    "per_concept": {
+     "arch.plugin": {
+      "f1": 0.143,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.1,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.526,
+      "fn": 27,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.357,
+      "tp": 15
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.cli": {
+      "f1": 0.378,
+      "fn": 15,
+      "fp": 8,
+      "precision": 0.467,
+      "recall": 0.318,
+      "tp": 7
+     },
+     "layer.config": {
+      "f1": 0.105,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.2,
+      "recall": 0.071,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.4,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.io": {
+      "f1": 0.462,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.375,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.588,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.5,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.37,
+      "fn": 15,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.25,
+      "tp": 5
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.6,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.5,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "net.client": {
+      "f1": 0.308,
+      "fn": 5,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 7,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.222,
+      "fn": 2,
+      "fp": 5,
+      "precision": 0.167,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.5,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_structured": {
+    "items": 116,
+    "macro": {
+     "f1": 0.414,
+     "precision": 0.515,
+     "recall": 0.395
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.576,
+     "fn": 137,
+     "fp": 59,
+     "precision": 0.693,
+     "recall": 0.493,
+     "tp": 133
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.308,
+      "fn": 3,
+      "fp": 6,
+      "precision": 0.25,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.6,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.5,
+      "tp": 3
+     },
+     "layer.cli": {
+      "f1": 0.375,
+      "fn": 10,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.config": {
+      "f1": 0.615,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "layer.domain": {
+      "f1": 0.75,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.io": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.889,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 1.0,
+      "tp": 4
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.645,
+      "fn": 1,
+      "fp": 10,
+      "precision": 0.5,
+      "recall": 0.909,
+      "tp": 10
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.565,
+      "fn": 19,
+      "fp": 1,
+      "precision": 0.929,
+      "recall": 0.406,
+      "tp": 13
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.286,
+      "fn": 2,
+      "fp": 8,
+      "precision": 0.2,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "ood.value_object": {
+      "f1": 0.182,
+      "fn": 7,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.778,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.923,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.857,
+      "tp": 6
+     },
+     "pattern.command": {
+      "f1": 0.545,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.375,
+      "tp": 3
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.538,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.7,
+      "recall": 0.438,
+      "tp": 7
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "heldout_structured_judged_items": {
+    "items": 104,
+    "macro": {
+     "f1": 0.39,
+     "precision": 0.5,
+     "recall": 0.369
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.55,
+     "fn": 137,
+     "fp": 56,
+     "precision": 0.678,
+     "recall": 0.463,
+     "tp": 118
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.2,
+      "fn": 3,
+      "fp": 5,
+      "precision": 0.167,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "layer.cli": {
+      "f1": 0.286,
+      "fn": 10,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.167,
+      "tp": 2
+     },
+     "layer.config": {
+      "f1": 0.333,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.857,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 1.0,
+      "tp": 3
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.621,
+      "fn": 1,
+      "fp": 10,
+      "precision": 0.474,
+      "recall": 0.9,
+      "tp": 9
+     },
+     "net.client": {
+      "f1": 0.364,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.565,
+      "fn": 19,
+      "fp": 1,
+      "precision": 0.929,
+      "recall": 0.406,
+      "tp": 13
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.182,
+      "fn": 2,
+      "fp": 7,
+      "precision": 0.125,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ood.value_object": {
+      "f1": 0.182,
+      "fn": 7,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.714,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.923,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.857,
+      "tp": 6
+     },
+     "pattern.command": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.455,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.625,
+      "recall": 0.357,
+      "tp": 5
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "threshold": 0.55,
+   "train": {
+    "items": 307,
+    "macro": {
+     "f1": 0.435,
+     "precision": 0.653,
+     "recall": 0.375
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.527,
+     "fn": 388,
+     "fp": 162,
+     "precision": 0.655,
+     "recall": 0.442,
+     "tp": 307
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.421,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.138,
+      "fn": 21,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.621,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.818,
+      "recall": 0.5,
+      "tp": 9
+     },
+     "layer.cli": {
+      "f1": 0.45,
+      "fn": 15,
+      "fp": 7,
+      "precision": 0.562,
+      "recall": 0.375,
+      "tp": 9
+     },
+     "layer.config": {
+      "f1": 0.727,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.842,
+      "recall": 0.64,
+      "tp": 16
+     },
+     "layer.domain": {
+      "f1": 0.727,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.667,
+      "tp": 8
+     },
+     "layer.io": {
+      "f1": 0.41,
+      "fn": 8,
+      "fp": 15,
+      "precision": 0.348,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "layer.os": {
+      "f1": 0.452,
+      "fn": 4,
+      "fp": 13,
+      "precision": 0.35,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.persistence": {
+      "f1": 0.421,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.286,
+      "tp": 4
+     },
+     "layer.tests": {
+      "f1": 0.876,
+      "fn": 21,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.779,
+      "tp": 74
+     },
+     "layer.ui": {
+      "f1": 0.357,
+      "fn": 17,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.227,
+      "tp": 5
+     },
+     "layer.util": {
+      "f1": 0.5,
+      "fn": 5,
+      "fp": 11,
+      "precision": 0.421,
+      "recall": 0.615,
+      "tp": 8
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.477,
+      "fn": 38,
+      "fp": 8,
+      "precision": 0.724,
+      "recall": 0.356,
+      "tp": 21
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.476,
+      "fn": 6,
+      "fp": 5,
+      "precision": 0.5,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.528,
+      "fn": 4,
+      "fp": 21,
+      "precision": 0.4,
+      "recall": 0.778,
+      "tp": 14
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.359,
+      "fn": 11,
+      "fp": 14,
+      "precision": 0.333,
+      "recall": 0.389,
+      "tp": 7
+     },
+     "parse.ast": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.667,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.375,
+      "fn": 4,
+      "fp": 6,
+      "precision": 0.333,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.48,
+      "fn": 11,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.353,
+      "tp": 6
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.4,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "pattern.visitor": {
+      "f1": 0.333,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "scm.packaging": {
+      "f1": 0.706,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.8,
+      "recall": 0.632,
+      "tp": 12
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.537,
+      "fn": 14,
+      "fp": 5,
+      "precision": 0.688,
+      "recall": 0.44,
+      "tp": 11
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.429,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.333,
+      "tp": 3
+     },
+     "xcut.concurrency": {
+      "f1": 0.516,
+      "fn": 13,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.533,
+      "fn": 6,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.4,
+      "tp": 4
+     },
+     "xcut.logging": {
+      "f1": 0.632,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   },
+   "train_judged_items": {
+    "items": 274,
+    "macro": {
+     "f1": 0.392,
+     "precision": 0.59,
+     "recall": 0.338
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.5,
+     "fn": 388,
+     "fp": 150,
+     "precision": 0.642,
+     "recall": 0.409,
+     "tp": 269
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.421,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.138,
+      "fn": 21,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.421,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "layer.cli": {
+      "f1": 0.432,
+      "fn": 15,
+      "fp": 6,
+      "precision": 0.571,
+      "recall": 0.348,
+      "tp": 8
+     },
+     "layer.config": {
+      "f1": 0.7,
+      "fn": 9,
+      "fp": 3,
+      "precision": 0.824,
+      "recall": 0.609,
+      "tp": 14
+     },
+     "layer.domain": {
+      "f1": 0.7,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.io": {
+      "f1": 0.389,
+      "fn": 8,
+      "fp": 14,
+      "precision": 0.333,
+      "recall": 0.467,
+      "tp": 7
+     },
+     "layer.os": {
+      "f1": 0.452,
+      "fn": 4,
+      "fp": 13,
+      "precision": 0.35,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.persistence": {
+      "f1": 0.353,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.tests": {
+      "f1": 0.868,
+      "fn": 21,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.767,
+      "tp": 69
+     },
+     "layer.ui": {
+      "f1": 0.25,
+      "fn": 17,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.15,
+      "tp": 3
+     },
+     "layer.util": {
+      "f1": 0.4,
+      "fn": 5,
+      "fp": 10,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.465,
+      "fn": 38,
+      "fp": 8,
+      "precision": 0.714,
+      "recall": 0.345,
+      "tp": 20
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.5,
+      "fn": 6,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.533,
+      "fn": 4,
+      "fp": 17,
+      "precision": 0.414,
+      "recall": 0.75,
+      "tp": 12
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.378,
+      "fn": 11,
+      "fp": 12,
+      "precision": 0.368,
+      "recall": 0.389,
+      "tp": 7
+     },
+     "parse.ast": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.667,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.375,
+      "fn": 4,
+      "fp": 6,
+      "precision": 0.333,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.4,
+      "fn": 11,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.267,
+      "tp": 4
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.688,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.786,
+      "recall": 0.611,
+      "tp": 11
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.486,
+      "fn": 14,
+      "fp": 5,
+      "precision": 0.643,
+      "recall": 0.391,
+      "tp": 9
+     },
+     "xcut.auth": {
+      "f1": 0.333,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.333,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.533,
+      "fn": 13,
+      "fp": 1,
+      "precision": 0.889,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.556,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.385,
+      "tp": 5
+     },
+     "xcut.i18n": {
+      "f1": 0.533,
+      "fn": 6,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.4,
+      "tp": 4
+     },
+     "xcut.logging": {
+      "f1": 0.632,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.75,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   }
+  },
+  "names+imports+graph": {
+   "heldout_flat": {
+    "items": 109,
+    "macro": {
+     "f1": 0.402,
+     "precision": 0.442,
+     "recall": 0.433
+    },
+    "macro_over": 34,
+    "micro": {
+     "f1": 0.481,
+     "fn": 138,
+     "fp": 106,
+     "precision": 0.516,
+     "recall": 0.45,
+     "tp": 113
+    },
+    "per_concept": {
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.476,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.357,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.559,
+      "fn": 24,
+      "fp": 6,
+      "precision": 0.76,
+      "recall": 0.442,
+      "tp": 19
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.2,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.167,
+      "tp": 1
+     },
+     "layer.cli": {
+      "f1": 0.462,
+      "fn": 14,
+      "fp": 7,
+      "precision": 0.562,
+      "recall": 0.391,
+      "tp": 9
+     },
+     "layer.config": {
+      "f1": 0.19,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.333,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "layer.domain": {
+      "f1": 0.571,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 7,
+      "precision": 0.3,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.625,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.432,
+      "fn": 14,
+      "fp": 7,
+      "precision": 0.533,
+      "recall": 0.364,
+      "tp": 8
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.588,
+      "fn": 0,
+      "fp": 7,
+      "precision": 0.417,
+      "recall": 1.0,
+      "tp": 5
+     },
+     "net.client": {
+      "f1": 0.273,
+      "fn": 4,
+      "fp": 12,
+      "precision": 0.2,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 8,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.2,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.143,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.8,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.logging": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_flat_judged_items": {
+    "items": 95,
+    "macro": {
+     "f1": 0.325,
+     "precision": 0.353,
+     "recall": 0.357
+    },
+    "macro_over": 33,
+    "micro": {
+     "f1": 0.462,
+     "fn": 138,
+     "fp": 86,
+     "precision": 0.527,
+     "recall": 0.41,
+     "tp": 96
+    },
+    "per_concept": {
+     "arch.plugin": {
+      "f1": 0.154,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.1,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.581,
+      "fn": 24,
+      "fp": 2,
+      "precision": 0.9,
+      "recall": 0.429,
+      "tp": 18
+     },
+     "layer.api": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 5,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.build": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.cli": {
+      "f1": 0.432,
+      "fn": 14,
+      "fp": 7,
+      "precision": 0.533,
+      "recall": 0.364,
+      "tp": 8
+     },
+     "layer.config": {
+      "f1": 0.105,
+      "fn": 13,
+      "fp": 4,
+      "precision": 0.2,
+      "recall": 0.071,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.4,
+      "fn": 1,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.io": {
+      "f1": 0.429,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.333,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 0.625,
+      "fn": 2,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.714,
+      "tp": 5
+     },
+     "layer.persistence": {
+      "f1": 0.4,
+      "fn": 14,
+      "fp": 4,
+      "precision": 0.6,
+      "recall": 0.3,
+      "tp": 6
+     },
+     "layer.tests": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 4
+     },
+     "net.client": {
+      "f1": 0.333,
+      "fn": 4,
+      "fp": 8,
+      "precision": 0.273,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "net.http": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "ood.interface": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "ood.value_object": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 7,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.chain": {
+      "f1": 0.571,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.command": {
+      "f1": 0.2,
+      "fn": 2,
+      "fp": 6,
+      "precision": 0.143,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 9,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.25,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.222,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.concurrency": {
+      "f1": 0.4,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "xcut.errors": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.5,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "xcut.validation": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     }
+    }
+   },
+   "heldout_structured": {
+    "items": 116,
+    "macro": {
+     "f1": 0.417,
+     "precision": 0.522,
+     "recall": 0.392
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.575,
+     "fn": 137,
+     "fp": 60,
+     "precision": 0.689,
+     "recall": 0.493,
+     "tp": 133
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.444,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.6,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.5,
+      "tp": 3
+     },
+     "layer.cli": {
+      "f1": 0.471,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "layer.config": {
+      "f1": 0.615,
+      "fn": 1,
+      "fp": 4,
+      "precision": 0.5,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "layer.domain": {
+      "f1": 0.75,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.6,
+      "tp": 3
+     },
+     "layer.io": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 4
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 11,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 11
+     },
+     "net.client": {
+      "f1": 0.333,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.553,
+      "fn": 19,
+      "fp": 2,
+      "precision": 0.867,
+      "recall": 0.406,
+      "tp": 13
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.25,
+      "fn": 2,
+      "fp": 10,
+      "precision": 0.167,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "ood.value_object": {
+      "f1": 0.143,
+      "fn": 7,
+      "fp": 5,
+      "precision": 0.167,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.778,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.6,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.667,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 4
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.56,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.438,
+      "tp": 7
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "heldout_structured_judged_items": {
+    "items": 104,
+    "macro": {
+     "f1": 0.395,
+     "precision": 0.509,
+     "recall": 0.367
+    },
+    "macro_over": 44,
+    "micro": {
+     "f1": 0.55,
+     "fn": 137,
+     "fp": 56,
+     "precision": 0.678,
+     "recall": 0.463,
+     "tp": 118
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "arch.repository": {
+      "f1": 0.667,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.667,
+      "tp": 2
+     },
+     "cs.data_structures": {
+      "f1": 0.286,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.333,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.429,
+      "fn": 7,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.3,
+      "tp": 3
+     },
+     "layer.build": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "layer.cli": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "layer.config": {
+      "f1": 0.333,
+      "fn": 1,
+      "fp": 3,
+      "precision": 0.25,
+      "recall": 0.5,
+      "tp": 1
+     },
+     "layer.domain": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "layer.io": {
+      "f1": 0.75,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.75,
+      "tp": 3
+     },
+     "layer.os": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 3
+     },
+     "layer.persistence": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.tests": {
+      "f1": 0.984,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.969,
+      "tp": 31
+     },
+     "layer.ui": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.util": {
+      "f1": 0.645,
+      "fn": 0,
+      "fp": 11,
+      "precision": 0.476,
+      "recall": 1.0,
+      "tp": 10
+     },
+     "net.client": {
+      "f1": 0.333,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.4,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "net.http": {
+      "f1": 0.565,
+      "fn": 19,
+      "fp": 1,
+      "precision": 0.929,
+      "recall": 0.406,
+      "tp": 13
+     },
+     "net.server": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "net.transport": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.inheritance": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.interface": {
+      "f1": 0.154,
+      "fn": 2,
+      "fp": 9,
+      "precision": 0.1,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ood.value_object": {
+      "f1": 0.154,
+      "fn": 7,
+      "fp": 4,
+      "precision": 0.2,
+      "recall": 0.125,
+      "tp": 1
+     },
+     "parse.ast": {
+      "f1": 0.667,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "parse.codegen": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.714,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.adapter": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.chain": {
+      "f1": 0.6,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.6,
+      "fn": 4,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.decorator": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 1.0,
+      "fn": 0,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "tp": 1
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.476,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.357,
+      "tp": 5
+     },
+     "scm.vcs": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ser.serialization": {
+      "f1": 0.235,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.133,
+      "tp": 2
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.compat": {
+      "f1": 0.571,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.571,
+      "fn": 2,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.5,
+      "tp": 2
+     },
+     "xcut.errors": {
+      "f1": 0.941,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.889,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.logging": {
+      "f1": 0.0,
+      "fn": 1,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.security": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "xcut.validation": {
+      "f1": 0.286,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.2,
+      "tp": 1
+     }
+    }
+   },
+   "threshold": 0.6,
+   "train": {
+    "items": 307,
+    "macro": {
+     "f1": 0.441,
+     "precision": 0.661,
+     "recall": 0.384
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.53,
+     "fn": 384,
+     "fp": 167,
+     "precision": 0.651,
+     "recall": 0.447,
+     "tp": 311
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.333,
+      "fn": 10,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.133,
+      "fn": 21,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.621,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.818,
+      "recall": 0.5,
+      "tp": 9
+     },
+     "layer.cli": {
+      "f1": 0.429,
+      "fn": 15,
+      "fp": 9,
+      "precision": 0.5,
+      "recall": 0.375,
+      "tp": 9
+     },
+     "layer.config": {
+      "f1": 0.766,
+      "fn": 7,
+      "fp": 4,
+      "precision": 0.818,
+      "recall": 0.72,
+      "tp": 18
+     },
+     "layer.domain": {
+      "f1": 0.727,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.8,
+      "recall": 0.667,
+      "tp": 8
+     },
+     "layer.io": {
+      "f1": 0.421,
+      "fn": 8,
+      "fp": 14,
+      "precision": 0.364,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "layer.os": {
+      "f1": 0.467,
+      "fn": 4,
+      "fp": 12,
+      "precision": 0.368,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.persistence": {
+      "f1": 0.421,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.286,
+      "tp": 4
+     },
+     "layer.tests": {
+      "f1": 0.855,
+      "fn": 24,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.747,
+      "tp": 71
+     },
+     "layer.ui": {
+      "f1": 0.345,
+      "fn": 17,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.227,
+      "tp": 5
+     },
+     "layer.util": {
+      "f1": 0.514,
+      "fn": 4,
+      "fp": 13,
+      "precision": 0.409,
+      "recall": 0.692,
+      "tp": 9
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.46,
+      "fn": 39,
+      "fp": 8,
+      "precision": 0.714,
+      "recall": 0.339,
+      "tp": 20
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.476,
+      "fn": 6,
+      "fp": 5,
+      "precision": 0.5,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.519,
+      "fn": 4,
+      "fp": 22,
+      "precision": 0.389,
+      "recall": 0.778,
+      "tp": 14
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.39,
+      "fn": 10,
+      "fp": 15,
+      "precision": 0.348,
+      "recall": 0.444,
+      "tp": 8
+     },
+     "parse.ast": {
+      "f1": 0.25,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.143,
+      "tp": 1
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.667,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.353,
+      "fn": 4,
+      "fp": 7,
+      "precision": 0.3,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.538,
+      "fn": 10,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.412,
+      "tp": 7
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.4,
+      "fn": 6,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "pattern.visitor": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "scm.packaging": {
+      "f1": 0.706,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.8,
+      "recall": 0.632,
+      "tp": 12
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.634,
+      "fn": 12,
+      "fp": 3,
+      "precision": 0.812,
+      "recall": 0.52,
+      "tp": 13
+     },
+     "xcut.auth": {
+      "f1": 0.5,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.4,
+      "tp": 2
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.429,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.333,
+      "tp": 3
+     },
+     "xcut.concurrency": {
+      "f1": 0.533,
+      "fn": 13,
+      "fp": 1,
+      "precision": 0.889,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.667,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.5,
+      "tp": 8
+     },
+     "xcut.i18n": {
+      "f1": 0.706,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.857,
+      "recall": 0.6,
+      "tp": 6
+     },
+     "xcut.logging": {
+      "f1": 0.6,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.667,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   },
+   "train_judged_items": {
+    "items": 274,
+    "macro": {
+     "f1": 0.398,
+     "precision": 0.588,
+     "recall": 0.348
+    },
+    "macro_over": 48,
+    "micro": {
+     "f1": 0.504,
+     "fn": 384,
+     "fp": 154,
+     "precision": 0.639,
+     "recall": 0.416,
+     "tp": 273
+    },
+    "per_concept": {
+     "arch.client_server": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 6,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.messaging": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.mvc": {
+      "f1": 0.444,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.667,
+      "recall": 0.333,
+      "tp": 2
+     },
+     "arch.pipeline": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "arch.plugin": {
+      "f1": 0.333,
+      "fn": 10,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "arch.repository": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 1,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "cs.data_structures": {
+      "f1": 0.588,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.714,
+      "recall": 0.5,
+      "tp": 5
+     },
+     "cs.ml": {
+      "f1": 0.0,
+      "fn": 0,
+      "fp": 3,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "layer.api": {
+      "f1": 0.133,
+      "fn": 21,
+      "fp": 5,
+      "precision": 0.286,
+      "recall": 0.087,
+      "tp": 2
+     },
+     "layer.build": {
+      "f1": 0.421,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.667,
+      "recall": 0.308,
+      "tp": 4
+     },
+     "layer.cli": {
+      "f1": 0.41,
+      "fn": 15,
+      "fp": 8,
+      "precision": 0.5,
+      "recall": 0.348,
+      "tp": 8
+     },
+     "layer.config": {
+      "f1": 0.744,
+      "fn": 7,
+      "fp": 4,
+      "precision": 0.8,
+      "recall": 0.696,
+      "tp": 16
+     },
+     "layer.domain": {
+      "f1": 0.7,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.778,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.io": {
+      "f1": 0.4,
+      "fn": 8,
+      "fp": 13,
+      "precision": 0.35,
+      "recall": 0.467,
+      "tp": 7
+     },
+     "layer.os": {
+      "f1": 0.467,
+      "fn": 4,
+      "fp": 12,
+      "precision": 0.368,
+      "recall": 0.636,
+      "tp": 7
+     },
+     "layer.persistence": {
+      "f1": 0.353,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.75,
+      "recall": 0.231,
+      "tp": 3
+     },
+     "layer.tests": {
+      "f1": 0.846,
+      "fn": 24,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.733,
+      "tp": 66
+     },
+     "layer.ui": {
+      "f1": 0.24,
+      "fn": 17,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.15,
+      "tp": 3
+     },
+     "layer.util": {
+      "f1": 0.429,
+      "fn": 4,
+      "fp": 12,
+      "precision": 0.333,
+      "recall": 0.6,
+      "tp": 6
+     },
+     "net.client": {
+      "f1": 0.381,
+      "fn": 12,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.25,
+      "tp": 4
+     },
+     "net.http": {
+      "f1": 0.447,
+      "fn": 39,
+      "fp": 8,
+      "precision": 0.704,
+      "recall": 0.328,
+      "tp": 19
+     },
+     "net.server": {
+      "f1": 0.471,
+      "fn": 8,
+      "fp": 1,
+      "precision": 0.8,
+      "recall": 0.333,
+      "tp": 4
+     },
+     "net.transport": {
+      "f1": 0.5,
+      "fn": 6,
+      "fp": 4,
+      "precision": 0.556,
+      "recall": 0.455,
+      "tp": 5
+     },
+     "ood.inheritance": {
+      "f1": 0.4,
+      "fn": 9,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 3
+     },
+     "ood.interface": {
+      "f1": 0.522,
+      "fn": 4,
+      "fp": 18,
+      "precision": 0.4,
+      "recall": 0.75,
+      "tp": 12
+     },
+     "ood.state_machine": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "ood.value_object": {
+      "f1": 0.421,
+      "fn": 10,
+      "fp": 12,
+      "precision": 0.4,
+      "recall": 0.444,
+      "tp": 8
+     },
+     "parse.ast": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.codegen": {
+      "f1": 0.154,
+      "fn": 11,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.083,
+      "tp": 1
+     },
+     "parse.lexer": {
+      "f1": 0.0,
+      "fn": 2,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "parse.parser": {
+      "f1": 0.211,
+      "fn": 15,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.118,
+      "tp": 2
+     },
+     "pattern.adapter": {
+      "f1": 0.667,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.556,
+      "tp": 5
+     },
+     "pattern.chain": {
+      "f1": 0.353,
+      "fn": 4,
+      "fp": 7,
+      "precision": 0.3,
+      "recall": 0.429,
+      "tp": 3
+     },
+     "pattern.command": {
+      "f1": 0.476,
+      "fn": 10,
+      "fp": 1,
+      "precision": 0.833,
+      "recall": 0.333,
+      "tp": 5
+     },
+     "pattern.decorator": {
+      "f1": 0.4,
+      "fn": 3,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "pattern.factory": {
+      "f1": 0.0,
+      "fn": 5,
+      "fp": 2,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.observer": {
+      "f1": 0.0,
+      "fn": 4,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.proxy": {
+      "f1": 0.667,
+      "fn": 0,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 1.0,
+      "tp": 2
+     },
+     "pattern.strategy": {
+      "f1": 0.0,
+      "fn": 6,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "pattern.visitor": {
+      "f1": 0.0,
+      "fn": 3,
+      "fp": 0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "tp": 0
+     },
+     "scm.packaging": {
+      "f1": 0.688,
+      "fn": 7,
+      "fp": 3,
+      "precision": 0.786,
+      "recall": 0.611,
+      "tp": 11
+     },
+     "scm.vcs": {
+      "f1": 0.5,
+      "fn": 2,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.333,
+      "tp": 1
+     },
+     "ser.serialization": {
+      "f1": 0.595,
+      "fn": 12,
+      "fp": 3,
+      "precision": 0.786,
+      "recall": 0.478,
+      "tp": 11
+     },
+     "xcut.auth": {
+      "f1": 0.333,
+      "fn": 3,
+      "fp": 1,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 1
+     },
+     "xcut.caching": {
+      "f1": 0.444,
+      "fn": 5,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.286,
+      "tp": 2
+     },
+     "xcut.compat": {
+      "f1": 0.333,
+      "fn": 6,
+      "fp": 2,
+      "precision": 0.5,
+      "recall": 0.25,
+      "tp": 2
+     },
+     "xcut.concurrency": {
+      "f1": 0.552,
+      "fn": 13,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.381,
+      "tp": 8
+     },
+     "xcut.errors": {
+      "f1": 0.556,
+      "fn": 8,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.385,
+      "tp": 5
+     },
+     "xcut.i18n": {
+      "f1": 0.706,
+      "fn": 4,
+      "fp": 1,
+      "precision": 0.857,
+      "recall": 0.6,
+      "tp": 6
+     },
+     "xcut.logging": {
+      "f1": 0.6,
+      "fn": 5,
+      "fp": 3,
+      "precision": 0.667,
+      "recall": 0.545,
+      "tp": 6
+     },
+     "xcut.security": {
+      "f1": 0.889,
+      "fn": 1,
+      "fp": 0,
+      "precision": 1.0,
+      "recall": 0.8,
+      "tp": 4
+     },
+     "xcut.validation": {
+      "f1": 0.353,
+      "fn": 9,
+      "fp": 2,
+      "precision": 0.6,
+      "recall": 0.25,
+      "tp": 3
+     }
+    }
+   }
+  }
+ },
+ "corpus_version": "1.0.0",
+ "forest": {
+  "aider": {
+   "layout": "flat",
+   "pruned": {
+    "clustered_share": 0.592,
+    "clusters": 24,
+    "files": 152,
+    "folder_purity": 0.689,
+    "folders": 12
+   },
+   "raw": {
+    "clustered_share": 0.822,
+    "clusters": 2,
+    "files": 152,
+    "folder_purity": 0.344,
+    "folders": 12
+   },
+   "split": "heldout"
+  },
+  "aiohttp": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.453,
+    "clusters": 7,
+    "files": 148,
+    "folder_purity": 0.582,
+    "folders": 11
+   },
+   "raw": {
+    "clustered_share": 0.932,
+    "clusters": 1,
+    "files": 148,
+    "folder_purity": 0.551,
+    "folders": 11
+   },
+   "split": "train"
+  },
+  "attrs": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.518,
+    "clusters": 9,
+    "files": 56,
+    "folder_purity": 0.69,
+    "folders": 4
+   },
+   "raw": {
+    "clustered_share": 0.964,
+    "clusters": 1,
+    "files": 56,
+    "folder_purity": 0.556,
+    "folders": 4
+   },
+   "split": "train"
+  },
+  "axios": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.429,
+    "clusters": 34,
+    "files": 266,
+    "folder_purity": 0.509,
+    "folders": 34
+   },
+   "raw": {
+    "clustered_share": 0.726,
+    "clusters": 9,
+    "files": 266,
+    "folder_purity": 0.311,
+    "folders": 34
+   },
+   "split": "heldout"
+  },
+  "click": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.355,
+    "clusters": 4,
+    "files": 76,
+    "folder_purity": 0.593,
+    "folders": 6
+   },
+   "raw": {
+    "clustered_share": 0.961,
+    "clusters": 2,
+    "files": 76,
+    "folder_purity": 0.329,
+    "folders": 6
+   },
+   "split": "train"
+  },
+  "flask": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.431,
+    "clusters": 4,
+    "files": 65,
+    "folder_purity": 0.536,
+    "folders": 14
+   },
+   "raw": {
+    "clustered_share": 0.938,
+    "clusters": 1,
+    "files": 65,
+    "folder_purity": 0.377,
+    "folders": 14
+   },
+   "split": "train"
+  },
+  "gin": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.204,
+    "clusters": 3,
+    "files": 98,
+    "folder_purity": 0.5,
+    "folders": 7
+   },
+   "raw": {
+    "clustered_share": 1.0,
+    "clusters": 3,
+    "files": 98,
+    "folder_purity": 0.765,
+    "folders": 7
+   },
+   "split": "train"
+  },
+  "httpx": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.4,
+    "clusters": 5,
+    "files": 60,
+    "folder_purity": 0.833,
+    "folders": 5
+   },
+   "raw": {
+    "clustered_share": 0.95,
+    "clusters": 2,
+    "files": 60,
+    "folder_purity": 0.333,
+    "folders": 5
+   },
+   "split": "train"
+  },
+  "jinja": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.66,
+    "clusters": 6,
+    "files": 50,
+    "folder_purity": 0.667,
+    "folders": 4
+   },
+   "raw": {
+    "clustered_share": 0.92,
+    "clusters": 1,
+    "files": 50,
+    "folder_purity": 0.543,
+    "folders": 4
+   },
+   "split": "train"
+  },
+  "lark": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.774,
+    "clusters": 3,
+    "files": 53,
+    "folder_purity": 0.366,
+    "folders": 7
+   },
+   "raw": {
+    "clustered_share": 0.925,
+    "clusters": 1,
+    "files": 53,
+    "folder_purity": 0.347,
+    "folders": 7
+   },
+   "split": "heldout"
+  },
+  "llm": {
+   "layout": "flat",
+   "pruned": {
+    "clustered_share": 0.373,
+    "clusters": 5,
+    "files": 59,
+    "folder_purity": 0.636,
+    "folders": 3
+   },
+   "raw": {
+    "clustered_share": 1.0,
+    "clusters": 1,
+    "files": 59,
+    "folder_purity": 0.678,
+    "folders": 3
+   },
+   "split": "heldout"
+  },
+  "marshmallow": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.618,
+    "clusters": 3,
+    "files": 34,
+    "folder_purity": 0.571,
+    "folders": 5
+   },
+   "raw": {
+    "clustered_share": 0.941,
+    "clusters": 1,
+    "files": 34,
+    "folder_purity": 0.469,
+    "folders": 5
+   },
+   "split": "heldout"
+  },
+  "nanogpt": {
+   "layout": "flat",
+   "pruned": {
+    "clustered_share": 0.333,
+    "clusters": 1,
+    "files": 12,
+    "folder_purity": 1.0,
+    "folders": 2
+   },
+   "raw": {
+    "clustered_share": 0.333,
+    "clusters": 1,
+    "files": 12,
+    "folder_purity": 1.0,
+    "folders": 2
+   },
+   "split": "heldout"
+  },
+  "pip": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.577,
+    "clusters": 39,
+    "files": 338,
+    "folder_purity": 0.467,
+    "folders": 31
+   },
+   "raw": {
+    "clustered_share": 0.947,
+    "clusters": 2,
+    "files": 338,
+    "folder_purity": 0.222,
+    "folders": 31
+   },
+   "split": "train"
+  },
+  "poetry": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.584,
+    "clusters": 38,
+    "files": 375,
+    "folder_purity": 0.397,
+    "folders": 69
+   },
+   "raw": {
+    "clustered_share": 0.861,
+    "clusters": 8,
+    "files": 375,
+    "folder_purity": 0.133,
+    "folders": 69
+   },
+   "split": "heldout"
+  },
+  "pytest": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.386,
+    "clusters": 13,
+    "files": 220,
+    "folder_purity": 0.471,
+    "folders": 39
+   },
+   "raw": {
+    "clustered_share": 0.791,
+    "clusters": 2,
+    "files": 220,
+    "folder_purity": 0.345,
+    "folders": 39
+   },
+   "split": "train"
+  },
+  "redis-py": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.665,
+    "clusters": 27,
+    "files": 319,
+    "folder_purity": 0.373,
+    "folders": 30
+   },
+   "raw": {
+    "clustered_share": 0.947,
+    "clusters": 2,
+    "files": 319,
+    "folder_purity": 0.182,
+    "folders": 30
+   },
+   "split": "train"
+  },
+  "requests": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.429,
+    "clusters": 5,
+    "files": 35,
+    "folder_purity": 0.8,
+    "folders": 4
+   },
+   "raw": {
+    "clustered_share": 0.943,
+    "clusters": 2,
+    "files": 35,
+    "folder_purity": 0.667,
+    "folders": 4
+   },
+   "split": "heldout"
+  },
+  "rich": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.436,
+    "clusters": 25,
+    "files": 172,
+    "folder_purity": 0.6,
+    "folders": 4
+   },
+   "raw": {
+    "clustered_share": 0.983,
+    "clusters": 5,
+    "files": 172,
+    "folder_purity": 0.586,
+    "folders": 4
+   },
+   "split": "train"
+  },
+  "scrapy": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.523,
+    "clusters": 63,
+    "files": 545,
+    "folder_purity": 0.477,
+    "folders": 47
+   },
+   "raw": {
+    "clustered_share": 0.945,
+    "clusters": 2,
+    "files": 545,
+    "folder_purity": 0.336,
+    "folders": 47
+   },
+   "split": "train"
+  },
+  "shell-gpt": {
+   "layout": "flat",
+   "pruned": {
+    "clustered_share": 0.714,
+    "clusters": 1,
+    "files": 28,
+    "folder_purity": 0.45,
+    "folders": 6
+   },
+   "raw": {
+    "clustered_share": 0.786,
+    "clusters": 1,
+    "files": 28,
+    "folder_purity": 0.5,
+    "folders": 6
+   },
+   "split": "heldout"
+  },
+  "sqlite-utils": {
+   "layout": "flat",
+   "pruned": {
+    "clustered_share": 0.125,
+    "clusters": 3,
+    "files": 64,
+    "folder_purity": 0.625,
+    "folders": 2
+   },
+   "raw": {
+    "clustered_share": 0.938,
+    "clusters": 2,
+    "files": 64,
+    "folder_purity": 0.833,
+    "folders": 2
+   },
+   "split": "heldout"
+  },
+  "sqlmodel": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.102,
+    "clusters": 7,
+    "files": 186,
+    "folder_purity": 0.579,
+    "folders": 50
+   },
+   "raw": {
+    "clustered_share": 0.608,
+    "clusters": 6,
+    "files": 186,
+    "folder_purity": 0.292,
+    "folders": 50
+   },
+   "split": "train"
+  },
+  "starlette": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.817,
+    "clusters": 6,
+    "files": 71,
+    "folder_purity": 0.397,
+    "folders": 4
+   },
+   "raw": {
+    "clustered_share": 0.972,
+    "clusters": 2,
+    "files": 71,
+    "folder_purity": 0.333,
+    "folders": 4
+   },
+   "split": "heldout"
+  },
+  "tox": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.442,
+    "clusters": 26,
+    "files": 269,
+    "folder_purity": 0.437,
+    "folders": 50
+   },
+   "raw": {
+    "clustered_share": 0.874,
+    "clusters": 2,
+    "files": 269,
+    "folder_purity": 0.068,
+    "folders": 50
+   },
+   "split": "train"
+  },
+  "werkzeug": {
+   "layout": "structured",
+   "pruned": {
+    "clustered_share": 0.551,
+    "clusters": 12,
+    "files": 89,
+    "folder_purity": 0.449,
+    "folders": 12
+   },
+   "raw": {
+    "clustered_share": 0.955,
+    "clusters": 4,
+    "files": 89,
+    "folder_purity": 0.318,
+    "folders": 12
+   },
+   "split": "train"
+  }
+ },
+ "sets": {
+  "heldout_flat": [
+   "aider",
+   "llm",
+   "sqlite-utils",
+   "nanogpt",
+   "shell-gpt"
+  ],
+  "heldout_structured": [
+   "requests",
+   "starlette",
+   "poetry",
+   "marshmallow",
+   "lark",
+   "axios"
+  ],
+  "train": [
+   "flask",
+   "click",
+   "jinja",
+   "httpx",
+   "sqlmodel",
+   "pip",
+   "werkzeug",
+   "scrapy",
+   "rich",
+   "aiohttp",
+   "pytest",
+   "attrs",
+   "redis-py",
+   "tox",
+   "gin"
+  ]
+ },
+ "taxonomy_version": "1.0.0",
+ "weights": {
+  "ancestor": 0.25,
+  "graph": 0.5,
+  "import": 0.5,
+  "member": 0.5,
+  "parent": 0.5,
+  "stem": 1.0
+ }
+}

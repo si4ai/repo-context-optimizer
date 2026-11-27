@@ -1,0 +1,267 @@
+{
+ "repo": "requests",
+ "url": "https://github.com/psf/requests",
+ "sha": "3c7baaa05ab4aa49cc819ce3a819d260de19c157",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/requests",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package docstring \"HTTP Library\"; sessions, adapters, auth, cookies modules"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test package for the HTTP client"
+  },
+  {
+   "kind": "module",
+   "path": "tests/testserver",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test HTTP server helper for the suite"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package facade re-exports the public API"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/_internal_utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "string conversion and ASCII helpers"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/api.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "request/get/post module-level functions"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/cookies.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "cookie jar and cookie headers"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/exceptions.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "exception hierarchy for request failures"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/models.py",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Request, PreparedRequest, Response models",
+   "auto_rejected": [
+    "cs.ml"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/sessions.py",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.client_server",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Session: persistent settings, redirects, auth merge"
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/structures.py",
+   "concepts": [
+    {
+     "id": "cs.data_structures",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "CaseInsensitiveDict, LookupDict containers",
+   "auto_rejected": [
+    "ood.interface"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/requests/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: netrc auth, proxies, header parsing"
+  },
+  {
+   "kind": "file",
+   "path": "tests/compat.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "py2/py3 compat shim for tests"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_adapters.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the transport adapter"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_hooks.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests request hooks"
+  }
+ ]
+}

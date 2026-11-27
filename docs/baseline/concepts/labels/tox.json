@@ -1,0 +1,463 @@
+{
+ "repo": "tox",
+ "url": "https://github.com/tox-dev/tox",
+ "sha": "da6036b647a1b07c2a7d2eb8bda98780b1683556",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/tox",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test automation tool: run, provision, report"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/config",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "configuration model and sets"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/config/cli",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command-line parsing into config"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/config/loader",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "config loaders: ini, memory, native, conversion",
+   "auto_rejected": [
+    "arch.pipeline",
+    "arch.plugin"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/config/loader/toml",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "TOML loader with replacement and validation"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/config/source",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "config source discovery: tox.ini, pyproject, setup.cfg"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/execute",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command execution in environments"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/plugin",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "pluggy plugin manager and hook specs"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/session/cmd",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "session commands: list, exec, devenv, quickstart"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/tox_env",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "environment creation and management"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/tox_env/python",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Python environments and packaging"
+  },
+  {
+   "kind": "module",
+   "path": "src/tox/util",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "helpers"
+  },
+  {
+   "kind": "module",
+   "path": "tests/config",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "config tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/config/loader",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "loader tests",
+   "auto_rejected": [
+    "arch.pipeline",
+    "arch.plugin"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "tests/session/cmd",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "session command tests"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/config/cli/env_var.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "config values from env vars"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/config/loader/toml/_replace.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "TOML replacement directives"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/config/sets.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "ConfigSet classes"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/config/source/legacy_toml.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "legacy TOML source"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/config/source/tox_ini.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tox.ini source"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/execute/local_sub_process/read_via_thread_windows.py",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Windows overlapped stream reading thread"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/execute/stream.py",
+   "concepts": [
+    {
+     "id": "layer.io",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SyncWrite output stream",
+   "auto_rejected": [
+    "arch.messaging"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/tox_env/python/pip/req/file.py",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "requirements file parser"
+  },
+  {
+   "kind": "file",
+   "path": "src/tox/tox_env/python/virtual_env/api.py",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "VirtualEnv abstract env",
+   "auto_rejected": [
+    "layer.api"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "tests/config/test_set_env.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests set_env"
+  },
+  {
+   "kind": "file",
+   "path": "tests/session/cmd/test_man.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests man command"
+  },
+  {
+   "kind": "file",
+   "path": "tests/tox_env/python/virtual_env/package/test_package_cmd_builder.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests package builder"
+  }
+ ]
+}
