@@ -118,10 +118,14 @@ holds the signatures of the files the `--for` files import, one hop in the
 file import graph and across module boundaries, never the `--for` files' own
 outlines (card 1340). Imported files are ranked nearest first: imported by
 more `--for` files, then a smaller directory distance to the nearest
-importing `--for` file, then path. Cut order when over budget: one
+importing `--for` file, then path. With `--for` the Forest holds only
+the owning modules and their one-hop modules (depends on and used by), and
+the cut order is: one hop lines, then those neighbor Forest lines, then Tree
+nodes of the farthest imported file first, then the owners' Forest lines
+(card 1342). Without `--for`, cut order when over budget: one
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
-no prose) from the deepest level up, then Tree nodes of the farthest
-imported file first, then the remaining Forest entries. A parent Forest line is kept
+no prose) from the deepest level up, then the remaining Forest entries.
+A parent Forest line is kept
 until all of its children are cut. Nothing is cut silently. A pack that is still over budget after every cut is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:

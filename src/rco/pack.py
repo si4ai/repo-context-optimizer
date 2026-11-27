@@ -14,7 +14,10 @@ owned, no prose) from the deepest level up, then Tree nodes of the farthest
 imported file first, then the remaining Forest entries. With --for, the
 budget is min(--budget, half the estimated tokens of the imported files);
 when that is below MIN_BUDGET, or the --for files import nothing in the
-repo, they get a one-line no-op pack instead (card 1341). After the pack
+repo, they get a one-line no-op pack instead (card 1341). With --for, the Forest holds only the
+owning modules and their one-hop modules; those neighbor lines are cut
+right after the hop lines, before any Tree node, and the owners' lines go
+last (card 1342). After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
@@ -395,6 +398,13 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
             idx = call_index(m.trees, code, focus=trees)
             trees = [with_derived_docs(t, idx) for t in trees]
     hop = [HopLine(h, _one_line(by_id[h])) for h in hop_ids]
+    neighbors: list[str] = []
+    if owners:
+        # card 1342: with --for, the Forest is the owners and their one-hop
+        # modules; the whole-repo Forest stays on the path without --for
+        keep = set(owners) | set(hop_ids)
+        entries = [e for e in entries if e.id in keep]
+        neighbors = list(reversed(hop_ids))  # cut order: test modules, then by id from the end
     stale = tuple(sorted(e.id for e in entries if is_stale(e.prose, e.tree_hash)))
     label = " ".join(for_paths or ())
     trimmed: list[str] = []
@@ -410,7 +420,14 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         if hop:
             trimmed.append(f"hop:{hop.pop().id}")
             return True
-        idx = _next_forest_cut(entries, all_ids, empty_only=True)
+        while neighbors:  # card 1342: neighbor Forest lines go before any Tree node
+            mid = neighbors.pop(0)
+            idx = next((i for i, e in enumerate(entries) if e.id == mid), None)
+            if idx is not None:
+                trimmed.append(f"forest:{entries.pop(idx).id}")
+                return True
+        # with --for only the owners' lines are left here, and they go last
+        idx = None if owners else _next_forest_cut(entries, all_ids, empty_only=True)
         if idx is not None:
             trimmed.append(f"forest:{entries.pop(idx).id}")
             return True

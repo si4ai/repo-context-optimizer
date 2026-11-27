@@ -137,7 +137,9 @@ def test_pack_shows_docs_and_is_byte_identical(tmp_path):
     # card 1340: the --for file's own outline is left out; imported files keep derived docs
     assert "# Run. Takes x. Returns int." not in md
     assert "Takes x. Returns int. Called by core.py:run." in md
-    assert "- web: layer 0; Defines functions draw, helper, paint." in md
+    # card 1342: web is not a neighbor of pkg, so its line is only in the whole-repo pack
+    assert "- web:" not in md
+    assert "- web: layer 0; Defines functions draw, helper, paint." in pack_markdown(pack(repo, sha))
 
 
 def test_function_local_imports_resolve(tmp_path):
