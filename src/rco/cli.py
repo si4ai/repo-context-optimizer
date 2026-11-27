@@ -108,6 +108,14 @@ def make_parser() -> argparse.ArgumentParser:
     k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"estimated tokens (default: {DEFAULT_BUDGET})")
     _common(k)
 
+    rp = sub.add_parser("replay", help="estimate rco's saving on this repo's last code commits")
+    rp.add_argument("--last", type=int, default=10, help="code commits to replay (default: 10)")
+    rp.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
+                    help=f"pack budget, estimated tokens (default: {DEFAULT_BUDGET})")
+    rp.add_argument("--max-files", type=int, default=50,
+                    help="skip commits that change more code files than this (default: 50)")
+    _common(rp)
+
     r = sub.add_parser("triage", help="hint per branch: clean or a structural brief (never rebases)")
     r.add_argument("branches", nargs="+", metavar="BRANCH",
                    help="branch to hint about (at least one)")
@@ -328,6 +336,11 @@ def run(args: argparse.Namespace) -> Exit:
         if p.used > p.budget:
             note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
+    if args.cmd == "replay":
+        from rco import metrics, replay
+        name, count = metrics.counter()
+        return emit(replay.replay(repo, args.last, args.budget, args.max_files, count, name),
+                    args.format, args.out)
     if args.cmd == "pin":
         from rco import pin
         sha = gitread.resolve(repo, args.sha)

@@ -52,6 +52,16 @@ rco pack --for src/cli.py  # Forest + Trees for those modules and one import hop
 rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 ```
 
+Does it help on your repo? One command, no setup, no agent, writes nothing:
+
+```
+pip install "repo-context-optimizer[tokens]"   # adds tiktoken for real token counts
+cd your-repo
+rco replay                 # replays your last 10 code commits: with vs without rco
+```
+
+It prints tokens and file reads with and without rco for each commit, the medians, and its method and limits. It is an estimate, not a measurement of an agent, and it says so plainly when rco does not win. See [`rco replay`](#rco-replay---last-n---budget-n---max-files-n).
+
 `--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 12000. `--for` is optional. These defaults match the [Commands](#commands) section.
 
 Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
@@ -242,6 +252,15 @@ CLI: tw run, tw stop
 
 # budget used: ~150 / 12000 estimated tokens
 ```
+
+### `rco replay [--last N] [--budget N] [--max-files N]`
+
+An estimate of what rco saves on this repo, from its own history. It replays the last N (default 10) non-merge commits that changed code. Each commit's diff stands in for an agent's first useful edit:
+
+- without rco: the changed code files plus the in-repo files they import, one hop. A lower bound, since real agents also search.
+- with rco: the `rco pack --for CHANGED` text plus the changed files, which the agent still opens to edit.
+
+It reports tokens (tiktoken `o200k_base` with the `tokens` extra; otherwise characters / 4, labelled as an estimate) and file reads per commit, the medians, the percent saved, and how many commits the pack cost more than the imported files it replaced. If rco does not win, the report says so. Limits it prints every time: the pack is aimed at exactly the files the commit changed (a real agent must guess them), file reads stand in for tool calls, and files are read at the commit itself. The pack is built from git, so no `rco update` is needed and it edits no file. With `.rco/` present it appends its one line to the [events log](#events-log), like every rco run; the packs it builds inside add none. Root commits (also the oldest commit in a shallow clone) and commits that change more than `--max-files` (default 50) code files are skipped and counted. Exit 0, or 2 when no commit qualifies. `--format json` gives schema `rco.replay/1`. Real agent tokens and tool calls to the first useful edit need the agent's own session log, which is a later step.
 
 ### `rco tree [SHA] [--for PATHS]`
 

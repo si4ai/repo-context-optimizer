@@ -42,6 +42,8 @@ rco init            # add --hooks for the post-merge hook; add --metrics to uplo
 - With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
 - With `--agents`: a marked block at the top of `AGENTS.md` (created if missing), and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md` and `.github/copilot-instructions.md` when they exist, telling an agent to run `rco pack --for FILE...` before it reads code. A second run leaves it as is; rco edits only between its markers. See the README, `rco init`.
 
+Before or after setup, `pip install "repo-context-optimizer[tokens]"` and `rco replay` print an estimate of what rco saves on your last 10 code commits, with its method and limits. It needs no store and edits no file; with `.rco/` present it appends its one line to the events log.
+
 Then commit the two files (and, with `--agents`, each file the report lists as wrote, added or updated), open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
 
 Limits of the generated workflow:
