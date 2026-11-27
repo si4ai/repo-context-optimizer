@@ -29,4 +29,4 @@ jobs:
       contents: read
       issues: read
       pull-requests: read
-    uses: si4ai/.github/.github/workflows/pr_text.yml@de8ed263569a59c98b58c1342b52fb298773d12a
+    uses: si4ai/.github/.github/workflows/pr_text.yml@4ff4ff42072e8bda6b58aab3f7cae663243073af
