@@ -21,9 +21,10 @@ def _ts(t: int) -> str:
     return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(t))
 
 
-def _ev(run: str, t: int, head: str | None, cmd: str = "pack", exit_code: int = 0) -> dict:
+def _ev(run: str, t: int, head: str | None, cmd: str = "pack", exit_code: int = 0,
+        ms: int = 5) -> dict:
     return {"v": 1, "run": run, "ts": _ts(t), "cmd": cmd, "exit": exit_code, "store": None,
-            "head": head, "ms": 5, "for": ["pkg/core.py"]}
+            "head": head, "ms": ms, "for": ["pkg/core.py"]}
 
 
 def _events(path: Path, rows: list[dict], extra: tuple[str, ...] = ()) -> Path:
@@ -68,7 +69,7 @@ def test_reports_exactly_the_unpacked_commit(tmp_path):
     assert d not in {x.sha for x in rep.commits}
     obj = _report(repo, a, ev)
     assert obj["schema"] == "rco.bypass/1" and obj["window_s"] == 1800
-    assert (obj["events"], obj["bad_lines"], obj["covered"], obj["uncovered"]) == (1, 0, 1, 1)
+    assert (obj["pack_events"], obj["bad_lines"], obj["covered"], obj["uncovered"]) == (1, 0, 1, 1)
     assert [(x["sha"], x["covered"], x["run"]) for x in obj["commits"]] == [
         (b, True, "run-a"), (c, False, None)]
 
@@ -121,7 +122,7 @@ def test_bad_lines_counted_not_fatal(tmp_path):
     events, bad = bypass.read_events(ev)
     assert len(events) == 1 and bad == 3
     obj = _report(repo, a, ev)
-    assert (obj["events"], obj["bad_lines"], obj["covered"]) == (1, 3, 1)
+    assert (obj["pack_events"], obj["bad_lines"], obj["covered"]) == (1, 3, 1)
 
 
 def test_strict_exit_1_default_exit_0(tmp_path):
@@ -171,3 +172,43 @@ def test_bad_numbers_are_usage_errors(tmp_path):
     assert _run(repo, a, ev, "--days", "0") == Exit.USAGE
     assert cli.main(["metrics", "bypass", "--repo", str(repo), "--events", str(ev),
                      "--window-min", "-1"]) == Exit.USAGE
+
+
+def _covered_b(tmp_path, t: int, ms: int = 0, window_min: int = 30) -> bool:
+    """Is B (at T0+60 s, parent A) covered by a pack run started at t that took ms?"""
+    repo, a, b, c, _ = _history(tmp_path)
+    ev = _events(tmp_path / "e.jsonl", [_ev("r", t, a, ms=ms)])
+    return _report(repo, a, ev, "--window-min", str(window_min))["commits"][0]["covered"]
+
+
+def test_window_edges_are_exact(tmp_path):
+    w = 30 * 60
+    # the run ends exactly at the commit: covered; one second after it: not
+    assert _covered_b(tmp_path, T0 + 60, 0)
+    assert not _covered_b(tmp_path, T0 + 61, 0)
+    # the run ends exactly `window` before the commit: covered; one second earlier: not
+    assert _covered_b(tmp_path, T0 + 60 - w, 0)
+    assert not _covered_b(tmp_path, T0 + 59 - w, 0)
+
+
+def test_a_pack_still_running_at_the_commit_does_not_cover(tmp_path):
+    # started 1 s before the commit and ran 5 s: not finished when the commit landed
+    assert not _covered_b(tmp_path, T0 + 59, ms=5000)
+    # started window + 10 s before the commit, ran 20 s: finished inside the window
+    w = 30 * 60
+    assert _covered_b(tmp_path, T0 + 60 - w - 10, ms=20000)
+    assert not _covered_b(tmp_path, T0 + 60 - w - 10, ms=5000)
+
+
+def test_pack_events_count_ignores_other_commands(tmp_path):
+    repo, a, b, c, _ = _history(tmp_path)
+    rows = [_ev("p", T0 + 10, a), _ev("bp", T0 + 20, a, cmd="metrics bypass"),
+            _ev("t", T0 + 20, a, cmd="tree")]
+    ev = _events(tmp_path / "e.jsonl", rows)
+    assert _report(repo, a, ev)["pack_events"] == 1
+
+
+def test_base_and_days_together_are_a_usage_error(tmp_path):
+    repo, a, *_ = _history(tmp_path)
+    ev = _events(tmp_path / "e.jsonl", [_ev("run-a", T0 + 10, a)])
+    assert _run(repo, a, ev, "--days", "3") == Exit.USAGE

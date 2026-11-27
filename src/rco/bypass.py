@@ -3,7 +3,8 @@
 The events file (card 1314) says when each `rco pack` ran and at which HEAD;
 git says when each code commit was made. A commit is covered when a pack run
 finished with exit 0 or 1, at a HEAD that is the commit's parent or an
-ancestor of it, no later than the commit and within the window before it.
+ancestor of it, and finished (start plus duration) no later than the commit and
+at most the window before it.
 That shows a pack RAN before the commit, not that the agent read it.
 
 The report holds counts and ids, never a clock reading, so the same events
@@ -31,6 +32,11 @@ class Event:
     cmd: str
     exit: int
     head: str | None
+    ms: int = 0  # how long the run took
+
+    @property
+    def end(self) -> float:
+        return self.ts + self.ms / 1000
 
 
 @dataclass(frozen=True)
@@ -61,7 +67,9 @@ def _event(obj: object) -> Event | None:
         epoch = calendar.timegm(time.strptime(ts, "%Y-%m-%dT%H:%M:%SZ"))
     except ValueError:
         return None
-    return Event(run, epoch, cmd, code, head)
+    ms = obj.get("ms")
+    dur = ms if isinstance(ms, int) and not isinstance(ms, bool) and ms > 0 else 0
+    return Event(run, epoch, cmd, code, head, dur)
 
 
 def read_events(path: Path) -> tuple[list[Event], int]:
@@ -120,7 +128,7 @@ def code_commits(repo: Path, base: str | None, days: int) -> list[Commit]:
 @dataclass(frozen=True)
 class BypassReport:
     window_s: int
-    events: int
+    pack_events: int
     bad_lines: int
     commits: tuple[Checked, ...]
     strict: bool = False
@@ -134,7 +142,7 @@ class BypassReport:
         return len(self.commits) - self.covered
 
     def to_obj(self) -> dict:
-        return {"schema": SCHEMA_BYPASS, "window_s": self.window_s, "events": self.events,
+        return {"schema": SCHEMA_BYPASS, "window_s": self.window_s, "pack_events": self.pack_events,
                 "bad_lines": self.bad_lines, "covered": self.covered,
                 "uncovered": self.uncovered,
                 "commits": [{"sha": c.sha, "files": c.files, "covered": c.covered, "run": c.run}
@@ -145,7 +153,7 @@ class BypassReport:
                  f"- code commits: {len(self.commits)} "
                  f"({self.covered} covered, {self.uncovered} uncovered)",
                  f"- window: {self.window_s // 60} min before each commit",
-                 f"- events read: {self.events} ({self.bad_lines} unreadable lines)"]
+                 f"- pack runs read: {self.pack_events} ({self.bad_lines} unreadable lines)"]
         bare = [c.sha[:7] for c in self.commits if not c.covered]
         if bare:
             lines += ["", "Uncovered commits:", *[f"- {s}" for s in bare]]
@@ -172,8 +180,8 @@ def bypass(repo: Path, events: list[Event], commits: list[Commit], window_s: int
         run = None
         if c.parent:
             for e in reversed(packs):  # the closest earlier run wins
-                if e.head and 0 <= c.ts - e.ts <= window_s and below(e.head, c.parent):
+                if e.head and 0 <= c.ts - e.end <= window_s and below(e.head, c.parent):
                     run = e.run
                     break
         checked.append(Checked(c.sha, len(c.files), run is not None, run))
-    return BypassReport(window_s, len(events), bad_lines, tuple(checked), strict)
+    return BypassReport(window_s, sum(1 for e in events if e.cmd == "pack"), bad_lines, tuple(checked), strict)

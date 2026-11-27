@@ -158,7 +158,7 @@ def make_parser() -> argparse.ArgumentParser:
     _common(mm)
     bp = ms.add_parser("bypass", help="code commits with no rco pack run before them")
     bp.add_argument("--base", default=None, help="check BASE..HEAD (default: the last --days days)")
-    bp.add_argument("--days", type=int, default=14, help="look back this many days when no --base (default: 14)")
+    bp.add_argument("--days", type=int, default=None, help="look back this many days when no --base (default: 14)")
     bp.add_argument("--window-min", type=int, default=240, help="a pack run covers a commit made within this many minutes after it (default: 240)")
     bp.add_argument("--events", type=Path, default=None, help="events file (default: .rco/events.jsonl)")
     bp.add_argument("--strict", action="store_true", help="exit 1 when any code commit is uncovered")
@@ -292,13 +292,15 @@ def run(args: argparse.Namespace) -> Exit:
         if args.metrics_cmd == "bypass":
             from rco import bypass, events
             from rco.config import worktree_top
-            if args.days < 1:
+            if args.days is not None and args.base:
+                raise UsageError("bypass takes --base or --days, not both")
+            if args.days is not None and args.days < 1:
                 raise UsageError("--days must be at least 1")
             if args.window_min < 0:
                 raise UsageError("--window-min must not be negative")
             path = args.events or worktree_top(repo) / events.EVENTS_RELPATH
             found, bad = bypass.read_events(path)
-            commits = bypass.code_commits(repo, args.base, args.days)
+            commits = bypass.code_commits(repo, args.base, args.days or 14)
             rep = bypass.bypass(repo, found, commits, args.window_min * 60, bad, args.strict)
             return emit(rep, args.format, args.out)
         raise UsageError(f"unknown command metrics {args.metrics_cmd}")

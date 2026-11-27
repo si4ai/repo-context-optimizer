@@ -15,8 +15,8 @@
   exits 1 if that file is missing or incomplete
 - `rco metrics bypass` reports code commits that no `rco pack` run preceded,
   from `.rco/events.jsonl` and git history: a pack run covers a commit when it
-  exited 0 or 1 at the commit's parent (or an ancestor) within `--window-min`
-  minutes before it. Counts and ids only, byte-identical for the same inputs;
+  exited 0 or 1 at the commit's parent (or an ancestor) and finished no later
+  than the commit and at most `--window-min` minutes before it. Counts and ids only, byte-identical for the same inputs;
   exit 0, or 1 with `--strict` when any commit is uncovered; a missing or empty
   events file is exit 2. It shows a pack ran, not that it was read
 - `rco metrics summary` rolls many of those files into a trend: count, mean
