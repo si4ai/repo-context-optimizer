@@ -31,7 +31,7 @@ def _paths(p):
 
 def test_for_outlines_imported_files_only(tmp_path):
     repo, sha = _repo(tmp_path)
-    p = pack(repo, sha, ["pkg/a/f.py"], 10 ** 6)
+    p = pack(repo, sha, ["pkg/a/f.py"], 10 ** 6, fit_to_imports=False)
     assert _paths(p) == {"other/x.py", "far/deep/er/y.py"}
     names = {c.name for t in p.trees for n in t.nodes for c in n.children}
     assert {"x0", "x5", "y0", "y5"} <= names
@@ -43,11 +43,11 @@ def test_for_outlines_imported_files_only(tmp_path):
 
 def test_farther_file_cut_first(tmp_path):
     repo, sha = _repo(tmp_path)
-    full = pack(repo, sha, ["pkg/a/f.py"], 10 ** 6)
+    full = pack(repo, sha, ["pkg/a/f.py"], 10 ** 6, fit_to_imports=False)
     n_x = sum(1 for t in full.trees for n in t.nodes if n.path == "other/x.py")
     y_cut_x_whole = 0
     for budget in range(MIN_BUDGET, full.used + 1, 2):
-        p = pack(repo, sha, ["pkg/a/f.py"], budget)
+        p = pack(repo, sha, ["pkg/a/f.py"], budget, fit_to_imports=False)
         assert estimate_tokens(pack_markdown(p, "pkg/a/f.py")) <= budget
         cut = [t for t in p.trimmed if t.startswith("node:")]
         x_cut = any(":other/x.py:" in t for t in cut)

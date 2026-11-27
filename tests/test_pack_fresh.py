@@ -35,7 +35,7 @@ def _warning(text):
 
 def test_header_current(tmp_path):
     repo, shas = make_history(tmp_path / "r")
-    text = _md(pack(repo, shas[-1], FOR))
+    text = _md(pack(repo, shas[-1], FOR, fit_to_imports=False))
     assert _built_line(text) == (f"# built from {shas[-1][:7]} (git); HEAD {shas[-1][:7]}; "
                                  "current; working tree matches")
     assert _warning(text) is None
@@ -47,7 +47,7 @@ def test_explicit_old_sha_behind(tmp_path):
     # A, then B changes pkg/core.py; pack A while HEAD is B
     repo, shas = make_history(tmp_path / "r")
     fixture.git(repo, "reset", "-q", "--hard", shas[1])
-    text = _md(pack(repo, shas[0], FOR))
+    text = _md(pack(repo, shas[0], FOR, fit_to_imports=False))
     assert f"# built from {shas[0][:7]} (git); HEAD {shas[1][:7]}; 1 commit behind HEAD;" \
         in _built_line(text)
     assert _built_line(text).endswith("working tree 1 file differs")
@@ -56,11 +56,11 @@ def test_explicit_old_sha_behind(tmp_path):
 
 def test_many_commits_behind_and_off_history(tmp_path):
     repo, shas = make_history(tmp_path / "r")
-    p = pack(repo, shas[0], FOR)
+    p = pack(repo, shas[0], FOR, fit_to_imports=False)
     assert p.built.behind == 4 and "4 commits behind HEAD" in _built_line(_md(p))
     fixture.git(repo, "checkout", "-q", "--orphan", "other")
     fixture.commit(repo, {"pkg/core.py": "def run(x: int) -> int:\n    return 0\n"}, "other")
-    p = pack(repo, shas[0], FOR)
+    p = pack(repo, shas[0], FOR, fit_to_imports=False)
     assert p.built.behind is None and "not on HEAD's history" in _built_line(_md(p))
 
 
@@ -69,7 +69,7 @@ def test_dirty_tree_warns(tmp_path):
     (repo / "pkg" / "core.py").write_text("def run(x: int) -> int:\n    return 2\n")
     (repo / "pkg" / "new.py").write_text("VALUE = 1\n")  # untracked, same module
     (repo / "util" / "helpers.py").write_text("X = 1\n")  # another module
-    p = pack(repo, shas[-1], FOR)
+    p = pack(repo, shas[-1], FOR, fit_to_imports=False)
     assert p.built.differs == ("pkg/core.py", "pkg/new.py")
     text = _md(p)
     assert _built_line(text).endswith("current; working tree 2 files differ")
@@ -85,7 +85,7 @@ def test_warning_caps_names(tmp_path):
     repo, shas = make_history(tmp_path / "r")
     for i in range(12):
         (repo / "pkg" / f"n{i:02d}.py").write_text("")
-    text = _md(pack(repo, shas[-1], FOR))
+    text = _md(pack(repo, shas[-1], FOR, fit_to_imports=False))
     w = _warning(text)
     assert w.endswith("pkg/n09.py (+2 more)") and w.count(", ") == 9
 
@@ -93,22 +93,22 @@ def test_warning_caps_names(tmp_path):
 def test_rco_dir_is_not_a_change(tmp_path):
     repo, shas = make_history(tmp_path / "r")
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK  # creates .rco/
-    assert pack(repo, shas[-1], FOR).built.differs == ()
+    assert pack(repo, shas[-1], FOR, fit_to_imports=False).built.differs == ()
 
 
 def test_source_line(tmp_path):
     repo, shas = make_history(tmp_path / "r")
-    assert "(git)" in _built_line(_md(pack(repo, shas[-1], FOR, store=MemoryStore())))
+    assert "(git)" in _built_line(_md(pack(repo, shas[-1], FOR, store=MemoryStore(), fit_to_imports=False)))
     s = MemoryStore()
     _publish(s, repo, shas[-1])
-    p = pack(repo, shas[-1], FOR, store=s)
+    p = pack(repo, shas[-1], FOR, store=s, fit_to_imports=False)
     assert p.built.source == "store" and "(store)" in _built_line(_md(p))
 
 
 def test_json_built_and_roundtrip(tmp_path):
     repo, shas = make_history(tmp_path / "r")
     (repo / "pkg" / "core.py").write_text("")
-    p = pack(repo, shas[0], FOR)
+    p = pack(repo, shas[0], FOR, fit_to_imports=False)
     obj = pack_to_obj(p)
     assert obj["schema"] == "rco.pack/1"
     assert obj["built"] == {"source": "git", "head": shas[-1], "behind": 4,
@@ -123,7 +123,7 @@ def test_exit_0_with_warning(tmp_path, capsys):
     (repo / "pkg" / "core.py").write_text("")
     assert cli.main(["pack", "--repo", str(repo), "--for", *FOR]) == Exit.OK
     assert _warning(capsys.readouterr().out) == "# warning: changed since this pack: pkg/core.py"
-    assert PackReport(pack(repo, shas[-1], FOR)).exit_code() == Exit.OK
+    assert PackReport(pack(repo, shas[-1], FOR, fit_to_imports=False)).exit_code() == Exit.OK
 
 
 def test_warning_survives_trim(tmp_path):
@@ -133,7 +133,7 @@ def test_warning_survives_trim(tmp_path):
              for f in sorted(root.rglob("*")) if f.is_file()}
     repo, sha = fixture.make_repo(tmp_path / "fb", files)
     (repo / "src" / "app" / "cli.py").write_text("")
-    p = pack(repo, sha, ["src/app/cli.py"], MIN_BUDGET)
+    p = pack(repo, sha, ["src/app/cli.py"], MIN_BUDGET, fit_to_imports=False)
     assert p.trimmed and p.used <= MIN_BUDGET
     text = _md(p, ["src/app/cli.py"])
     assert _built_line(text).endswith("current; working tree 1 file differs")

@@ -128,8 +128,8 @@ def test_drain_writes_derived_prose_when_nothing_is_mined(tmp_path):
 
 def test_pack_shows_docs_and_is_byte_identical(tmp_path):
     repo, sha, _ = _map(tmp_path)
-    a = pack(repo, sha, ["pkg/core.py"])
-    b = pack(repo, sha, ["pkg/core.py"])
+    a = pack(repo, sha, ["pkg/core.py"], fit_to_imports=False)
+    b = pack(repo, sha, ["pkg/core.py"], fit_to_imports=False)
     ja = json.dumps(pack_to_obj(a), sort_keys=True)
     assert ja == json.dumps(pack_to_obj(b), sort_keys=True)
     md = pack_markdown(a, "pkg/core.py")

@@ -37,7 +37,7 @@ def _publish(store, repo, sha):
 
 def test_golden_markdown(tmp_path):
     repo, sha = _repo(tmp_path)
-    got = pack_markdown(pack(repo, sha, ["src/app/cli.py"]), "src/app/cli.py").encode()
+    got = pack_markdown(pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False), "src/app/cli.py").encode()
     golden = HERE / "golden" / "pack_forest_basic.md"
     if os.environ.get("RCO_REGEN") == "1":
         golden.write_bytes(got)
@@ -53,7 +53,7 @@ def test_whole_repo_pack_is_forest_only(tmp_path):
 
 def test_for_gives_imported_trees_and_one_hop(tmp_path):
     repo, sha = _repo(tmp_path)
-    p = pack(repo, sha, ["src/app/core/engine.py"])
+    p = pack(repo, sha, ["src/app/core/engine.py"], fit_to_imports=False)
     # card 1340: the files engine.py imports, not its own module
     assert [t.module for t in p.trees] == ["src/app/util"]
     assert {n.path for t in p.trees for n in t.nodes} == {"src/app/util/helpers.py"}
@@ -66,11 +66,11 @@ def test_never_over_budget_and_every_cut_named(tmp_path, case):
     repo, sha = _repo(tmp_path, case)
     full = fixture.git(repo, "ls-files").splitlines()
     for budget in (MIN_BUDGET, 160, 200, 400, 1000, 8000):
-        p = pack(repo, sha, full[:2], budget)
+        p = pack(repo, sha, full[:2], budget, fit_to_imports=False)
         text = pack_markdown(p, " ".join(full[:2]))
         assert estimate_tokens(text) <= budget, (case, budget)
         assert p.used == estimate_tokens(text)
-        full_p = pack(repo, sha, full[:2], 10**6)
+        full_p = pack(repo, sha, full[:2], 10**6, fit_to_imports=False)
         kept = ({f"hop:{h.id}" for h in p.hop} | {f"forest:{e.id}" for e in p.forest}
                 | {f"node:{t.module}|{node_key(n.path, n.name, n.kind)}" for t in p.trees
                    for n in t.nodes})
@@ -84,11 +84,11 @@ def test_never_over_budget_and_every_cut_named(tmp_path, case):
 def test_cut_order_hop_then_nodes_then_forest(tmp_path):
     repo, sha = _repo(tmp_path)
     paths = ["src/app/core/engine.py", "src/app/cli.py"]
-    full = pack(repo, sha, paths, 10 ** 6)
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
     seen = set()
     for budget in range(MIN_BUDGET, full.used + 1):
         try:
-            p = pack(repo, sha, paths, budget)
+            p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
         kinds = [t.split(":", 1)[0] for t in p.trimmed]
@@ -100,8 +100,8 @@ def test_cut_order_hop_then_nodes_then_forest(tmp_path):
 
 def test_byte_identical_across_runs(tmp_path):
     repo, sha = _repo(tmp_path)
-    a = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150)))
-    b = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150)))
+    a = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150, fit_to_imports=False)))
+    b = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150, fit_to_imports=False)))
     assert a == b
 
 
@@ -120,7 +120,7 @@ def test_stale_prose_shown_and_exit_1(tmp_path):
     m = build.build_map(repo, sha)
     core = next(t for t in m.trees if t.module == "src/app/core")
     s.put_prose("src/app/core", Prose("Engine.", ProseSource.MINED, canon.tree_hash(core)))
-    p = pack(repo, sha, store=s)
+    p = pack(repo, sha, store=s, fit_to_imports=False)
     assert p.stale == ("src/app/util",)
     text = pack_markdown(p)
     assert "- src/app/util: Helpers for clamp. [stale]" in text
@@ -140,7 +140,7 @@ def test_pack_without_store_writes_nothing(tmp_path):
 def test_budget_floor_is_a_usage_error(tmp_path):
     repo, sha = _repo(tmp_path)
     with pytest.raises(UsageError):
-        pack(repo, sha, budget=MIN_BUDGET - 1)
+        pack(repo, sha, budget=MIN_BUDGET - 1, fit_to_imports=False)
     assert cli.main(["pack", "--repo", str(repo), "--budget", "10"]) == Exit.USAGE
 
 
@@ -155,7 +155,7 @@ def test_cli_json(tmp_path, capsys):
 def test_long_for_label_still_within_budget(tmp_path):
     repo, sha = _repo(tmp_path)
     paths = ["src/app/cli.py"] * 100
-    p = pack(repo, sha, paths, MIN_BUDGET)
+    p = pack(repo, sha, paths, MIN_BUDGET, fit_to_imports=False)
     assert estimate_tokens(pack_markdown(p, " ".join(paths))) <= MIN_BUDGET
 
 
@@ -198,10 +198,10 @@ def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
     assert not _is_empty_forest_entry(entries["app"])
     assert not _is_empty_forest_entry(entries["lib"])
 
-    full = pack(repo, sha, ["app/cli.py"], 10 ** 6)
+    full = pack(repo, sha, ["app/cli.py"], 10 ** 6, fit_to_imports=False)
     hits = []
     for budget in range(MIN_BUDGET, full.used + 1, 4):
-        p = pack(repo, sha, ["app/cli.py"], budget)
+        p = pack(repo, sha, ["app/cli.py"], budget, fit_to_imports=False)
         empty_cut = [t[7:] for t in p.trimmed
                      if t.startswith("forest:") and t[7:] in set(empty_ids)]
         nodes_kept = sum(len(t.nodes) for t in p.trees)
@@ -234,7 +234,7 @@ def test_hop_lists_test_modules_last(tmp_path):
         "zz/z.py": "from pkg.mod import f\n\n\ndef h() -> int:\n    return f()\n",
     }
     repo, sha = fixture.make_repo(tmp_path / "hops", files)
-    p = pack(repo, sha, ["pkg/mod.py"], 10 ** 6)
+    p = pack(repo, sha, ["pkg/mod.py"], 10 ** 6, fit_to_imports=False)
     ids = [h.id for h in p.hop]
     assert "tests" in ids and "lib" in ids and "zz" in ids
     rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
@@ -250,14 +250,14 @@ def test_leftover_budget_keeps_hops_that_fit(tmp_path):
 
     repo, sha = _repo(tmp_path)
     paths = ["src/app/core/engine.py", "src/app/cli.py"]
-    full = pack(repo, sha, paths, 10 ** 6)
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
     assert full.hop
     hop_line = {h.id: h.line for h in full.hop}
     label = " ".join(paths)
     hits = 0
     for budget in range(MIN_BUDGET, full.used):
         try:
-            p = pack(repo, sha, paths, budget)
+            p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
         for t in p.trimmed:
@@ -303,7 +303,7 @@ def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
 def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
     fwd, back = "src/app/cli.py", "src\\app\\cli.py"
-    assert pack_to_obj(pack(repo, sha, [back])) == pack_to_obj(pack(repo, sha, [fwd]))
+    assert pack_to_obj(pack(repo, sha, [back], fit_to_imports=False)) == pack_to_obj(pack(repo, sha, [fwd], fit_to_imports=False))
     assert build.build_map(repo, sha, [back]) == build.build_map(repo, sha, [fwd])
     for cmd in ("tree", "pack"):
         assert cli.main([cmd, "--repo", str(repo), "--format", "json", "--for", fwd]) == Exit.OK
@@ -343,7 +343,7 @@ def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
     for _ in range(12):
         repo, sha = fixture.make_repo(tmp_path / f"over8000_{n}",
                                       {"pkg/mod.py": _mod(n), "pkg/use.py": "from pkg import mod\n"})
-        full = pack(repo, sha, ["pkg/use.py"], 10**6)
+        full = pack(repo, sha, ["pkg/use.py"], 10**6, fit_to_imports=False)
         used = full.used
         if old < used <= old + 800:
             break
@@ -356,11 +356,11 @@ def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
     else:
         raise AssertionError(f"could not land a pack just over {old}: last used={used} n={n}")
 
-    tight = pack(repo, sha, ["pkg/use.py"], old)
+    tight = pack(repo, sha, ["pkg/use.py"], old, fit_to_imports=False)
     assert tight.used <= old, tight.used
     assert estimate_tokens(pack_markdown(tight, "pkg/use.py")) <= old
 
-    p = pack(repo, sha, ["pkg/use.py"])  # reported default
+    p = pack(repo, sha, ["pkg/use.py"], fit_to_imports=False)  # reported default
     assert p.budget == DEFAULT_BUDGET
     assert p.used <= p.budget
     assert p.used > old  # the new default keeps the pack that 8000 would have cut
@@ -390,6 +390,6 @@ def test_pack_stays_under_budget_on_seeded_sweep(tmp_path):
     repo, sha = fixture.make_repo(tmp_path / "sweep", files)
     paths = ["focus/__init__.py"]
     for budget in (3000, 5000, 11000):
-        p = pack(repo, sha, paths, budget)
+        p = pack(repo, sha, paths, budget, fit_to_imports=False)
         assert p.used <= budget, (budget, p.used, p.notes)
         assert estimate_tokens(pack_markdown(p, "focus/__init__.py")) <= budget
