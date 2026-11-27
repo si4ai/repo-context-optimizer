@@ -10,9 +10,46 @@
   in a fresh clone still write nothing. One `O_APPEND` write of at most
   4096 bytes per run keeps concurrent runs whole on a local disk; a log
   failure never changes the exit code (README, Events log)
+- `rco init --agents` writes one marked block at the top of `AGENTS.md`
+  (created if missing) and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md`
+  and `.github/copilot-instructions.md` when they exist, telling an agent
+  to run `rco pack --for FILE...` before reading code. A second run changes
+  nothing; rco edits only between its markers and keeps line endings, a
+  leading BOM and the file mode, and it writes through a symlinked
+  `CLAUDE.md` or `AGENTS.md` instead of replacing the link. A file that is
+  not UTF-8 is left alone with a message.
+  Files over 16 KiB get a size warning. It also writes
+  `.cursor/environment.json` when `.cursor/` exists and the file does not,
+  and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
+  Opt-in; plain `rco init` is unchanged.
+- `rco replay` estimates what rco saves on your own repo in one command: it
+  replays the last N code commits and prints tokens and file reads with
+  rco (the pack plus the changed files) and without (the changed files and
+  their imports, one hop), the medians, and its method and limits. It says
+  plainly when rco does not win. No agent, store or file edit; an estimate,
+  not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
+  adds tiktoken for real token counts; without it the counts are labelled
+  chars/4 estimates
+- `rco pack` says where it came from on its second line: the commit, the
+  source (store or git), HEAD, how many commits behind HEAD, and whether
+  the working tree differs. With `--for`, a warning line names the changed
+  files in those modules (up to 10). Both lines are never cut, and the
+  command still exits 0. `--format json` adds a `built` key; the schema
+  stays `rco.pack/1` and its reader accepts packs with or without `built`
+- docs: `docs/guide/cloud-agents.md` (what to commit and the setup hook per
+  platform; its measured benefit says "unmeasured"), the examples
+  `docs/guide/examples/AGENTS.rco.md` and `cursor-environment.json`, and
+  `docs/baseline/cloud-ab.md` (the Bot-then-Build measurement method and an
+  empty results table)
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
+- `rco metrics bypass` reports code commits that no `rco pack` run preceded,
+  from `.rco/events.jsonl` and git history: a pack run covers a commit when it
+  exited 0 or 1 at the commit's parent (or an ancestor) and finished no later
+  than the commit and at most `--window-min` minutes before it. Counts and ids only, byte-identical for the same inputs;
+  exit 0, or 1 with `--strict` when any commit is uncovered; a missing or empty
+  events file is exit 2. It shows a pack ran, not that it was read
 - `rco metrics summary` rolls many of those files into a trend: count, mean
   and median ratio, total bytes and tokens saved, and the best and worst PRs,
   in text or `--json`
@@ -39,6 +76,8 @@
 
 ### changed
 
+- the smallest `rco pack --budget` is 128 estimated tokens, up from 64, so
+  the header, the new freshness line and a short warning still fit
 - the default `rco pack --budget` is 12000 estimated tokens, raised from
   8000 so current packs fit with headroom (Phase 0 sizes). A pack that is
   still over its budget after every cut is a warning on stderr, in the

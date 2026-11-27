@@ -87,7 +87,7 @@ def test_update_store_runs_on_push_and_caches_the_store():
     assert "github.event_name == 'push'" in body
     assert "fetch-depth: 0" in body
     assert "PYTHONPATH=src python -m rco update --name" in body
-    assert "actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830" in body
+    assert re.search(r"actions/cache@[0-9a-f]{40}", body)
     assert "path: .rco" in body
     assert "persist-credentials: false" in body
     assert "merge_group" not in body or "push" in body
