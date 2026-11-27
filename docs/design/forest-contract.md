@@ -111,9 +111,9 @@ Markdown follows the README example, plus a trimmed line:
 
 Without `--for` the pack is the Forest only and keeps the given budget. With
 `--for`, the budget is min(`--budget`, half the estimated tokens of the
-imported files), floored at 128, and when the `--for` files import no other
-file in the repo the pack is a single `nothing to add` line, exit 0 (card
-1341). With `--for` the Trees section
+imported files), and when the `--for` files import no other file in the
+repo, or that budget is under 128, the pack is a single `nothing to add`
+line, exit 0 (card 1341). With `--for` the Trees section
 holds the signatures of the files the `--for` files import, one hop in the
 file import graph and across module boundaries, never the `--for` files' own
 outlines (card 1340). Imported files are ranked nearest first: imported by

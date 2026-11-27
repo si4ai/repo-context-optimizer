@@ -12,9 +12,9 @@ rendered markdown, footer included. Over budget, cuts go in this order:
 hop lines from the end, then empty Forest lines (layer 0, no edges, nothing
 owned, no prose) from the deepest level up, then Tree nodes of the farthest
 imported file first, then the remaining Forest entries. With --for, the
-budget is min(--budget, half the estimated tokens of the imported files),
-at least MIN_BUDGET, and --for files that import nothing in the repo get a
-one-line no-op pack (card 1341). After the pack
+budget is min(--budget, half the estimated tokens of the imported files);
+when that is below MIN_BUDGET, or the --for files import nothing in the
+repo, they get a one-line no-op pack instead (card 1341). After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
@@ -42,6 +42,9 @@ LINE_CAP = 100
 WARN_NAMES = 10  # names shown on the "changed since this pack" line
 NOOP_NOTE = ("nothing to add for these files: they import no other file in the repo; "
              "read them directly")
+SMALL_NOTE = ("nothing to add for these files: the files they import are too small to "
+              "outline; read them directly")
+NOOP_NOTES = (NOOP_NOTE, SMALL_NOTE)
 
 
 def _is_empty_forest_entry(e: ForestEntry) -> bool:
@@ -234,11 +237,12 @@ def built_lines(p: Pack, named: bool = True) -> list[str]:
 
 
 def pack_markdown(p: Pack, for_label: str = "") -> str:
-    if NOOP_NOTE in p.notes:
+    noop = next((n for n in NOOP_NOTES if n in p.notes), None)
+    if noop:
         # card 1341: one line, so a pack with nothing to add costs as little as it
         # can; the card 1315 warning still follows when the --for files changed
         warn = [x for x in built_lines(p) if x.startswith("# warning:")]
-        return "\n".join([f"# rco pack  (SHA={p.sha[:7]}): {NOOP_NOTE}", *warn]) + "\n"
+        return "\n".join([f"# rco pack  (SHA={p.sha[:7]}): {noop}", *warn]) + "\n"
     flagged = _name_flags(p.notes)
     out = [f"# rco pack  (SHA={p.sha[:7]}, budget={p.budget} estimated tokens)"]
     out += built_lines(p, named=bool(p.trees) or bool(for_label))
@@ -369,8 +373,11 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         if fit_to_imports and ranked:
             # card 1341: the budget is a cap, not a fill target
             half = sum(estimate_tokens(code[p].decode("utf-8", "replace")) for p in ranked) // 2
+            if min(budget, half) < MIN_BUDGET:
+                # card 1341 (auditor 7164): too little to outline in the smallest pack
+                return _noop_pack(sha, budget, (*notes, SMALL_NOTE), built, " ".join(for_paths))
             if half < budget:
-                budget = max(MIN_BUDGET, half)
+                budget = half
                 notes.append(f"budget scaled to {budget}: half the estimated tokens of the imported files")
         rank = {p: i for i, p in enumerate(ranked)}
         per_file: dict[str, list[tuple[Tree, Node]]] = {}
@@ -465,7 +472,7 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
 
 def _noop_pack(sha: str, budget: int, notes: Sequence[str], built: BuiltFrom | None,
                label: str) -> Pack:
-    """The short pack for --for files that import nothing in the repo (exit 0)."""
+    """The short pack for --for files with nothing worth outlining (exit 0)."""
     p = Pack(sha, budget, 0, (), (), (), (), (), tuple(sorted(notes)), built)
     return replace(p, used=_measure(p, label))
 

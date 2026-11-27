@@ -2,7 +2,7 @@
 from rco import cli, fixture
 from rco.forest_model import estimate_tokens
 from rco.output import Exit
-from rco.pack import pack, pack_markdown
+from rco.pack import MIN_BUDGET, pack, pack_markdown
 
 
 def _fns(prefix: str, n: int) -> str:
@@ -64,3 +64,42 @@ def test_noop_pack_keeps_the_changed_warning(tmp_path, capsys):
     lines = capsys.readouterr().out.splitlines()
     assert "nothing to add for these files" in lines[0]
     assert lines[1:] == ["# warning: changed since this pack: app/solo.py"]
+
+
+def _sized(tokens: int) -> str:
+    """Python source whose estimated tokens are exactly `tokens`."""
+    head = "def g(x: int) -> int:\n    return x\n"
+    text = head + "#" * (tokens * 4 - len(head) - 1) + "\n"
+    assert estimate_tokens(text) == tokens
+    return text
+
+
+def _small_repo(tmp_path, imported_tokens: int):
+    files = {
+        "app/__init__.py": "",
+        "app/tiny.py": "from lib.small import g\n\n\ndef use() -> int:\n    return g(1)\n",
+        "lib/__init__.py": "",
+        "lib/small.py": _sized(imported_tokens),
+    }
+    return fixture.make_repo(tmp_path / f"small{imported_tokens}", files)
+
+
+def test_below_min_budget_skips_like_the_noop(tmp_path, capsys):
+    # half of 255 is 127 < MIN_BUDGET: no pack, one short line, exit 0
+    repo, sha = _small_repo(tmp_path, 255)
+    p = pack(repo, sha, ["app/tiny.py"])
+    text = pack_markdown(p, "app/tiny.py")
+    assert p.forest == () and p.trees == () and p.hop == ()
+    assert text.startswith("# rco pack  (SHA=") and "nothing to add for these files" in text
+    assert "## Forest" not in text
+    assert text.count("\n") == 1 and estimate_tokens(text) < 40
+    assert cli.main(["pack", "--repo", str(repo), "--for", "app/tiny.py"]) == Exit.OK
+    assert "nothing to add for these files" in capsys.readouterr().out
+
+
+def test_at_min_budget_still_packs(tmp_path):
+    # half of 256 is 128 == MIN_BUDGET: a real pack at budget 128
+    repo, sha = _small_repo(tmp_path, 256)
+    p = pack(repo, sha, ["app/tiny.py"])
+    assert p.budget == MIN_BUDGET
+    assert "nothing to add for these files" not in pack_markdown(p, "app/tiny.py")

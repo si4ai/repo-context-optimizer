@@ -146,8 +146,10 @@ def test_budget_floor_is_a_usage_error(tmp_path):
 
 def test_cli_json(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
-    assert cli.main(["pack", "--repo", str(repo), "--format", "json", "--for",
-                     "src/app/cli.py", "--budget", "128"]) == Exit.OK
+    # whole-repo pack: with --for this small fixture's imports are below the
+    # smallest pack and get the card 1341 no-op instead
+    assert cli.main(["pack", "--repo", str(repo), "--format", "json",
+                     "--budget", "128"]) == Exit.OK
     out = json.loads(capsys.readouterr().out)
     assert out["schema"] == "rco.pack/1" and out["used"] <= 128 and out["trimmed"]
 
