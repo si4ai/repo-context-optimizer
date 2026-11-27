@@ -52,6 +52,16 @@ rco pack --for src/cli.py  # Forest + Trees for those modules and one import hop
 rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 ```
 
+Does it help on your repo? One command, no setup, no agent, writes nothing:
+
+```
+pip install "repo-context-optimizer[tokens]"   # adds tiktoken for real token counts
+cd your-repo
+rco replay                 # replays your last 10 code commits: with vs without rco
+```
+
+It prints tokens and file reads with and without rco for each commit, the medians, and its method and limits. It is an estimate, not a measurement of an agent, and it says so plainly when rco does not win. See [`rco replay`](#rco-replay---last-n---budget-n---max-files-n).
+
 `--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 12000. `--for` is optional. These defaults match the [Commands](#commands) section.
 
 Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
@@ -246,6 +256,15 @@ CLI: tw run, tw stop
 # budget used: ~150 / 12000 estimated tokens
 ```
 
+### `rco replay [--last N] [--budget N] [--max-files N]`
+
+An estimate of what rco saves on this repo, from its own history. It replays the last N (default 10) non-merge commits that changed code. Each commit's diff stands in for an agent's first useful edit:
+
+- without rco: the changed code files plus the in-repo files they import, one hop. A lower bound, since real agents also search.
+- with rco: the `rco pack --for CHANGED` text plus the changed files, which the agent still opens to edit.
+
+It reports tokens (tiktoken `o200k_base` with the `tokens` extra; otherwise characters / 4, labelled as an estimate) and file reads per commit, the medians, the percent saved, and how many commits the pack cost more than the imported files it replaced. If rco does not win, the report says so. Limits it prints every time: the pack is aimed at exactly the files the commit changed (a real agent must guess them), file reads stand in for tool calls, and files are read at the commit itself. The pack is built from git, so no `rco update` is needed and it edits no file. With `.rco/` present it appends its one line to the [events log](#events-log), like every rco run; the packs it builds inside add none. Root commits (also the oldest commit in a shallow clone) and commits that change more than `--max-files` (default 50) code files are skipped and counted. Exit 0, or 2 when no commit qualifies. `--format json` gives schema `rco.replay/1`. Real agent tokens and tool calls to the first useful edit need the agent's own session log, which is a later step.
+
 ### `rco tree [SHA] [--for PATHS]`
 
 `SHA` defaults to `HEAD`. Prints the Map (the Trees) of that commit. `--for` limits the Map to the modules that own those paths; a path that matches no module is a warning on stderr, and the command still exits 0. A repository with no commits yields an empty Map (`modules=0`) and exit 0. `--format json` writes the Map JSON that `rco check` takes as MAP.
@@ -310,13 +329,14 @@ Checks the map against real outputs that you captured. rco never runs repo code,
 
 The incremental post-merge updater described above.
 
-### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci] [--metrics]`
+### `rco init [--hooks] [--remove-hooks] [--no-config] [--no-ci] [--metrics] [--agents]`
 
 One-step setup. It writes only files that don't exist yet, never overwrites one, and reports each file as wrote or kept:
 
 - `rco.toml` with every setting commented out, so nothing changes until you edit it.
 - `.github/workflows/rco.yml`. On a pull request, it puts `rco diff`, `rco affected`, (when `pins/` exists) `rco drift`, and the cross-PR notice into the job summary. The notice step is `python -m rco.notice_report`, which ships in the wheel: it lists the other open PRs into the same base with `gh api` (the job asks for `pull-requests: read`), fetches their heads, and runs `rco notice`. On a push to the default branch, it runs `rco update` with the store cached. Actions are pinned to full SHAs. It fails only on exit 2 or 3. With `--metrics`, the pull-request job also packs the changed files, writes `rco-metrics.json`, and uploads the `rco-report` artifact so you can roll the numbers up later with `rco metrics summary`.
 - With `--hooks`, a `post-merge` hook in git's hooks directory (`core.hooksPath` is honored). After a pull or merge it runs `rco update --name <branch>` in the background, and it always exits 0, even without `rco` on `PATH`. If another post-merge hook is already there, it is kept, and you add the line by hand. `--remove-hooks` deletes the hook only if rco wrote it.
+- With `--agents`, a short marked block at the top of each agent instruction file, telling the agent to run `rco update` once and `rco pack --for FILE...` before it reads code. `AGENTS.md` is created if it is missing. `CLAUDE.md` gets `@AGENTS.md` inside the block (an agent that reads `CLAUDE.md` skips `AGENTS.md` when both exist), and `GEMINI.md` and `.github/copilot-instructions.md` get the block, but only when they already exist. The block sits between `<!-- rco:begin (rco init --agents) -->` and `<!-- rco:end -->`, after any `---` frontmatter, so a size cap cuts the end of your text and not the pointer. A rerun changes nothing (`kept: current`); rco only ever edits between those markers, keeps the file's line endings, and leaves a block with no end marker alone. A file over 16 KiB gets a warning (devin reads the first 16 KiB; codex caps at 32 KiB). With `.aider.conf.yml` that does not read `AGENTS.md`, the report asks you to add `read: [AGENTS.md]` by hand. With a `.cursor/` directory and no `.cursor/environment.json`, it writes one whose `install` line pins this rco version and runs `rco update`.
 
 ### `rco metrics`
 

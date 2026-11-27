@@ -10,6 +10,26 @@
   in a fresh clone still write nothing. One `O_APPEND` write of at most
   4096 bytes per run keeps concurrent runs whole on a local disk; a log
   failure never changes the exit code (README, Events log)
+- `rco init --agents` writes one marked block at the top of `AGENTS.md`
+  (created if missing) and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md`
+  and `.github/copilot-instructions.md` when they exist, telling an agent
+  to run `rco pack --for FILE...` before reading code. A second run changes
+  nothing; rco edits only between its markers and keeps line endings, a
+  leading BOM and the file mode, and it writes through a symlinked
+  `CLAUDE.md` or `AGENTS.md` instead of replacing the link. A file that is
+  not UTF-8 is left alone with a message.
+  Files over 16 KiB get a size warning. It also writes
+  `.cursor/environment.json` when `.cursor/` exists and the file does not,
+  and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
+  Opt-in; plain `rco init` is unchanged.
+- `rco replay` estimates what rco saves on your own repo in one command: it
+  replays the last N code commits and prints tokens and file reads with
+  rco (the pack plus the changed files) and without (the changed files and
+  their imports, one hop), the medians, and its method and limits. It says
+  plainly when rco does not win. No agent, store or file edit; an estimate,
+  not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
+  adds tiktoken for real token counts; without it the counts are labelled
+  chars/4 estimates
 - `rco pack` says where it came from on its second line: the commit, the
   source (store or git), HEAD, how many commits behind HEAD, and whether
   the working tree differs. With `--for`, a warning line names the changed

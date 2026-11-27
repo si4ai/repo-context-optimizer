@@ -84,6 +84,8 @@ def make_parser() -> argparse.ArgumentParser:
     i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
     i.add_argument("--metrics", action="store_true",
                    help="also write and upload rco-metrics.json on pull requests")
+    i.add_argument("--agents", action="store_true",
+                   help="write the rco pack pointer into agent instruction files")
     _common(i)
 
     lv = sub.add_parser("live", help="check the map against captured real outputs")
@@ -105,6 +107,14 @@ def make_parser() -> argparse.ArgumentParser:
                    help="paths whose owning modules get full Trees and one import hop")
     k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"estimated tokens (default: {DEFAULT_BUDGET})")
     _common(k)
+
+    rp = sub.add_parser("replay", help="estimate rco's saving on this repo's last code commits")
+    rp.add_argument("--last", type=int, default=10, help="code commits to replay (default: 10)")
+    rp.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
+                    help=f"pack budget, estimated tokens (default: {DEFAULT_BUDGET})")
+    rp.add_argument("--max-files", type=int, default=50,
+                    help="skip commits that change more code files than this (default: 50)")
+    _common(rp)
 
     r = sub.add_parser("triage", help="hint per branch: clean or a structural brief (never rebases)")
     r.add_argument("branches", nargs="+", metavar="BRANCH",
@@ -258,7 +268,7 @@ def run(args: argparse.Namespace) -> Exit:
         if args.metrics and not args.ci:
             raise UsageError("init --metrics needs the CI workflow (omit --no-ci)")
         rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks,
-                        args.metrics)
+                        args.metrics, args.agents)
         return emit(rep, args.format, args.out)
     if args.cmd == "metrics":
         from rco import metrics
@@ -326,6 +336,11 @@ def run(args: argparse.Namespace) -> Exit:
         if p.used > p.budget:
             note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
+    if args.cmd == "replay":
+        from rco import metrics, replay
+        name, count = metrics.counter()
+        return emit(replay.replay(repo, args.last, args.budget, args.max_files, count, name),
+                    args.format, args.out)
     if args.cmd == "pin":
         from rco import pin
         sha = gitread.resolve(repo, args.sha)
