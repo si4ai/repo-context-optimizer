@@ -4,6 +4,12 @@
 
 ### added
 
+- every rco run appends one JSON line (run id, UTC start, command, exit
+  code, store pointer, HEAD, duration, and for `rco pack` the `--for` paths)
+  to `.rco/events.jsonl`, but only once `.rco/` exists, so read-only commands
+  in a fresh clone still write nothing. One `O_APPEND` write of at most
+  4096 bytes per run keeps concurrent runs whole on a local disk; a log
+  failure never changes the exit code (README, Events log)
 - `rco pack` says where it came from on its second line: the commit, the
   source (store or git), HEAD, how many commits behind HEAD, and whether
   the working tree differs. With `--for`, a warning line names the changed
@@ -26,6 +32,16 @@
   `ci/notice_report.sh` miss from the 0.1.4 audit)
 - `rco affected --format json` adds `select` (`all`, `tests` or `none`),
   `by_path` and `docs`, so a CI job can skip tests on a docs-only change
+
+### fixed
+
+- `rco update` killed after the pointer swap and before the prose queue no
+  longer leaves the store stale for good: the queue is derived from
+  staleness (every module of the published SHA with no prose for its
+  TreeHash), also when the rerun finds the SHA already published.
+  `tests/test_update_process.py` runs the real CLI twice, kills it at each
+  step and reruns it, and races three updates; SPIN property 8 models the
+  kill.
 
 ### changed
 
