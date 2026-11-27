@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import ast
 import warnings
-from typing import Mapping, Sequence
+from typing import Iterable, Mapping, Sequence
 
 from rco.extract.python import module_name
 from rco.model import Module
@@ -101,14 +101,18 @@ def file_imports(path: str, data: bytes, index: Mapping[str, str],
 
 
 def file_graph(paths: Sequence[str], sources: Mapping[str, bytes],
-               local: bool = False) -> dict[str, tuple[str, ...]]:
-    """Repo path -> sorted in-repo paths it imports, for every code file in sources."""
+               local: bool = False, only: Iterable[str] | None = None
+               ) -> dict[str, tuple[str, ...]]:
+    """Repo path -> sorted in-repo paths it imports, for every code file in sources.
+
+    only limits the keys to those files (their imports still resolve repo-wide).
+    """
     from rco.edges import file_edges, repo_facts
     from rco.extract.langs import lang_of
     index = _dotted_index([p for p in paths if p in sources])
     facts = repo_facts(frozenset(paths), sources)
     out: dict[str, tuple[str, ...]] = {}
-    for p in sorted(sources):
+    for p in sorted(sources if only is None else set(only) & set(sources)):
         if p.endswith(".py"):
             out[p] = file_imports(p, sources[p], index, local)
         elif lang_of(p):

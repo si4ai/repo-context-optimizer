@@ -10,16 +10,12 @@
 - src/app/cyc_b: layer 0; Defines constant B. (depends on: src/app/cyc_a) (used by: src/app/cyc_a)
 - src/app/util: layer 0; Defines function clamp. (used by: src/app/core)
 
-## Trees (full, for --for src/app/cli.py)
-### src/app
-module app
-module app.__main__
-module app.cli
-  def main() -> int  # Main. Returns int. Calls engine.py:run.
-CLI: app
-  --fast action=store_true
+## Trees (files imported by --for src/app/cli.py; the --for files are not outlined)
+### src/app/core
+module app.core.engine
+  def run() -> int  # Run. Returns int. Calls helpers.py:clamp. Called by cli.py:main.
 
 ## One hop (name and one line)
 - src/app/core: layer 1; Defines function run.
 
-# budget used: ~241 / 12000 estimated tokens
+# budget used: ~244 / 12000 estimated tokens

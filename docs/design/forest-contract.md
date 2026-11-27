@@ -98,9 +98,9 @@ Markdown follows the README example, plus a trimmed line:
 ## Forest
 - <id>: <one line> (depends on: a, b) (used by: c)
 
-## Trees (full, for --for <files>)
+## Trees (files imported by --for <files>; the --for files are not outlined)
 ### <id>
-<one line per node, the rco tree markdown>
+<one line per node of each imported file, the rco tree markdown>
 
 ## One hop (name and one line)
 - <id>: <one line>
@@ -109,10 +109,15 @@ Markdown follows the README example, plus a trimmed line:
 # trimmed: x, y
 ```
 
-Without `--for` the pack is the Forest only. Cut order when over budget: one
+Without `--for` the pack is the Forest only. With `--for` the Trees section
+holds the signatures of the files the `--for` files import, one hop in the
+file import graph and across module boundaries, never the `--for` files' own
+outlines (card 1340). Imported files are ranked nearest first: imported by
+more `--for` files, then a smaller directory distance to the nearest
+importing `--for` file, then path. Cut order when over budget: one
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
-no prose) from the deepest level up, then Tree nodes from the end of each
-full Tree, then the remaining Forest entries. A parent Forest line is kept
+no prose) from the deepest level up, then Tree nodes of the farthest
+imported file first, then the remaining Forest entries. A parent Forest line is kept
 until all of its children are cut. Nothing is cut silently. A pack that is still over budget after every cut is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:

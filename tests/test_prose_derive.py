@@ -134,7 +134,9 @@ def test_pack_shows_docs_and_is_byte_identical(tmp_path):
     assert ja == json.dumps(pack_to_obj(b), sort_keys=True)
     md = pack_markdown(a, "pkg/core.py")
     assert "def clamp(x: int) -> int  # Clamp x." in md
-    assert "# Run. Takes x. Returns int." in md
+    # card 1340: the --for file's own outline is left out; imported files keep derived docs
+    assert "# Run. Takes x. Returns int." not in md
+    assert "Takes x. Returns int. Called by core.py:run." in md
     assert "- web: layer 0; Defines functions draw, helper, paint." in md
 
 

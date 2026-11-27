@@ -1,5 +1,16 @@
 # Changelog
 
+## unreleased
+
+### changed
+
+- `rco pack --for` outlines the files the `--for` files import (one hop in
+  the file import graph, across module boundaries) instead of every file of
+  the owning modules, and leaves out the `--for` files' own outlines, which
+  the agent opens anyway. Imported files are ranked nearest first and budget
+  cuts remove the farthest file first, not the last nodes in path order
+  (card 1340)
+
 ## 0.1.7 - 2026-11-27
 
 `rco pack` now says how fresh it is, every run leaves a line in an events

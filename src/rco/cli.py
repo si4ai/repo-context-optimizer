@@ -104,7 +104,7 @@ def make_parser() -> argparse.ArgumentParser:
     k = sub.add_parser("pack", help="Forest plus Trees for an agent, within a token budget")
     k.add_argument("sha", nargs="?", default="HEAD", help="commit (default: HEAD)")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE",
-                   help="paths whose owning modules get full Trees and one import hop")
+                   help="paths whose imported files get outlined, plus one module hop")
     k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"estimated tokens (default: {DEFAULT_BUDGET})")
     _common(k)
 
