@@ -300,3 +300,87 @@ def test_no_agents_flag_no_agent_steps(tmp_path):
     repo, _ = _repo(tmp_path)
     assert {s.path for s in init(repo).steps} == {"rco.toml", WORKFLOW}
     assert not (repo / "AGENTS.md").exists()
+
+
+# ---- rco init --agents: links, BOM, encoding, mode (card 1316, Validator letter 7061) ----
+
+def _link(repo, name, target):
+    try:
+        (repo / name).symlink_to(target)
+    except (OSError, NotImplementedError):
+        pytest.skip("symlinks not available")
+
+
+@pytest.mark.parametrize("link,real", [("CLAUDE.md", "AGENTS.md"), ("AGENTS.md", "CLAUDE.md")])
+def test_agents_keeps_a_symlink_and_edits_its_target(tmp_path, link, real):
+    repo, _ = _repo(tmp_path)
+    (repo / real).write_text("# rules\n")
+    _link(repo, link, real)
+    got = _agents(repo)
+    assert (repo / link).is_symlink() and os.readlink(repo / link) == real
+    assert not (repo / real).is_symlink()
+    data = (repo / real).read_text()
+    assert data.count(AGENT_BEGIN) == 1 and data.endswith("# rules\n")
+    assert (repo / link).read_text() == data
+    names = ("AGENTS.md", "CLAUDE.md")
+    done = [n for n in names if got[n][0] == "added"]
+    assert len(done) == 1 and got[next(n for n in names if n not in done)][0] == "kept"
+    again = _agents(repo)
+    assert (repo / real).read_text() == data and (repo / link).is_symlink()
+    assert again[done[0]] == ("kept", "current")
+
+
+def test_agents_dangling_link_is_created_through(tmp_path):
+    repo, _ = _repo(tmp_path)
+    _link(repo, "CLAUDE.md", "AGENTS.md")
+    got = _agents(repo)
+    assert got["AGENTS.md"] == ("wrote", "")
+    assert got["CLAUDE.md"] == ("kept", "same file as AGENTS.md")
+    assert (repo / "CLAUDE.md").is_symlink()
+    assert (repo / "AGENTS.md").read_text() == agent_block(AGENT_BLOCK)
+
+
+@pytest.mark.parametrize("nl", ["\n", "\r\n"])
+def test_agents_bom_stays_first(tmp_path, nl):
+    repo, _ = _repo(tmp_path)
+    text = f"# rules{nl}"
+    (repo / "AGENTS.md").write_bytes(b"\xef\xbb\xbf" + text.encode())
+    assert _agents(repo)["AGENTS.md"] == ("added", "")
+    data = (repo / "AGENTS.md").read_bytes()
+    assert data.startswith(b"\xef\xbb\xbf" + AGENT_BEGIN.encode())
+    assert data.count(b"\xef\xbb\xbf") == 1
+    assert _strip_block(data[3:], nl.encode()) == text.encode()
+    assert _agents(repo)["AGENTS.md"] == ("kept", "current")
+    assert (repo / "AGENTS.md").read_bytes() == data
+
+
+def test_agents_bom_with_frontmatter(tmp_path):
+    repo, _ = _repo(tmp_path)
+    (repo / "AGENTS.md").write_bytes(b"\xef\xbb\xbf---\ntitle: x\n---\nbody\n")
+    _agents(repo)
+    data = (repo / "AGENTS.md").read_bytes()
+    assert data.startswith(b"\xef\xbb\xbf---\ntitle: x\n---\n" + AGENT_BEGIN.encode())
+
+
+def test_agents_non_utf8_file_is_left_alone_with_a_message(tmp_path):
+    repo, _ = _repo(tmp_path)
+    raw = "caf\xe9 rules\n".encode("latin-1")
+    (repo / "AGENTS.md").write_bytes(raw)
+    (repo / "GEMINI.md").write_text("# g\n")
+    got = _agents(repo)
+    assert got["AGENTS.md"] == ("kept", "not UTF-8; convert it to UTF-8 or add the block by hand")
+    assert (repo / "AGENTS.md").read_bytes() == raw
+    assert got["GEMINI.md"] == ("added", "")
+    assert cli.main(["init", "--repo", str(repo), "--no-config", "--no-ci", "--agents"]) == Exit.OK
+
+
+@pytest.mark.skipif(os.name == "nt", reason="POSIX file modes")
+def test_agents_keeps_the_file_mode(tmp_path):
+    repo, _ = _repo(tmp_path)
+    (repo / "AGENTS.md").write_text("# rules\n")
+    (repo / "GEMINI.md").write_text("# g\n")
+    os.chmod(repo / "AGENTS.md", 0o600)
+    os.chmod(repo / "GEMINI.md", 0o640)
+    _agents(repo)
+    assert (repo / "AGENTS.md").stat().st_mode & 0o777 == 0o600
+    assert (repo / "GEMINI.md").stat().st_mode & 0o777 == 0o640

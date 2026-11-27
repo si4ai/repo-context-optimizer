@@ -28,6 +28,7 @@ version.
 from __future__ import annotations
 
 import os
+import stat
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -258,17 +259,33 @@ def _frontmatter_end(text: str) -> int:
     return 0  # unterminated: treat as plain text
 
 
-def _upsert_block(top: Path, rel: str, body: str, create: bool) -> Step:
-    """Add the marked block at the top of rel, or bring an existing block up to date."""
-    p = top / rel
+def _upsert_block(top: Path, rel: str, body: str, create: bool,
+                  seen: dict[Path, str] | None = None) -> Step:
+    """Add the marked block at the top of rel, or bring an existing block up to date.
+
+    A symlink is written through to its real file, and a real file reached twice in one run
+    (CLAUDE.md linked to AGENTS.md) is edited once; seen maps real paths to the name that did it.
+    """
+    link = top / rel
+    p = link.resolve()
+    if seen is not None:
+        if p in seen:
+            return Step(rel, "kept", f"same file as {seen[p]}")
+        seen[p] = rel
     if not p.exists():
         if not create:
             return Step(rel, "absent")
         p.parent.mkdir(parents=True, exist_ok=True)
         write_atomic(p, agent_block(body).encode("utf-8"))
         return Step(rel, "wrote")
-    with open(p, encoding="utf-8", newline="") as f:
-        text = f.read()
+    mode = stat.S_IMODE(p.stat().st_mode)
+    try:
+        with open(p, encoding="utf-8", newline="") as f:
+            text = f.read()
+    except UnicodeDecodeError:
+        return Step(rel, "kept", "not UTF-8; convert it to UTF-8 or add the block by hand")
+    bom = "\ufeff" if text.startswith("\ufeff") else ""
+    text = text[len(bom):]
     nl = "\r\n" if "\r\n" in text else "\n"
     block = agent_block(body, nl)
     begin = text.find(AGENT_BEGIN)
@@ -285,14 +302,14 @@ def _upsert_block(top: Path, rel: str, body: str, create: bool) -> Step:
     else:
         at = _frontmatter_end(text)
         new, action = text[:at] + block + nl + text[at:], "added"
-    write_atomic(p, new.encode("utf-8"))
+    write_atomic(p, (bom + new).encode("utf-8"), mode)
     return Step(rel, action)
 
 
 def _size_warning(top: Path, step: Step) -> Step:
     p = top / step.path
     n = p.stat().st_size if p.is_file() else 0
-    if n <= SIZE_WARN:
+    if n <= SIZE_WARN or step.detail.startswith("same file as"):
         return step
     warn = f"warning: {n} bytes; devin injects the first 16 KiB, codex caps at 32 KiB"
     return Step(step.path, step.action, f"{step.detail}; {warn}" if step.detail else warn)
@@ -303,7 +320,8 @@ def cursor_install_line() -> str:
 
 
 def _agent_steps(top: Path) -> list[Step]:
-    steps = [_size_warning(top, _upsert_block(top, rel, body, create))
+    seen: dict[Path, str] = {}
+    steps = [_size_warning(top, _upsert_block(top, rel, body, create, seen))
              for rel, body, create in AGENT_TARGETS]
     aider = top / AIDER_CONF
     if aider.is_file() and AGENTS_FILE not in aider.read_text(encoding="utf-8", errors="replace"):
