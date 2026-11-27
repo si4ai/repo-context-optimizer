@@ -53,7 +53,8 @@ The default in 0.1.7:
 pip install repo-context-optimizer   # installs the `rco` command
 cd any-git-repo
 rco pack                   # SHA=HEAD; no --for: whole-repo Forest only; --budget 12000
-rco pack --for src/cli.py  # Forest + Trees for those modules and one import hop
+rco pack --for src/cli.py  # owner + one-hop Forest lines, Trees of imported files, one import hop;
+                           # one "nothing to add" line when nothing worth outlining is imported
 rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 ```
 

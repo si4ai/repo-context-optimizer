@@ -46,8 +46,9 @@ python3 tools/phase3_ab.py score \
 
 `prepare` writes `ab-run/manifest.json`, `ab-run/control/brief.md`, and
 `ab-run/treatment/{brief.md,pack.md,pack.json}`. The treatment brief
-embeds a live `rco pack` (forest, trees for `--for`, one import hop,
-budget). The control brief has the same task and no pack. `rco pack` is
+embeds a live `rco pack --for` (owner and one-hop forest lines, trees of
+the imported files, one import hop, budget; or the one-line no-op when
+nothing worth outlining is imported). The control brief has the same task and no pack. `rco pack` is
 read-only: it does not create `.rco/` in the target repo.
 
 `score` parses kit logs with the phase 0 parser
