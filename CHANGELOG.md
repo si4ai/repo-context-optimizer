@@ -1,6 +1,11 @@
 # Changelog
 
-## unreleased
+## 0.1.7 - 2026-11-27
+
+`rco pack` now says how fresh it is, every run leaves a line in an events
+log, and a repo can point its agents at the pack with `rco init --agents`.
+Trees, Forests and packs stay deterministic: no LLM runs, and the same
+commit gives the same output. The smallest `--budget` rises from 64 to 128.
 
 ### added
 
@@ -9,7 +14,7 @@
   to `.rco/events.jsonl`, but only once `.rco/` exists, so read-only commands
   in a fresh clone still write nothing. One `O_APPEND` write of at most
   4096 bytes per run keeps concurrent runs whole on a local disk; a log
-  failure never changes the exit code (README, Events log)
+  failure never changes the exit code (README, Events log) (#86, card 1314)
 - `rco init --agents` writes one marked block at the top of `AGENTS.md`
   (created if missing) and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md`
   and `.github/copilot-instructions.md` when they exist, telling an agent
@@ -21,7 +26,7 @@
   Files over 16 KiB get a size warning. It also writes
   `.cursor/environment.json` when `.cursor/` exists and the file does not,
   and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
-  Opt-in; plain `rco init` is unchanged.
+  Opt-in; plain `rco init` is unchanged (#88, card 1316)
 - `rco replay` estimates what rco saves on your own repo in one command: it
   replays the last N code commits and prints tokens and file reads with
   rco (the pack plus the changed files) and without (the changed files and
@@ -29,33 +34,36 @@
   plainly when rco does not win. No agent, store or file edit; an estimate,
   not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
   adds tiktoken for real token counts; without it the counts are labelled
-  chars/4 estimates
+  chars/4 estimates (#89, card 1319). With `.rco/` present it appends its one
+  events line, like every run; it edits no file
 - `rco pack` says where it came from on its second line: the commit, the
   source (store or git), HEAD, how many commits behind HEAD, and whether
   the working tree differs. With `--for`, a warning line names the changed
   files in those modules (up to 10). Both lines are never cut, and the
   command still exits 0. `--format json` adds a `built` key; the schema
   stays `rco.pack/1` and its reader accepts packs with or without `built`
+  (#87, card 1315)
 - docs: `docs/guide/cloud-agents.md` (what to commit and the setup hook per
   platform; its measured benefit says "unmeasured"), the examples
   `docs/guide/examples/AGENTS.rco.md` and `cursor-environment.json`, and
   `docs/baseline/cloud-ab.md` (the Bot-then-Build measurement method and an
-  empty results table)
+  empty results table) (#92, card 1313)
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
 - `rco metrics bypass` reports code commits that no `rco pack` run preceded,
   from `.rco/events.jsonl` and git history: a pack run covers a commit when it
   exited 0 or 1 at the commit's parent (or an ancestor) and finished no later
-  than the commit and at most `--window-min` minutes before it. Counts and ids only, byte-identical for the same inputs;
-  exit 0, or 1 with `--strict` when any commit is uncovered; a missing or empty
-  events file is exit 2. It shows a pack ran, not that it was read
+  than the commit and at most `--window-min` minutes before it. Counts and
+  ids only, byte-identical for the same inputs; exit 0, or 1 with `--strict`
+  when any commit is uncovered; a missing or empty events file is exit 2. It
+  shows a pack ran, not that it was read (#91, card 1317)
 - `rco metrics summary` rolls many of those files into a trend: count, mean
   and median ratio, total bytes and tokens saved, and the best and worst PRs,
-  in text or `--json`
+  in text or `--json` (#81, card 1301)
 - `rco init --metrics` is an opt-in that packs changed files, writes
   `rco-metrics.json`, and uploads the `rco-report` artifact; default `rco init`
-  is unchanged
+  is unchanged (#81)
 - `tools/fetch_rco_metrics.py` downloads recent `rco-report` artifacts with
   the GitHub CLI already authenticated in the environment
 - `rco affected` maps a changed file to the tests that run or read it by
@@ -63,6 +71,7 @@
   `ci/notice_report.sh` miss from the 0.1.4 audit)
 - `rco affected --format json` adds `select` (`all`, `tests` or `none`),
   `by_path` and `docs`, so a CI job can skip tests on a docs-only change
+  (#80, card 1235 step 1)
 
 ### fixed
 
@@ -72,12 +81,12 @@
   TreeHash), also when the rerun finds the SHA already published.
   `tests/test_update_process.py` runs the real CLI twice, kills it at each
   step and reruns it, and races three updates; SPIN property 8 models the
-  kill.
+  kill (#90, card 1318)
 
 ### changed
 
 - the smallest `rco pack --budget` is 128 estimated tokens, up from 64, so
-  the header, the new freshness line and a short warning still fit
+  the header, the new freshness line and a short warning still fit (#87)
 - the default `rco pack --budget` is 12000 estimated tokens, raised from
   8000 so current packs fit with headroom (Phase 0 sizes). A pack that is
   still over its budget after every cut is a warning on stderr, in the
@@ -85,11 +94,25 @@
   exits 0 (exit 1 still means stale prose). `rco metrics measure` writes
   the budget-used line to the GitHub job summary and a workflow warning
   on overrun, so the `rco init --metrics` workflow stays valid YAML and
-  does not fail the job
+  does not fail the job (#83)
 - `rco affected`: docs no code file names select nothing instead of
   setting `run_all`; test config and infra (`pyproject.toml`, a top-level
   `conftest.py`, lock files, CI workflows, ...) set `run_all` even when
-  they are code
+  they are code (#80, card 1235 step 1)
+
+### process and docs
+
+- CI calls the shared `si4ai/.github` `pr_text` and `hygiene` workflows,
+  pinned to a commit, instead of its own copies (#93, #94)
+- docs: `docs/research/agent-platforms.md`, a public-docs snapshot of agent
+  instruction files and pre-warm hooks (#85); the README's third
+  verification layer is rewritten around protocol conformance (#84);
+  `docs/github-setup.md` and the adopting guide
+  are refreshed for 0.1.6 (#73, #76); the README says `--for` is optional (#74)
+- `readme_ledger` R20 compares the test-select jobs to the select outputs (#75)
+- CI: a diff and affected report on pull requests and a store update on push
+  (#77, card 1228); Dependabot for pip and GitHub Actions (#79, #82);
+  `__pycache__/` and `.rco/` are in `.gitignore` (#78)
 
 ## 0.1.6 - 2026-11-20
 
