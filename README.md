@@ -356,6 +356,32 @@ Exit codes, so agents can script the commands:
 | 2 | Usage error. |
 | 3 | Internal error. |
 
+### Events log
+
+Once `.rco/` exists in the checkout (the first `rco update` creates it), every
+rco run appends one JSON line to `.rco/events.jsonl`. Without `.rco/`, nothing
+is written, so read-only commands in a fresh clone still leave the tree
+untouched. `--help` and `--version` are not runs and write no line.
+
+| Key | Type | What it holds |
+|---|---|---|
+| `v` | int | line format version, `1` |
+| `run` | string | random id of this run (32 hex) |
+| `ts` | string | UTC start time, `YYYY-MM-DDTHH:MM:SSZ` |
+| `cmd` | string | the command: `update`, `pack`, `metrics measure`, ... |
+| `exit` | int | the exit code the command returned |
+| `store` | string or null | the store's `main` pointer when the run ended |
+| `head` | string or null | `git rev-parse HEAD` when the run ended |
+| `ms` | int | duration in milliseconds |
+| `for` | list or null | `rco pack` only: the `--for` paths (cut to fit the line) |
+
+Each line is one `O_APPEND` write of at most 4096 bytes, so concurrent runs on
+a local disk never tear or mix lines; no lock is taken. On a network
+filesystem `O_APPEND` is not guaranteed atomic, so lines may interleave
+there. A failure to write the log is one note on stderr and never changes
+the exit code. Read it with `cat .rco/events.jsonl` or, for example,
+`jq -c 'select(.cmd == "pack")' .rco/events.jsonl`.
+
 ## Secrets
 
 Before any pack output or storage, rco runs a redaction and hygiene pass over extracted constants, docstrings, and other literals. Redacted values are replaced with a placeholder and are never written through. What is redacted:
@@ -502,7 +528,7 @@ flowchart LR
     V3 -.->|evidence of correctness| V4["smoke tests, exit codes,<br/>timing, cold-agent A/B"]
 ```
 
-1. **Is the design right?** A SPIN (or TLA+) model of `rco update` with racing merges, a late update, a crash midway, and a rebased history. Properties: the pointer only moves forward (a new SHA must descend from the current one, checked and written in one atomic compare-and-swap); a published pointer always has its Trees; a stale Forest is never shown as current; an update run twice equals one run; no changed module is skipped; every Forest eventually becomes fresh. Status: modelled in `verify/spin/rco_update.pml` (linear history, two modules, two updaters, one crash, one duplicate). The design as first written failed all seven properties; with the four rules above it passes all seven. Rebased history and a lossy store are not modelled yet.
+1. **Is the design right?** A SPIN (or TLA+) model of `rco update` with racing merges, a late update, a crash midway, and a rebased history. Properties: the pointer only moves forward (a new SHA must descend from the current one, checked and written in one atomic compare-and-swap); a published pointer always has its Trees; a stale Forest is never shown as current; an update run twice equals one run; no changed module is skipped; every Forest eventually becomes fresh. Status: modelled in `verify/spin/rco_update.pml` (linear history, two modules, two updaters, one crash, one duplicate). The design as first written failed all seven properties; with the four rules above it passes all seven. An eighth property (card 1318) adds a kill after the pointer write followed by a rerun: rco 0.1.6 fails it, and deriving the prose queue from staleness passes it. Rebased history and a lossy store are not modelled yet.
 2. **Does the code follow the design, and is the map true?** The map checker takes a repo, a SHA, and a map, and reports each claim as true, false, or missing, with no LLM:
    - Contracts: every function, flag, table, column, and route in a Tree exists at that SHA with that shape, checked by a fresh parse and by real outputs (`--help`, the live schema, the route table). It also reports what the Tree missed.
    - Edges: every depends-on and used-by link matches the import graph at that SHA.
