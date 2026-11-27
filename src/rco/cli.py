@@ -156,6 +156,13 @@ def make_parser() -> argparse.ArgumentParser:
     mm.add_argument("--pack", default=None, help="rco pack markdown for the changed files")
     mm.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"pack budget recorded in the file (default: {DEFAULT_BUDGET})")
     _common(mm)
+    bp = ms.add_parser("bypass", help="code commits with no rco pack run before them")
+    bp.add_argument("--base", default=None, help="check BASE..HEAD (default: the last --days days)")
+    bp.add_argument("--days", type=int, default=14, help="look back this many days when no --base (default: 14)")
+    bp.add_argument("--window-min", type=int, default=240, help="a pack run covers a commit made within this many minutes after it (default: 240)")
+    bp.add_argument("--events", type=Path, default=None, help="events file (default: .rco/events.jsonl)")
+    bp.add_argument("--strict", action="store_true", help="exit 1 when any code commit is uncovered")
+    _common(bp)
     ck = ms.add_parser("check", help="exit 1 unless the metrics file is present and complete")
     ck.add_argument("file", help="rco-metrics.json to check")
     return p
@@ -282,6 +289,18 @@ def run(args: argparse.Namespace) -> Exit:
                      f"over the budget of {doc.get('pack_budget')}")
             metrics.announce_pack_budget(doc.get("pack_used"), int(doc["pack_budget"]))
             return emit(metrics.MetricsReport(doc), args.format, args.out)
+        if args.metrics_cmd == "bypass":
+            from rco import bypass, events
+            from rco.config import worktree_top
+            if args.days < 1:
+                raise UsageError("--days must be at least 1")
+            if args.window_min < 0:
+                raise UsageError("--window-min must not be negative")
+            path = args.events or worktree_top(repo) / events.EVENTS_RELPATH
+            found, bad = bypass.read_events(path)
+            commits = bypass.code_commits(repo, args.base, args.days)
+            rep = bypass.bypass(repo, found, commits, args.window_min * 60, bad, args.strict)
+            return emit(rep, args.format, args.out)
         raise UsageError(f"unknown command metrics {args.metrics_cmd}")
     if args.cmd == "live":
         from rco import live
