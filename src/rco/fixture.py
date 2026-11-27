@@ -51,9 +51,9 @@ def _env() -> dict[str, str]:
     return env
 
 
-def git(repo: Path, *args: str) -> str:
+def git(repo: Path, *args: str, env: Mapping[str, str] | None = None) -> str:
     p = subprocess.run(["git", "-C", str(repo), *args], capture_output=True,
-                       env=_env(), check=True)
+                       env={**_env(), **(env or {})}, check=True)
     return p.stdout.decode().strip()
 
 
@@ -67,11 +67,16 @@ def write_files(repo: Path, files: Mapping[str, str | bytes]) -> None:
             f.write_text(body, encoding="utf-8")
 
 
-def commit(repo: Path, files: Mapping[str, str | bytes], message: str = "fixture") -> str:
-    """Write files, stage everything, commit; returns the commit SHA."""
+def commit(repo: Path, files: Mapping[str, str | bytes], message: str = "fixture",
+           date: str | None = None) -> str:
+    """Write files, stage everything, commit; returns the commit SHA.
+
+    date (git's raw form, "EPOCH +0000") replaces FIXED_DATE for this commit.
+    """
     write_files(repo, files)
     git(repo, "add", "-A")
-    git(repo, "commit", "-q", "--allow-empty", "-m", message)
+    when = {} if date is None else {"GIT_AUTHOR_DATE": date, "GIT_COMMITTER_DATE": date}
+    git(repo, "commit", "-q", "--allow-empty", "-m", message, env=when)
     return git(repo, "rev-parse", "HEAD")
 
 

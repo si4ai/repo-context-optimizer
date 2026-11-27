@@ -30,6 +30,7 @@ Check first: rco needs Python 3.12 or newer. The workflow it writes runs on GitH
 pip install repo-context-optimizer==0.1.6
 cd your-repo
 rco init            # add --hooks for the post-merge hook; add --metrics to upload rco-metrics.json
+                    # add --agents to point coding agents at rco pack
 ```
 
 `rco init` writes only files that are not there yet, and reports each one as wrote or kept:
@@ -39,8 +40,11 @@ rco init            # add --hooks for the post-merge hook; add --metrics to uplo
   - On `pull_request`: base = `git merge-base` of the PR base and head. It runs `rco diff`, `rco affected`, `rco drift pins` (when `pins/` exists), then `python -m rco.notice_report`, the cross-PR notice that ships in the wheel. The notice lists the other open PRs into the same base branch with `gh api`, fetches each head as `pr-N`, and runs `rco notice`. The step fails only if one of them exits 2 or 3.
   - On `push` to the default branch: `rco update --name <branch>`, with `.rco/` kept in `actions/cache`.
 - With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
+- With `--agents`: a marked block at the top of `AGENTS.md` (created if missing), and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md` and `.github/copilot-instructions.md` when they exist, telling an agent to run `rco pack --for FILE...` before it reads code. A second run leaves it as is; rco edits only between its markers. See the README, `rco init`.
 
-Then commit the two files, open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
+Before or after setup, `pip install "repo-context-optimizer[tokens]"` and `rco replay` print an estimate of what rco saves on your last 10 code commits, with its method and limits. It needs no store and edits no file; with `.rco/` present it appends its one line to the events log.
+
+Then commit the two files (and, with `--agents`, each file the report lists as wrote, added or updated), open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
 
 Limits of the generated workflow:
 
@@ -63,7 +67,7 @@ Codes are used in every table and diagram. Shipped = in the 0.1.6 CLI or wheel. 
 |---|---|---|---|
 | TR | `rco tree [SHA]` | what are the public contracts (functions, classes, argparse flags, SQL tables, routes, and the bundled languages) at this commit? | 0 |
 | FO | `rco forest [SHA]` | How do modules depend on each other, and what are the entry points? | 0 |
-| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget is too small (< 64, or below the header and footer) |
+| PK | `rco pack --for FILES` | what do I need to know before I edit these files? Forest plus Trees for those modules and one import hop, within `--budget` tokens | 0; 1 if stored prose is stale; 2 if budget is too small (< 128, or below the header and footer) |
 | DF | `rco diff BASE HEAD` | Which contracts changed between two commits, and who calls them (qualified, not by bare name)? | 0 none, 1 changes |
 | CK | `rco check MAP` / `--selftest` | Is this map still true for the code? Does the checker catch planted errors? | 0 ok, 1 findings |
 | UP | `rco update [SHA] --name P` | save a commit's map to the store and move pointer P forward | 0; refuses to move backwards |
@@ -213,6 +217,8 @@ flowchart LR
 ## Agents on demand: the map without LLM tokens
 
 Outside any pipeline, an agent can ask rco at any time. Answers are computed from git objects with no model, no keys and no network. The LLM prose path is off; prose is mined from docstrings and READMEs.
+
+For agents that start from a fresh checkout (Cursor, Codex, Devin and the like), see [Cloud agents and rco](cloud-agents.md).
 
 | question the agent has | Command |
 |---|---|

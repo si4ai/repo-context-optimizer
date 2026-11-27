@@ -11,8 +11,11 @@ Order (README sequence diagram, verify/spin/rco_update.pml variant fixed):
    from the pointer it replaces (rule 1). A pointer that moved meanwhile is
    re-read; one that moved past NEW refuses the swap, and nothing more is
    written (late finisher).
-5. Only after a successful swap, queue a prose rewrite for each module whose
-   TreeHash differs from the replaced SHA's (rule 4).
+5. Only once the pointer shows NEW, queue a prose rewrite for each module of
+   NEW that has no prose for its TreeHash and is not queued yet (rule 4).
+   The queue is derived from that staleness, not from what this run changed,
+   so a run killed after the swap and before the queue is repaired by the
+   next run, even one that finds NEW already published.
 
 Staleness is never written (rule 3). No holds, no locks. Running the same
 update twice equals running it once (content-addressed writes).
@@ -83,7 +86,8 @@ def update(repo: Path, store: Store, new: str, name: str = DEFAULT_POINTER,
     start = store.get_pointer(name)
     notes: list[str] = []
     if start == new:
-        return UpdateResult(name, start, new, False, (), (), ("already published",))
+        return UpdateResult(name, start, new, False, (), _queue_missing(store, new, hit),
+                            ("already published",))
     if start is not None and not is_ancestor(repo, start, new):
         return UpdateResult(name, start, new, False, (), (),
                             (f"refused: {new[:12]} does not descend from {name}={start[:12]}",))
@@ -123,7 +127,8 @@ def update(repo: Path, store: Store, new: str, name: str = DEFAULT_POINTER,
     while True:
         if cur == new:
             notes.append("already published by another update")
-            return UpdateResult(name, start, new, False, tuple(extracted), (), tuple(notes))
+            return UpdateResult(name, start, new, False, tuple(extracted),
+                                _queue_missing(store, new, hit), tuple(notes))
         if cur is not None and not is_ancestor(repo, cur, new):
             notes.append(f"refused: {name} moved past {new[:12]} to {cur[:12]}")
             return UpdateResult(name, start, new, False, tuple(extracted), (), tuple(notes))
@@ -132,12 +137,27 @@ def update(repo: Path, store: Store, new: str, name: str = DEFAULT_POINTER,
         cur = store.get_pointer(name)  # moved meanwhile: re-read and re-check
 
     # rule 4: prose rewrites only after the pointer write
-    before = {r.module: r.tree_hash for r in store.list_by_sha(cur)} if cur else {}
-    queued = [m for m in sorted(trees) if before.get(m) != trees[m]]
-    hit("queue", new)
-    for m in queued:
-        store.enqueue(m, trees[m])
-    return UpdateResult(name, cur, new, True, tuple(extracted), tuple(queued), tuple(notes))
+    return UpdateResult(name, cur, new, True, tuple(extracted), _queue_missing(store, new, hit),
+                        tuple(notes))
+
+
+def _queue_missing(store: Store, sha: str,
+                   hit: Callable[[str, str], None]) -> tuple[str, ...]:
+    """Queue every module of the published sha with no prose for its TreeHash.
+
+    Derived from staleness (rule 3), so it is idempotent and repairs a run
+    killed between the swap and the queue. Rows already queued are left as
+    they are; the result names only the modules queued by this call. Call
+    only when the pointer already shows sha (rule 4).
+    """
+    waiting = set(store.queued())
+    todo = [(r.module, r.tree_hash) for r in sorted(store.list_by_sha(sha))
+            if (r.module, r.tree_hash) not in waiting
+            and store.get_prose(r.module, r.tree_hash) is None]
+    hit("queue", sha)
+    for module, tree_hash in todo:
+        store.enqueue(module, tree_hash)
+    return tuple(m for m, _ in todo)
 
 
 def result_to_obj(r: UpdateResult) -> dict:
