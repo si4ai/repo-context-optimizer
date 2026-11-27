@@ -2,13 +2,8 @@
 # built from 46ac956 (git); HEAD 46ac956; current; working tree matches
 
 ## Forest
-- .: layer 0
-- db: layer 0; Owns table users.
 - src/app: layer 2; Defines function main. Owns command app. (depends on: src/app/core)
 - src/app/core: layer 1; Defines function run. (depends on: src/app/util) (used by: src/app)
-- src/app/cyc_a: layer 0; Defines constant A. (depends on: src/app/cyc_b) (used by: src/app/cyc_b)
-- src/app/cyc_b: layer 0; Defines constant B. (depends on: src/app/cyc_a) (used by: src/app/cyc_a)
-- src/app/util: layer 0; Defines function clamp. (used by: src/app/core)
 
 ## Trees (files imported by --for src/app/cli.py; the --for files are not outlined)
 ### src/app/core
@@ -18,4 +13,4 @@ module app.core.engine
 ## One hop (name and one line)
 - src/app/core: layer 1; Defines function run.
 
-# budget used: ~244 / 12000 estimated tokens
+# budget used: ~165 / 12000 estimated tokens

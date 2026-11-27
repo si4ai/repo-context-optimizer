@@ -91,8 +91,11 @@ def test_cut_order_hop_then_nodes_then_forest(tmp_path):
             p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
-        kinds = [t.split(":", 1)[0] for t in p.trimmed]
-        assert kinds == sorted(kinds, key=["hop", "node", "forest"].index), (budget, kinds)
+        owners = {"src/app", "src/app/core"}
+        kinds = ["owner" if t.startswith("forest:") and t[7:] in owners else t.split(":", 1)[0]
+                 for t in p.trimmed]
+        # card 1342: hop lines, then neighbor Forest lines, then Tree nodes, then owners
+        assert kinds == sorted(kinds, key=["hop", "forest", "node", "owner"].index), (budget, kinds)
         seen |= set(kinds)
     # tight budgets still cut hops first; leftover budget may put some hops back
     assert "node" in seen and "forest" in seen
@@ -181,6 +184,8 @@ def _empty_forest_repo(tmp_path):
         ),
         "lib/helpers.py": "def run() -> int:\n    return 0\n",
     }
+    for i in range(12):  # non-empty modules, so the whole Forest is over the smallest budget
+        files[f"pad{i:02d}/m.py"] = f"from lib import helpers\n\n\ndef p{i:02d}() -> int:\n    return helpers.run()\n"
     return fixture.make_repo(tmp_path / "cut_empty", files)
 
 
@@ -189,7 +194,7 @@ def _is_empty_forest_entry(e):
             and not e.owns.commands and not e.owns.tables and not e.owns.routes)
 
 
-def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
+def test_empty_forest_lines_cut_deepest_first(tmp_path):
     from rco.forest import build_forest
 
     repo, sha = _empty_forest_repo(tmp_path)
@@ -200,30 +205,29 @@ def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
     assert not _is_empty_forest_entry(entries["app"])
     assert not _is_empty_forest_entry(entries["lib"])
 
-    full = pack(repo, sha, ["app/cli.py"], 10 ** 6, fit_to_imports=False)
+    # card 1342: with --for the empty modules are not neighbors, so they are not shown
+    near = pack(repo, sha, ["app/cli.py"], 10 ** 6, fit_to_imports=False)
+    assert not {e.id for e in near.forest} & set(empty_ids)
+    # without --for the whole Forest is shown and empty lines go first, deepest first
+    full = pack(repo, sha, None, 10 ** 6)
     hits = []
     for budget in range(MIN_BUDGET, full.used + 1, 4):
-        p = pack(repo, sha, ["app/cli.py"], budget, fit_to_imports=False)
+        p = pack(repo, sha, None, budget)
         empty_cut = [t[7:] for t in p.trimmed
                      if t.startswith("forest:") and t[7:] in set(empty_ids)]
-        nodes_kept = sum(len(t.nodes) for t in p.trees)
-        if empty_cut and nodes_kept:
-            hits.append((p, empty_cut))
-    assert hits, "some budget must cut empty Forest lines and still keep Tree nodes"
-
-    for p, empty_cut in hits:
-        kinds = [t.split(":", 1)[0] for t in p.trimmed]
-        if "node" in kinds:
-            assert kinds.index("forest") < kinds.index("node")
+        other_cut = [t for t in p.trimmed if t.startswith("forest:") and t[7:] not in set(empty_ids)]
+        if empty_cut:
+            hits.append((p, empty_cut, other_cut))
+    assert hits, "some budget must cut empty Forest lines"
+    for p, empty_cut, other_cut in hits:
+        if other_cut:
+            assert empty_cut == empty_ids  # every empty line went before a non-empty one
         assert empty_cut == empty_ids[:len(empty_cut)]
-        # a parent is not cut while a child is still shown
         shown = {e.id for e in p.forest}
         for mid in shown:
             parent = mid.rsplit("/", 1)[0] if "/" in mid else None
-            if parent in set(empty_ids) | {"app", "lib"}:
-                # if a child is shown, its existing parent must still be shown
-                if parent in entries:
-                    assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
+            if parent in entries:
+                assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
 
 def test_hop_lists_test_modules_last(tmp_path):
     files = {

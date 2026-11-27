@@ -15,6 +15,10 @@
   files. When the `--for` files import no other file in the repo, or that
   budget is under 128, the pack is one `nothing to add` line and exits 0
   (card 1341)
+- `rco pack --for` shows only the Forest lines of the owning modules and
+  their one-hop modules, not the whole-repo Forest, and cuts those neighbor
+  lines before any Tree node; the owners' lines go last. Without `--for`
+  the full Forest stays (card 1342)
 
 ## 0.1.7 - 2026-11-27
 
