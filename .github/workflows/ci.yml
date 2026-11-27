@@ -170,7 +170,7 @@ jobs:
   hygiene_report:
     permissions:
       contents: read
-    uses: si4ai/.github/.github/workflows/hygiene.yml@329c0aafdb323bd40dc5a685eed7db7ae8e1b0c8
+    uses: si4ai/.github/.github/workflows/hygiene.yml@de8ed263569a59c98b58c1342b52fb298773d12a
 
   # role-trailer report: each commit in the range must carry a Role:
   # trailer naming a configured desk. report only: no --strict here.
