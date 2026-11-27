@@ -2,7 +2,7 @@
 
 Deterministic repo context for coding agents: contract Trees, an architecture Forest, contract diffs, and rebase triage. The goal is to replace LLM tokens with code wherever a contract can be computed.
 
-**Status:** This is 0.1.6. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. See [What ships](#what-ships) for what works and what is still design.
+**Status:** This is 0.1.7. 0.1.1 was merged but never tagged or published to PyPI, so 0.1.2 was the first install after 0.1.0 and carried both. `pip install repo-context-optimizer` installs the `rco` command. Everything in it is deterministic: the LLM prose path is off, and mined or derived prose fills in. `rco triage`, `rco notice`, `rco plan`, and `rco affected` are hints only (they never rebase, push, or block). The cold-agent A/B that counts waits until this install is the one under test. 0.1.7 adds the per-run events log, a freshness line on every pack, `rco init --agents`, `rco replay`, and `rco metrics bypass`; the smallest `--budget` is now 128. See [What ships](#what-ships) for what works and what is still design.
 
 Builder and grok-tui split the development work, Auditor checks the design and models, and Validator passes and merges each PR.
 
@@ -14,7 +14,7 @@ Open raw files only on demand.
 
 ## What ships
 
-| Code | Capability | 0.1.6 |
+| Code | Capability | 0.1.7 |
 |---|---|---|
 | TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
 | PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
@@ -25,6 +25,11 @@ Open raw files only on demand.
 | SG | `rco diff --staged` / `--worktree` | shipped |
 | TS | `rco affected`: test selection from a diff | shipped |
 | IN | `rco init`: config, CI workflow, and hook setup | shipped |
+| AG | `rco init --agents`: a marked block that points agent instruction files at `rco pack` | shipped |
+| EV | `.rco/events.jsonl`: one line per run, once `.rco/` exists | shipped |
+| FR | `rco pack` names its commit and says how far HEAD has moved | shipped |
+| RP | `rco replay`: a labelled before/after estimate on your own history | shipped (an estimate, not an agent measurement) |
+| MX | `rco metrics measure`, `summary` and `bypass` | shipped |
 | HK | post-merge hook trigger for `rco update` | shipped (a merge webhook needs your own server) |
 | RO | `rco live`: check against a schema dump, OpenAPI, or `--help` | shipped |
 | LP | LLM prose | not shipped; off by design |
@@ -42,7 +47,7 @@ RCO's rule: **if code can compute it, code computes it.** CPU, memory, and disk 
 
 ## Just works
 
-The default in 0.1.6:
+The default in 0.1.7:
 
 ```
 pip install repo-context-optimizer   # installs the `rco` command
@@ -52,7 +57,7 @@ rco pack --for src/cli.py  # Forest + Trees for those modules and one import hop
 rco diff                   # BASE=merge-base(default branch, HEAD); HEAD=HEAD
 ```
 
-Does it help on your repo? One command, no setup, no agent, writes nothing:
+Does it help on your repo? One command, no setup, no agent, and it edits no file:
 
 ```
 pip install "repo-context-optimizer[tokens]"   # adds tiktoken for real token counts
@@ -60,7 +65,7 @@ cd your-repo
 rco replay                 # replays your last 10 code commits: with vs without rco
 ```
 
-It prints tokens and file reads with and without rco for each commit, the medians, and its method and limits. It is an estimate, not a measurement of an agent, and it says so plainly when rco does not win. See [`rco replay`](#rco-replay---last-n---budget-n---max-files-n).
+It prints tokens and file reads with and without rco for each commit, the medians, and its method and limits. It is an estimate, not a measurement of an agent, and it says so plainly when rco does not win. With `.rco/` present it appends its one line to the [events log](#events-log), like every rco run; without `.rco/` nothing is written. See [`rco replay`](#rco-replay---last-n---budget-n---max-files-n).
 
 `--budget` is in estimated tokens. The estimator is approximate (characters / 4). The design default is 12000. `--for` is optional. These defaults match the [Commands](#commands) section.
 
@@ -203,13 +208,13 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 ## Commands
 
-`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco metrics` rolls up token-efficiency numbers from `rco-metrics.json` files. `rco triage` and `rco notice` (phase 5, hints only) have landed, and so has `rco plan` (simple merge planning, a plan only). Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see [the pin contract](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/design/pin-contract.md)). Defaults match the [quick start](#just-works).
+`rco tree`, `rco check`, `rco diff`, `rco pack`, and `rco update` have landed; see [Just works](#just-works). The [output contract](#output-contract) applies to every shipped command. `rco replay` estimates the saving on your own history, `rco init --agents` points agent instruction files at the pack, and `rco metrics` rolls up token-efficiency numbers from `rco-metrics.json` files and lists commits no pack preceded. `rco triage` and `rco notice` (phase 5, hints only) have landed, and so has `rco plan` (simple merge planning, a plan only). Phase 4 adds `rco pin` and `rco drift` (pinned contracts, a report and never a block; see [the pin contract](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/design/pin-contract.md)). Defaults match the [quick start](#just-works).
 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
 - `SHA` defaults to `HEAD`. A repository with no commits still yields an empty pack and exit 0.
 - `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
-- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose). The smallest budget is 128.
+- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. The smallest is 128; a lower value is a usage error (exit 2). Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose). The smallest budget is 128.
 - The second line says where the pack came from: `# built from <sha> (store|git); HEAD <sha>; current | N commits behind HEAD | not on HEAD's history; working tree matches | N files differ`. With `--for`, only files in the modules that own those paths count, and a third line names them: `# warning: changed since this pack: a.py, b.py (+N more)` (up to 10 names). Both lines sit above `## Forest`, so budget cuts never remove them, and the command still exits 0. `--format json` carries the same facts under `built` (`source`, `head`, `behind`, `differs`).
 - Known limit: the check runs when the pack is built. A pack saved to a file and read later still shows the commit and the HEAD it was built at; compare those with the current HEAD yourself.
 
@@ -526,13 +531,13 @@ flowchart TD
 | 4. Forest prose | A test shows no prose is ever written for a SHA the pointer has not published. |
 | 5. Update and pack | `tw rco update` runs after each merge on this repo and the mill and publishes the merge SHA; `rco pack --for FILES` returns a pack within `--budget`; this is where dogfooding starts. |
 
-Until slice 5 lands, the pipeline ends at merge; from slice 2 on, the map checker reports drift read-only on this repo and the mill.
+Slices 1 to 4 and the commands of slice 5 (`rco update`, `rco pack`) have shipped, and this repo's CI runs the diff and affected report and updates the store on push. The `tw rco update` run on the mill is not shipped (see the TW row).
 
 - **Phase 0.** Baseline, using the mill's cold-test kit and an existing baseline: tokens and reads before the first useful action, plus wrong guesses, from cold-agent logs. Also measure extract cost and how many modules a typical merge touches.
 - **Phase 1.** Trees, hashes, and `rco diff` for Python, the CLI, SQL, and routes. Zero LLM. Deterministic tests: same SHA in, same bytes out. Redaction pass and the output contract (stdout/`--out`, format flags, exit codes). The map checker (see [Verification](#verification)) ships with the first Tree builder, so the first map anyone reads comes with a measured accuracy.
 - **Phase 2.** The Forest, computed first, with optional prose, plus staleness and name-in-Tree checks. When prose is on, it is generated lazily from the Tree (not raw source), the first time an agent asks for it in a pack; mined first from existing docstrings, module headers, and READMEs, with the model called only when nothing useful exists; written to a fixed template with a hard length cap, using a cheap model; rewritten only when that module's contract hash changes, never on internal edits, and debounced across merges; and checked by code: any name the prose cites must exist in the Tree, or the entry is flagged.
 - **Phase 3.** `rco pack`, A/B tested on cold agents.
-  The harness (`tools/phase3_ab.py`, method in [`docs/baseline/phase3-ab.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/phase3-ab.md)) prepares control and treatment briefs and scores mill cold-test kit logs against the phase 0 metrics (reads and tokens before the first useful action, wrong guesses). It never launches agents. The counting run, and any savings claim, waits until the forest is in a released install; a claim requires platform token counts (see [`docs/baseline/phase0.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/phase0.md)).
+  The harness (`tools/phase3_ab.py`, method in [`docs/baseline/phase3-ab.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/phase3-ab.md)) prepares control and treatment briefs and scores mill cold-test kit logs against the phase 0 metrics (reads and tokens before the first useful action, wrong guesses). It never launches agents. The counting run, and any savings claim, waits until the forest is in a released install; a claim requires platform token counts (see [`docs/baseline/phase0.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/phase0.md)). The plan for measuring the saving on the mill's own desks is in [`docs/baseline/cloud-ab.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/baseline/cloud-ab.md); it has no results yet.
 - **Phase 4.** Pinned contracts: a developer reviews a Tree and commits it as the intended contract; every PR re-extracts and reports drift from the pin as a visible check, not a block. The map then works both ways: it describes the code, and the code is checked against it.
 - **Phase 5.** `rco triage` as a hint (never rebases or pushes), plus a cross-PR contract notice in CI (a visible hint, not a block), subject to the identity constraint above. Rebase and merge tools come only after the map is reliable.
 - Then the mill backend and the MCP adapter.
@@ -552,7 +557,7 @@ flowchart LR
     V3 -.->|evidence of correctness| V4["smoke tests, exit codes,<br/>timing, cold-agent A/B"]
 ```
 
-1. **Is the design right?** A SPIN (or TLA+) model of `rco update` with racing merges, a late update, a crash midway, and a rebased history. Properties: the pointer only moves forward (a new SHA must descend from the current one, checked and written in one atomic compare-and-swap); a published pointer always has its Trees; a stale Forest is never shown as current; an update run twice equals one run; no changed module is skipped; every Forest eventually becomes fresh. Status: modelled in `verify/spin/rco_update.pml` (linear history, two modules, two updaters, one crash, one duplicate). The design as first written failed all seven properties; with the four rules above it passes all seven. An eighth property (card 1318) adds a kill after the pointer write followed by a rerun: rco 0.1.6 fails it, and deriving the prose queue from staleness passes it. Rebased history and a lossy store are not modelled yet.
+1. **Is the design right?** A SPIN (or TLA+) model of `rco update` with racing merges, a late update, a crash midway, and a rebased history. Properties: the pointer only moves forward (a new SHA must descend from the current one, checked and written in one atomic compare-and-swap); a published pointer always has its Trees; a stale Forest is never shown as current; an update run twice equals one run; no changed module is skipped; every Forest eventually becomes fresh. Status: modelled in `verify/spin/rco_update.pml` (linear history, two modules, two updaters, one crash, one duplicate). The design as first written failed all seven properties; with the four rules above it passes all seven. An eighth property (card 1318) adds a kill after the pointer write followed by a rerun: rco 0.1.6 fails it; 0.1.7 derives the prose queue from staleness and passes it. Rebased history and a lossy store are not modelled yet.
 2. **Does the code follow the design, and is the map true?** The map checker takes a repo, a SHA, and a map, and reports each claim as true, false, or missing, with no LLM:
    - Contracts: every function, flag, table, column, and route in a Tree exists at that SHA with that shape, checked by a fresh parse and by real outputs (`--help`, the live schema, the route table). It also reports what the Tree missed.
    - Edges: every depends-on and used-by link matches the import graph at that SHA.
@@ -645,7 +650,7 @@ AST skeletonizers, ctags, tree-sitter, Aider's repo map, and various repo packer
 
 ## Process and GitHub setup
 
-This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md). Adopting rco in a repo: [`docs/guide/adopting-rco.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/guide/adopting-rco.md). A public-docs snapshot of instruction files and pre-warm hooks (2026-11-26; pack savings unmeasured, card 1313): [`docs/research/agent-platforms.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/research/agent-platforms.md).
+This repository dogfoods a portable process: checks over rules, report-only CI reports that show facts, and an independent Validator that passes and merges. The PR-text and hygiene checks are the shared `si4ai/.github` workflows, pinned to a commit. A hidden-code report (`tools/check_hidden_code.py`) runs on every PR and push. It exits 0 on findings; a crash fails the job. The recipe for pointing the same process at a user repository is in [`docs/github-setup.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/github-setup.md). Adopting rco in a repo: [`docs/guide/adopting-rco.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/guide/adopting-rco.md). A public-docs snapshot of instruction files and pre-warm hooks (2026-11-26; pack savings unmeasured, card 1313): [`docs/research/agent-platforms.md`](https://github.com/si4ai/repo-context-optimizer/blob/main/docs/research/agent-platforms.md).
 
 ## License
 
