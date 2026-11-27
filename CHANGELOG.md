@@ -22,6 +22,14 @@
   `.cursor/environment.json` when `.cursor/` exists and the file does not,
   and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
   Opt-in; plain `rco init` is unchanged.
+- `rco replay` estimates what rco saves on your own repo in one command: it
+  replays the last N code commits and prints tokens and file reads with
+  rco (the pack plus the changed files) and without (the changed files and
+  their imports, one hop), the medians, and its method and limits. It says
+  plainly when rco does not win. No agent, store or file edit; an estimate,
+  not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
+  adds tiktoken for real token counts; without it the counts are labelled
+  chars/4 estimates
 - docs: `docs/guide/cloud-agents.md` (what to commit and the setup hook per
   platform; its measured benefit says "unmeasured"), the examples
   `docs/guide/examples/AGENTS.rco.md` and `cursor-environment.json`, and
@@ -30,6 +38,12 @@
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
+- `rco metrics bypass` reports code commits that no `rco pack` run preceded,
+  from `.rco/events.jsonl` and git history: a pack run covers a commit when it
+  exited 0 or 1 at the commit's parent (or an ancestor) and finished no later
+  than the commit and at most `--window-min` minutes before it. Counts and ids only, byte-identical for the same inputs;
+  exit 0, or 1 with `--strict` when any commit is uncovered; a missing or empty
+  events file is exit 2. It shows a pack ran, not that it was read
 - `rco metrics summary` rolls many of those files into a trend: count, mean
   and median ratio, total bytes and tokens saved, and the best and worst PRs,
   in text or `--json`

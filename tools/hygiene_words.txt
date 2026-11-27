@@ -633,6 +633,9 @@ sequence
 trees
 yield
 just
+checked
+event
+uncovered
 aider
 claude
 cloud
