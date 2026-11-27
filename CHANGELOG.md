@@ -30,6 +30,12 @@
   not an agent measurement. `pip install "repo-context-optimizer[tokens]"`
   adds tiktoken for real token counts; without it the counts are labelled
   chars/4 estimates
+- `rco pack` says where it came from on its second line: the commit, the
+  source (store or git), HEAD, how many commits behind HEAD, and whether
+  the working tree differs. With `--for`, a warning line names the changed
+  files in those modules (up to 10). Both lines are never cut, and the
+  command still exits 0. `--format json` adds a `built` key; the schema
+  stays `rco.pack/1` and its reader accepts packs with or without `built`
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
@@ -65,6 +71,8 @@
 
 ### changed
 
+- the smallest `rco pack --budget` is 128 estimated tokens, up from 64, so
+  the header, the new freshness line and a short warning still fit
 - the default `rco pack --budget` is 12000 estimated tokens, raised from
   8000 so current packs fit with headroom (Phase 0 sizes). A pack that is
   still over its budget after every cut is a warning on stderr, in the

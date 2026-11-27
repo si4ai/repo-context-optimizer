@@ -195,7 +195,7 @@ step-0 follow-up PR, sent to every open step first.
 - Applied: the prose queue worker drops a queued row whose TreeHash the
   published pointer does not show. `rco update` queues only after its swap,
   so such a row was superseded (step 4).
-- Applied: `rco pack` refuses `--budget` under 64 (exit 2). An owner Tree
+- Applied: `rco pack` refuses `--budget` under 128 (exit 2). An owner Tree
   whose nodes are all cut loses its heading; its nodes are named in
   `trimmed` (step 5).
 - Applied: the update/pack/forest placeholders are gone; all three are built.
