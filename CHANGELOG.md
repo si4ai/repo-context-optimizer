@@ -10,6 +10,11 @@
   the agent opens anyway. Imported files are ranked nearest first and budget
   cuts remove the farthest file first, not the last nodes in path order
   (card 1340)
+- `rco pack --for` treats `--budget` as a cap, not a target: the budget is
+  the smaller of `--budget` and half the estimated tokens of the imported
+  files. When the `--for` files import no other file in the repo, or that
+  budget is under 128, the pack is one `nothing to add` line and exits 0
+  (card 1341)
 
 ## 0.1.7 - 2026-11-27
 

@@ -3,6 +3,7 @@ import json
 
 from rco import cli, fixture
 from rco.output import Exit
+from rco.pack import SMALL_NOTE
 from rco.prose import drain_queue
 from rco.store.sqlite import open_repo_store
 
@@ -26,11 +27,14 @@ def test_update_drain_pack(tmp_path, capsys):
     store = open_repo_store(repo)
     assert drain_queue(repo, store) == 0  # CLI already mined the queued rows
     code, p = _pack(repo, capsys, "--for", "pkg/core.py")
-    assert code == Exit.OK and p["stale"] == [] and not p["notes"]  # read from the store
+    # util/helpers.py is too small to outline: card 1341 no-op, read from the store
+    assert code == Exit.OK and p["stale"] == [] and p["trees"] == [] and p["hop"] == []
+    assert [n for n in p["notes"] if n.startswith("nothing to add")] == [SMALL_NOTE]
+    code, p = _pack(repo, capsys)
+    assert code == Exit.OK and p["stale"] == [] and p["notes"] == []
     forest = {e["id"]: e for e in p["forest"]}
     assert forest["pkg"]["prose"]["text"] == "Pkg does the work."
     assert forest["pkg"]["depends_on"] == ["util"]
-    assert [h["id"] for h in p["hop"]] == ["util"]
 
     b = fixture.commit(repo, {"util/helpers.py": "def clamp(x: int, lo: int = 0) -> int:\n    return max(lo, x)\n"})
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
