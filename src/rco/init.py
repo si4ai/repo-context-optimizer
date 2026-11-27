@@ -12,8 +12,15 @@ Writes, only where nothing is there yet:
   writes rco-metrics.json, and uploads the rco-report artifact.
 - `--hooks`: a post-merge hook that runs `rco update --name <branch>` in
   the background after every pull or merge, and always exits 0.
+- `--agents`: one marked block (AGENT_BEGIN..AGENT_END) at the top of each
+  agent instruction file, telling an agent to run `rco pack --for` before it
+  reads code. AGENTS.md is created if missing; CLAUDE.md, GEMINI.md and
+  .github/copilot-instructions.md get the block only if they exist. This is
+  the one place init edits a file that exists: only between the markers,
+  plus one blank line after the block.
 
-An existing file is never overwritten; the report says it was kept. A hook
+Outside those marked blocks, an existing file is never overwritten; the
+report says it was kept. A hook
 file is rco's only if it carries HOOK_MARK, and `--remove-hooks` deletes
 only such a file. The output is the same bytes for the same repo and rco
 version.
@@ -21,18 +28,39 @@ version.
 from __future__ import annotations
 
 import os
+import stat
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
 from rco import __version__, gitread
+from rco.canon import canonical_json
 from rco.config import worktree_top
-from rco.output import Exit, UsageError
+from rco.output import Exit, UsageError, write_atomic
 
 SCHEMA_INIT = "rco.init/1"
 HOOK_MARK = "# rco: post-merge hook (rco init --hooks)"
 WORKFLOW = ".github/workflows/rco.yml"
 CONFIG = "rco.toml"
+
+AGENT_BEGIN = "<!-- rco:begin (rco init --agents) -->"
+AGENT_END = "<!-- rco:end -->"
+# No version in the block, so it stays byte-stable across rco releases.
+AGENT_BLOCK = """\
+## rco: read the pack before the code
+- Run `rco update` once per checkout.
+- Before you read code, run `rco pack --for FILE...` for the files you will touch.
+- Read the pack first; open a raw file only when the pack does not answer.
+- If the pack's second line does not say `current`, run `rco update` and pack again; read any file on its `changed since this pack` line directly.
+"""
+AGENTS_FILE = "AGENTS.md"
+CLAUDE_IMPORT = "@AGENTS.md\n"  # an agent that reads CLAUDE.md skips AGENTS.md
+AGENT_TARGETS = ((AGENTS_FILE, AGENT_BLOCK, True), ("CLAUDE.md", CLAUDE_IMPORT, False),
+                 ("GEMINI.md", AGENT_BLOCK, False),
+                 (".github/copilot-instructions.md", AGENT_BLOCK, False))
+AIDER_CONF = ".aider.conf.yml"
+CURSOR_ENV = ".cursor/environment.json"
+SIZE_WARN = 16384  # devin injects the first 16 KiB; codex caps at 32 KiB
 
 CONFIG_TEXT = """\
 # rco settings (README "Storage backends" and "Module"). Everything is
@@ -177,7 +205,7 @@ jobs:
 @dataclass(frozen=True, slots=True)
 class Step:
     path: str
-    action: str  # "wrote", "kept", "removed", "absent"
+    action: str  # "wrote", "kept", "removed", "absent", "added", "updated"
     detail: str = ""
 
 
@@ -211,6 +239,102 @@ def _write_new(top: Path, rel: str, text: str, mode: int | None = None) -> Step:
     return Step(rel, "wrote")
 
 
+def agent_block(body: str, nl: str = "\n") -> str:
+    """The marked block for one file, with that file's line ending."""
+    return nl.join([AGENT_BEGIN, *body.splitlines(), AGENT_END]) + nl
+
+
+def _frontmatter_end(text: str) -> int:
+    """Index just past a leading --- frontmatter, or 0 when there is none."""
+    first = text.split("\n", 1)[0].rstrip("\r")
+    if first != "---" or "\n" not in text:
+        return 0
+    pos = text.index("\n") + 1
+    while pos < len(text):
+        nxt = text.find("\n", pos)
+        end = len(text) if nxt < 0 else nxt + 1
+        if text[pos:end].rstrip("\r\n") == "---":
+            return end
+        pos = end
+    return 0  # unterminated: treat as plain text
+
+
+def _upsert_block(top: Path, rel: str, body: str, create: bool,
+                  seen: dict[Path, str] | None = None) -> Step:
+    """Add the marked block at the top of rel, or bring an existing block up to date.
+
+    A symlink is written through to its real file, and a real file reached twice in one run
+    (CLAUDE.md linked to AGENTS.md) is edited once; seen maps real paths to the name that did it.
+    """
+    link = top / rel
+    p = link.resolve()
+    if seen is not None:
+        if p in seen:
+            return Step(rel, "kept", f"same file as {seen[p]}")
+        seen[p] = rel
+    if not p.exists():
+        if not create:
+            return Step(rel, "absent")
+        p.parent.mkdir(parents=True, exist_ok=True)
+        write_atomic(p, agent_block(body).encode("utf-8"))
+        return Step(rel, "wrote")
+    mode = stat.S_IMODE(p.stat().st_mode)
+    try:
+        with open(p, encoding="utf-8", newline="") as f:
+            text = f.read()
+    except UnicodeDecodeError:
+        return Step(rel, "kept", "not UTF-8; convert it to UTF-8 or add the block by hand")
+    bom = "\ufeff" if text.startswith("\ufeff") else ""
+    text = text[len(bom):]
+    nl = "\r\n" if "\r\n" in text else "\n"
+    block = agent_block(body, nl)
+    begin = text.find(AGENT_BEGIN)
+    if begin >= 0:
+        end = text.find(AGENT_END, begin)
+        if end < 0:
+            return Step(rel, "kept", "unterminated rco block")
+        end += len(AGENT_END)
+        if text.startswith(nl, end):
+            end += len(nl)
+        if text[begin:end] == block:
+            return Step(rel, "kept", "current")
+        new, action = text[:begin] + block + text[end:], "updated"
+    else:
+        at = _frontmatter_end(text)
+        new, action = text[:at] + block + nl + text[at:], "added"
+    write_atomic(p, (bom + new).encode("utf-8"), mode)
+    return Step(rel, action)
+
+
+def _size_warning(top: Path, step: Step) -> Step:
+    p = top / step.path
+    n = p.stat().st_size if p.is_file() else 0
+    if n <= SIZE_WARN or step.detail.startswith("same file as"):
+        return step
+    warn = f"warning: {n} bytes; devin injects the first 16 KiB, codex caps at 32 KiB"
+    return Step(step.path, step.action, f"{step.detail}; {warn}" if step.detail else warn)
+
+
+def cursor_install_line() -> str:
+    return f"pip install repo-context-optimizer=={__version__} && rco update"
+
+
+def _agent_steps(top: Path) -> list[Step]:
+    seen: dict[Path, str] = {}
+    steps = [_size_warning(top, _upsert_block(top, rel, body, create, seen))
+             for rel, body, create in AGENT_TARGETS]
+    aider = top / AIDER_CONF
+    if aider.is_file() and AGENTS_FILE not in aider.read_text(encoding="utf-8", errors="replace"):
+        steps.append(Step(AIDER_CONF, "kept", f"add `read: [{AGENTS_FILE}]` by hand"))
+    env = top / CURSOR_ENV
+    if env.exists():
+        steps.append(Step(CURSOR_ENV, "kept", f"exists; install line: {cursor_install_line()}"))
+    elif env.parent.is_dir():
+        write_atomic(env, canonical_json({"install": cursor_install_line()}) + b"\n")
+        steps.append(Step(CURSOR_ENV, "wrote"))
+    return steps
+
+
 def hooks_dir(repo: Path, top: Path) -> Path:
     p = subprocess.run(["git", "-C", str(repo), "rev-parse", "--git-path", "hooks"],
                        capture_output=True)
@@ -228,7 +352,8 @@ def _rel(p: Path, top: Path) -> str:
 
 
 def init(repo: Path, config: bool = True, ci: bool = True, hooks: bool = False,
-         remove_hooks: bool = False, metrics: bool = False) -> InitReport:
+         remove_hooks: bool = False, metrics: bool = False,
+         agents: bool = False) -> InitReport:
     top = worktree_top(repo)
     steps: list[Step] = []
     if config:
@@ -258,4 +383,6 @@ def init(repo: Path, config: bool = True, ci: bool = True, hooks: bool = False,
             steps.append(Step(_rel(hook, top), "removed"))
         else:
             steps.append(Step(_rel(hook, top), "kept", "not rco's; left alone"))
+    if agents:
+        steps += _agent_steps(top)
     return InitReport(tuple(steps))

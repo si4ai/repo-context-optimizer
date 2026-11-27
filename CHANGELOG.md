@@ -10,6 +10,18 @@
   in a fresh clone still write nothing. One `O_APPEND` write of at most
   4096 bytes per run keeps concurrent runs whole on a local disk; a log
   failure never changes the exit code (README, Events log)
+- `rco init --agents` writes one marked block at the top of `AGENTS.md`
+  (created if missing) and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md`
+  and `.github/copilot-instructions.md` when they exist, telling an agent
+  to run `rco pack --for FILE...` before reading code. A second run changes
+  nothing; rco edits only between its markers and keeps line endings, a
+  leading BOM and the file mode, and it writes through a symlinked
+  `CLAUDE.md` or `AGENTS.md` instead of replacing the link. A file that is
+  not UTF-8 is left alone with a message.
+  Files over 16 KiB get a size warning. It also writes
+  `.cursor/environment.json` when `.cursor/` exists and the file does not,
+  and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
+  Opt-in; plain `rco init` is unchanged.
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
