@@ -84,6 +84,8 @@ def make_parser() -> argparse.ArgumentParser:
     i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
     i.add_argument("--metrics", action="store_true",
                    help="also write and upload rco-metrics.json on pull requests")
+    i.add_argument("--agents", action="store_true",
+                   help="write the rco pack pointer into agent instruction files")
     _common(i)
 
     lv = sub.add_parser("live", help="check the map against captured real outputs")
@@ -265,7 +267,7 @@ def run(args: argparse.Namespace) -> Exit:
         if args.metrics and not args.ci:
             raise UsageError("init --metrics needs the CI workflow (omit --no-ci)")
         rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks,
-                        args.metrics)
+                        args.metrics, args.agents)
         return emit(rep, args.format, args.out)
     if args.cmd == "metrics":
         from rco import metrics

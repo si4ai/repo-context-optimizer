@@ -30,6 +30,7 @@ Check first: rco needs Python 3.12 or newer. The workflow it writes runs on GitH
 pip install repo-context-optimizer==0.1.6
 cd your-repo
 rco init            # add --hooks for the post-merge hook; add --metrics to upload rco-metrics.json
+                    # add --agents to point coding agents at rco pack
 ```
 
 `rco init` writes only files that are not there yet, and reports each one as wrote or kept:
@@ -39,8 +40,9 @@ rco init            # add --hooks for the post-merge hook; add --metrics to uplo
   - On `pull_request`: base = `git merge-base` of the PR base and head. It runs `rco diff`, `rco affected`, `rco drift pins` (when `pins/` exists), then `python -m rco.notice_report`, the cross-PR notice that ships in the wheel. The notice lists the other open PRs into the same base branch with `gh api`, fetches each head as `pr-N`, and runs `rco notice`. The step fails only if one of them exits 2 or 3.
   - On `push` to the default branch: `rco update --name <branch>`, with `.rco/` kept in `actions/cache`.
 - With `--hooks`: a `post-merge` hook that runs `rco update --name <branch>` in the background and always exits 0. `--remove-hooks` deletes it only if rco wrote it.
+- With `--agents`: a marked block at the top of `AGENTS.md` (created if missing), and of `CLAUDE.md` (as `@AGENTS.md`), `GEMINI.md` and `.github/copilot-instructions.md` when they exist, telling an agent to run `rco pack --for FILE...` before it reads code. A second run leaves it as is; rco edits only between its markers. See the README, `rco init`.
 
-Then commit the two files, open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
+Then commit the two files (and, with `--agents`, each file the report lists as wrote, added or updated), open a PR, and read the job summary. It is on the workflow run page, not in the check-run API. Keep the `rco` job out of your required checks.
 
 Limits of the generated workflow:
 
