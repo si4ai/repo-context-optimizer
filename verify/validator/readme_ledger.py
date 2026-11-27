@@ -205,6 +205,92 @@ def role_trailer_present(t: Path):
     return ("PASS", f"role-trailer check present: {h}") if h else ("FAIL", "not met yet: no role-trailer check in the repo (Auditor is porting it, card 1126)")
 
 
+def _fixture(t: Path, work: Path):
+    """A one-commit git repo under work, plus a runner for this ref's rco (git archive tree t)."""
+    env = {**os.environ, "PYTHONPATH": str(t / "src"), "PYTHONDONTWRITEBYTECODE": "1"}
+    env.pop("RCO_DEBUG", None)
+    def sh(*a, **k):
+        return subprocess.run(a, cwd=work, capture_output=True, text=True, env=env, **k)
+    (work / "pkg").mkdir(parents=True)
+    (work / "pkg/__init__.py").write_text("")
+    (work / "pkg/mod.py").write_text("def a(x):\n    return x\n")
+    sh("git", "init", "-q", ".")
+    sh("git", "add", "-A")
+    sh("git", "-c", "user.name=ledger", "-c", "user.email=ledger@example.invalid", "commit", "-q", "-m", "init")
+    head = sh("git", "rev-parse", "HEAD").stdout.strip()
+    return (lambda *a: sh(sys.executable, "-m", "rco", *a)), head
+
+
+def _events(work: Path):
+    f = work / ".rco/events.jsonl"
+    return [json.loads(l) for l in f.read_text().splitlines()] if f.is_file() else []
+
+
+def events_update_creates(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        if (w / ".rco").exists(): return ("FAIL", ".rco exists before update")
+        p = rco("update")
+        ev = _events(w)
+        if p.returncode != 0 or len(ev) != 1: return ("FAIL", f"update exit {p.returncode}, {len(ev)} lines: {p.stderr[-200:]}")
+        e = ev[0]
+        ok = e.get("cmd") == "update" and e.get("exit") == 0 and e.get("store") == head
+        return ("PASS", "update created .rco/events.jsonl: cmd=update exit=0 store=HEAD") if ok else ("FAIL", f"first line {e}")
+
+
+def events_runs_append(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        rco("update")
+        rco("pack", "--for", "pkg/mod.py")
+        after_pack = _events(w)
+        rco("check", "forest")
+        after_check = _events(w)
+        rco("--help"); rco("--version")
+        after_flags = _events(w)
+        keys = {"v", "run", "ts", "cmd", "exit", "store", "head", "ms", "for"}
+        probs = []
+        if [e.get("cmd") for e in after_pack] != ["update", "pack"]: probs.append(f"after pack: {[e.get('cmd') for e in after_pack]}")
+        elif after_pack[1].get("for") != ["pkg/mod.py"] or after_pack[1].get("exit") != 0: probs.append(f"pack line {after_pack[1]}")
+        if len(after_check) != 3 or after_check[-1].get("cmd") != "check": probs.append(f"check did not append: {len(after_check)} lines")
+        if len(after_flags) != len(after_check): probs.append("--help or --version appended a line")
+        if any(set(e) != keys for e in after_flags): probs.append("a line has keys other than the documented nine")
+        return ("PASS", "update, pack, check each append one line; --help/--version add none; nine documented keys") if not probs else ("FAIL", "; ".join(probs))
+
+
+def events_not_written_without_rco_dir(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        p1 = rco("pack", "--for", "pkg/mod.py"); rco("check", "forest")
+        if p1.returncode != 0: return ("FAIL", f"pack exit {p1.returncode}")
+        return ("PASS", "pack and check in a tree with no .rco/ left no .rco/") if not (w / ".rco").exists() else ("FAIL", f".rco appeared: {sorted(x.name for x in (w / '.rco').iterdir())}")
+
+
+def readonly_commands_create_no_store(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        (w / ".rco").mkdir()
+        rco("pack", "--for", "pkg/mod.py"); rco("check", "forest")
+        dbs = sorted(x.name for x in (w / ".rco").iterdir() if x.name.startswith("rco.db"))
+        return ("PASS", "pack and check beside an empty .rco/ created no rco.db") if not dbs else ("FAIL", f"store files appeared: {dbs}")
+
+
+def no_events_table(t: Path):
+    import sqlite3
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        rco("update"); rco("pack", "--for", "pkg/mod.py")
+        db = w / ".rco/rco.db"
+        if not db.is_file(): return ("FAIL", "no rco.db after update")
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            tables = sorted(r[0] for r in con.execute("select name from sqlite_master where type='table'"))
+        finally:
+            con.close()
+        bad = [x for x in tables if "event" in x.lower()]
+        return ("PASS", f"tables {tables}: no events table") if not bad else ("FAIL", f"events table present: {bad}")
+
+
 PROBES = {k: v for k, v in globals().items() if callable(v) and not k.startswith("_")}
 
 
