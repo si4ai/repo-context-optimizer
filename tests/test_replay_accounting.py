@@ -95,3 +95,12 @@ def test_memo_gives_the_same_rows(tmp_path):
         cached = replay(repo, 10, 12000, 50, metrics.estimate).to_obj()
     assert memo.active() is False
     assert replay(repo, 10, 12000, 50, metrics.estimate, use_memo=False).to_obj() == cached
+
+
+def test_since_bare_date_means_midnight_not_now(tmp_path, monkeypatch):
+    # git reads --since=2026-03-15 at the current time of day; replay pins it
+    # to midnight, so a commit 30 seconds after midnight is in
+    monkeypatch.setenv("TZ", "UTC")
+    repo, root, u, s, h = _history(tmp_path)
+    early = fixture.commit(repo, {"app/user.py": USER_B}, "early", date="1773532830 +0000")
+    assert early in _rows(repo, last=None, since="2026-03-15")
