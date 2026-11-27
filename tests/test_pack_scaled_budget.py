@@ -1,4 +1,6 @@
 """Card 1341: no pack when nothing in-repo is imported; budget = min(--budget, half the imported tokens)."""
+import json
+
 from rco import cli, fixture
 from rco.forest_model import estimate_tokens
 from rco.output import Exit
@@ -103,3 +105,16 @@ def test_at_min_budget_still_packs(tmp_path):
     p = pack(repo, sha, ["app/tiny.py"])
     assert p.budget == MIN_BUDGET
     assert "nothing to add for these files" not in pack_markdown(p, "app/tiny.py")
+
+
+def test_scaled_budget_is_noted(tmp_path, capsys):
+    # card 1344 (validator 7172 W1 on #99): the note says why the budget is lower
+    repo, sha = _repo(tmp_path)
+    imported = estimate_tokens((repo / "lib/big.py").read_text())
+    p = pack(repo, sha, ["app/user.py"], 12000)
+    note = f"budget scaled to {imported // 2}: half the estimated tokens of the imported files"
+    assert note in p.notes
+    assert cli.main(["pack", "--repo", str(repo), "--for", "app/user.py", "--format", "json"]) == Exit.OK
+    assert note in json.loads(capsys.readouterr().out)["notes"]
+    # a cap already below half the imported tokens is not a scaling
+    assert not [n for n in pack(repo, sha, ["app/user.py"], 200).notes if n.startswith("budget scaled")]

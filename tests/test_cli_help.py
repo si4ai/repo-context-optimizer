@@ -76,3 +76,12 @@ def test_missing_branches_name_the_command(capsys):
         assert err.startswith(f"rco {cmd}:"), err
         assert "the following arguments are required: BRANCH" in err
 
+
+
+def test_pack_summary_matches_the_for_pack(capsys):
+    # card 1344 (validator 7172 W2): the pack line in `rco --help` describes
+    # the 1340-1342 pack, not "Forest plus Trees"
+    assert cli.main(["--help"]) == 0
+    text = " ".join(capsys.readouterr().out.split())
+    assert "Forest plus Trees" not in text
+    assert "with --for, the nearby modules and the signatures of the files they import" in text

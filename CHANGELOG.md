@@ -4,6 +4,14 @@
 
 ### changed
 
+- `rco replay` counts each changed file once (the pack no longer outlines
+  them), sends nothing when the pack skips (a tie), and renders each pack's
+  header as if the commit were HEAD with a clean working tree, so replay no
+  longer adds a "files differ" warning no agent would see. `--format json`
+  adds per-commit changed and imported tokens, imported files, pack tokens,
+  `pack_skipped` and signature `coverage`; `--since DATE` replays every code
+  commit since a date. Per-file work is cached for the run (card 1344)
+- the `rco pack` line in `rco --help` describes the --for pack (card 1344)
 - `rco pack --for` outlines the files the `--for` files import (one hop in
   the file import graph, across module boundaries) instead of every file of
   the owning modules, and leaves out the `--for` files' own outlines, which

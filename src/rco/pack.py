@@ -317,13 +317,18 @@ def _built(repo: Path, sha: str, source: str, owners: Sequence[str] | None) -> B
 
 def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
          budget: int = DEFAULT_BUDGET, store: Store | None = None,
-         fit_to_imports: bool = True) -> Pack:
+         fit_to_imports: bool = True, as_if_head: bool = False) -> Pack:
     """Use the store when it has sha indexed; else build from git, writing nothing.
 
     fit_to_imports (card 1341; the CLI always sets it): with --for, print the
     short no-op pack when the --for files import nothing in the repo, and cap
     the budget at half the estimated tokens of the imported files. Tests of
     the cut order turn it off to keep a fixed budget on small fixtures.
+
+    as_if_head (card 1344; rco replay): render the freshness header as if sha
+    were HEAD with a clean working tree, which is what an agent packing at
+    that commit sees. Replay's own checkout sits at a later HEAD, and without
+    this every replayed pack carried a "files differ" warning no agent gets.
     """
     if budget < MIN_BUDGET:
         raise UsageError(f"--budget must be at least {MIN_BUDGET}")
@@ -362,7 +367,8 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
             notes.append("no module owns the --for paths")
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
                      - set(owners), key=_hop_key)
-    built = _built(repo, sha, source, owners if for_paths else None)
+    built = (BuiltFrom(source, sha, 0, ()) if as_if_head
+             else _built(repo, sha, source, owners if for_paths else None))
     trees: list[Tree] = []
     if for_paths:
         code = _code_sources(repo, sha)
