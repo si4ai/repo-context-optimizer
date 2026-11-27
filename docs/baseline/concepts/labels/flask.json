@@ -1,0 +1,296 @@
+{
+ "repo": "flask",
+ "url": "https://github.com/pallets/flask",
+ "sha": "49943b5a94413a530761350f04e896f76e8d620e",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/flask",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.mvc",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "web framework package: app, blueprints, views, sessions, cli"
+  },
+  {
+   "kind": "module",
+   "path": "src/flask/json",
+   "concepts": [
+    {
+     "id": "ser.serialization",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "JSON provider and tagged serializer"
+  },
+  {
+   "kind": "module",
+   "path": "src/flask/sansio",
+   "concepts": [
+    {
+     "id": "arch.mvc",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "IO-free app, blueprint and scaffold base"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_apps/cliapp",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "CLI test apps including an app factory"
+  },
+  {
+   "kind": "module",
+   "path": "tests/type_check",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "typing checks"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/app.py",
+   "concepts": [
+    {
+     "id": "arch.mvc",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Flask application class",
+   "auto_rejected": [
+    "layer.cli"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/config.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Config loading from files, objects and env"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/ctx.py",
+   "concepts": [
+    {
+     "id": "pattern.proxy",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.state_machine",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "app and request contexts behind context-local proxies"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/helpers.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "url_for, redirect, abort helpers"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/json/provider.py",
+   "concepts": [
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "JSONProvider pluggable JSON strategy",
+   "auto_rejected": [
+    "pattern.factory"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/sansio/blueprints.py",
+   "concepts": [
+    {
+     "id": "arch.mvc",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Blueprint registration"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/testing.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test client and CLI runner"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/typing.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "type aliases"
+  },
+  {
+   "kind": "file",
+   "path": "src/flask/wrappers.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Request and Response wrappers over werkzeug"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_apps/blueprintapp/apps/frontend/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.mvc",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "blueprint test app views"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_config.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests Config"
+  },
+  {
+   "kind": "file",
+   "path": "tests/type_check/typing_error_handler.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "typing check for error handlers"
+  }
+ ]
+}

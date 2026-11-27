@@ -1,0 +1,388 @@
+{
+ "repo": "pytest",
+ "url": "https://github.com/pytest-dev/pytest",
+ "sha": "6c3902cdb044a209dc5f1037732ecdbdec8553f7",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "scripts",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "release scripts"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test framework internals: fixtures, runner, plugins, reporting"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/_code",
+   "concepts": [
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "code inspection: source, frames, tracebacks"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/_io",
+   "concepts": [
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "terminal writer, pretty printing, saferepr"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/_py",
+   "concepts": [
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "vendored py.path and error helpers"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/assertion",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "assertion rewriting and failure explanations"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/config",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command-line options and config files"
+  },
+  {
+   "kind": "module",
+   "path": "src/_pytest/mark",
+   "concepts": [
+    {
+     "id": "pattern.decorator",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "marks and the -m expression parser"
+  },
+  {
+   "kind": "module",
+   "path": "src/pytest",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "public package facade and entry"
+  },
+  {
+   "kind": "module",
+   "path": "testing",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "testing/plugins_integration",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "plugin integration tests"
+  },
+  {
+   "kind": "module",
+   "path": "testing/python",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests of python collection and fixtures"
+  },
+  {
+   "kind": "file",
+   "path": "extra/get_issues.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "script fetching issues from the GitHub API"
+  },
+  {
+   "kind": "file",
+   "path": "scripts/release.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.vcs",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "release task script"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/_code/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "code subpackage facade"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/_io/pprint.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "pretty printer"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/_io/wcwidth.py",
+   "concepts": [
+    {
+     "id": "xcut.i18n",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "terminal width of unicode text"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/approx.py",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "approx comparisons"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/pastebin.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "plugin posting reports to a pastebin"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/pytester.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "pytester fixtures for testing plugins"
+  },
+  {
+   "kind": "file",
+   "path": "src/_pytest/threadexception.py",
+   "concepts": [
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "collects unhandled thread exceptions via hooks"
+  },
+  {
+   "kind": "file",
+   "path": "testing/example_scripts/dataclasses/test_compare_dataclasses.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "dataclass comparison example"
+  },
+  {
+   "kind": "file",
+   "path": "testing/test_session.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests sessions"
+  },
+  {
+   "kind": "file",
+   "path": "testing/test_stash.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests Stash"
+  }
+ ]
+}

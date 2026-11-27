@@ -1,0 +1,264 @@
+{
+ "repo": "starlette",
+ "url": "https://github.com/encode/starlette",
+ "sha": "63d868e1b89063fa1059dafe239e41f924c33805",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "starlette",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.mvc",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ASGI framework: applications, routing, requests, responses, middleware"
+  },
+  {
+   "kind": "module",
+   "path": "starlette/middleware",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ASGI middleware chain: cors, gzip, sessions, auth"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite for the framework"
+  },
+  {
+   "kind": "module",
+   "path": "tests/middleware",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "tests for middleware"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/_exception_handler.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "wraps apps with exception handler lookup"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/applications.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "auto"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.mvc",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Starlette application class, the ASGI entry point"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/config.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Config and Environ: settings from env and .env files"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/convertors.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "path parameter convertors for routes, registry of convertors"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/middleware/authentication.py",
+   "concepts": [
+    {
+     "id": "xcut.auth",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "AuthenticationMiddleware"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/middleware/errors.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ServerErrorMiddleware renders tracebacks"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/middleware/exceptions.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ExceptionMiddleware maps exceptions to handlers"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/requests.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Request and HTTPConnection, cookie parsing"
+  },
+  {
+   "kind": "file",
+   "path": "starlette/schemas.py",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "OpenAPI schema generator from routes"
+  },
+  {
+   "kind": "file",
+   "path": "tests/conftest.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "conftest: test client factory fixture"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_applications.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the application class"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_concurrency.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests threadpool and concurrency helpers"
+  }
+ ]
+}

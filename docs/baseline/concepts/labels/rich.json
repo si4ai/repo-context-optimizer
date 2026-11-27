@@ -1,0 +1,243 @@
+{
+ "repo": "rich",
+ "url": "https://github.com/Textualize/rich",
+ "sha": "3a109ccdffe5b2d0e30684a304fbd388e99ce57b",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "rich",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "terminal rendering: console, text, tables, progress, markdown"
+  },
+  {
+   "kind": "module",
+   "path": "rich/_unicode_data",
+   "concepts": [
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "unicode width tables per version"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tools",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "table generators and profiling scripts",
+   "auto_rejected": [
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "rich/_emoji_replace.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "emoji code replacement"
+  },
+  {
+   "kind": "file",
+   "path": "rich/_stack.py",
+   "concepts": [
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Stack container"
+  },
+  {
+   "kind": "file",
+   "path": "rich/_unicode_data/unicode11-0-0.py",
+   "concepts": [
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "unicode width table"
+  },
+  {
+   "kind": "file",
+   "path": "rich/_unicode_data/unicode15-0-0.py",
+   "concepts": [
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "unicode width table"
+  },
+  {
+   "kind": "file",
+   "path": "rich/abc.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "RichRenderable ABC"
+  },
+  {
+   "kind": "file",
+   "path": "rich/pager.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Pager and SystemPager"
+  },
+  {
+   "kind": "file",
+   "path": "rich/prompt.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Prompt classes with validation"
+  },
+  {
+   "kind": "file",
+   "path": "rich/table.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Table rendering"
+  },
+  {
+   "kind": "file",
+   "path": "rich/text.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Text with spans and styles"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_cells.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests cell widths"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_control.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests control codes"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_screen.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests Screen"
+  }
+ ]
+}

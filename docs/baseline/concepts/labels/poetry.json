@@ -1,0 +1,494 @@
+{
+ "repo": "poetry",
+ "url": "https://github.com/python-poetry/poetry",
+ "sha": "3cc663a738522c90dc2b50fcadc74e39ada4b73a",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/poetry",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "entry point and Factory that builds a Poetry project"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/config",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "config sources: file and dict backed settings"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/console/commands",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "console commands: add, install, lock, publish"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/console/commands/env",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "env subcommands: activate, info, list, use virtualenvs",
+   "auto_rejected": [
+    "layer.config"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/console/commands/self",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "self subcommands: manage poetry's own install"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/installation",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "installer, executor, chooser, wheel installer"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/installation/operations",
+   "concepts": [
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "install/uninstall/update operation objects"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/mixology",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "PubGrub version solver (mixology)"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/packages",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "package and dependency models, locker"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/repositories",
+   "concepts": [
+    {
+     "id": "arch.repository",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "package repositories: pypi, legacy, cached, lockfile, pool",
+   "auto_rejected": [
+    "layer.persistence"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/utils",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: authenticator, cache, password manager, threading"
+  },
+  {
+   "kind": "module",
+   "path": "src/poetry/utils/env",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "virtual environments: env manager, system and virtual envs",
+   "auto_rejected": [
+    "layer.config"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "tests/console/commands",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "tests console commands"
+  },
+  {
+   "kind": "module",
+   "path": "tests/console/commands/self",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests self commands"
+  },
+  {
+   "kind": "module",
+   "path": "tests/utils",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "tests utils"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/config/file_config_source.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "config source backed by a TOML file"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/console/commands/env/activate.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "env activate command for shells"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/console/commands/self/update.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "self update command"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/mixology/assignment.py",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Assignment in the version solver"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/plugins/plugin.py",
+   "concepts": [
+    {
+     "id": "arch.plugin",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Plugin abstract base class"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/publishing/publisher.py",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Publisher uploads packages to a repository"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/repositories/pypi_repository.py",
+   "concepts": [
+    {
+     "id": "arch.repository",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "PyPI repository using cachecontrol"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/utils/env/virtual_env.py",
+   "concepts": [
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "VirtualEnv environment"
+  },
+  {
+   "kind": "file",
+   "path": "src/poetry/utils/threading.py",
+   "concepts": [
+    {
+     "id": "xcut.concurrency",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.decorator",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "thread-safe cached_property decorator"
+  },
+  {
+   "kind": "file",
+   "path": "tests/console/commands/self/test_sync.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests self sync command"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_helpers.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.vcs",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.repository",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test helpers: mock dulwich repo, test locker and repository"
+  },
+  {
+   "kind": "file",
+   "path": "tests/utils/test_compat.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests compat helpers"
+  }
+ ]
+}

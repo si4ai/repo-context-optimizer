@@ -1,0 +1,391 @@
+{
+ "repo": "axios",
+ "url": "https://github.com/axios/axios",
+ "sha": "71c87d506567e2fe37ba9f6fae6a4fc9411583d0",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "lib",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "axios entry and shared utils",
+   "auto_rejected": [
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "lib/adapters",
+   "concepts": [
+    {
+     "id": "pattern.adapter",
+     "prov": "auto"
+    },
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "transport adapters: http (node), xhr, fetch"
+  },
+  {
+   "kind": "module",
+   "path": "lib/cancel",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "cancellation: CancelToken, CanceledError"
+  },
+  {
+   "kind": "module",
+   "path": "lib/core",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Axios class, AxiosError, headers, interceptor manager, request dispatch"
+  },
+  {
+   "kind": "module",
+   "path": "lib/defaults",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "default request config"
+  },
+  {
+   "kind": "module",
+   "path": "lib/helpers",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: URL building, form data, cookies, streams"
+  },
+  {
+   "kind": "module",
+   "path": "lib/platform/browser/classes",
+   "concepts": [
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "browser platform classes: Blob, FormData, URLSearchParams"
+  },
+  {
+   "kind": "module",
+   "path": "lib/platform/node/classes",
+   "concepts": [
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "node platform classes: Buffer, FormData"
+  },
+  {
+   "kind": "module",
+   "path": "scripts",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "build and benchmark scripts"
+  },
+  {
+   "kind": "module",
+   "path": "tests/browser",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "browser tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/smoke/cjs/tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "smoke tests for the CJS bundle"
+  },
+  {
+   "kind": "module",
+   "path": "tests/unit/helpers",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "unit tests for helpers"
+  },
+  {
+   "kind": "file",
+   "path": "lib/core/createMultipartBody.js",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "builds multipart request body"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/AxiosURLSearchParams.js",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "URLSearchParams encoding"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/Http2Sessions.js",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP/2 session pool for node"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/ZlibHeaderTransformStream.js",
+   "concepts": [
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "zlib header transform stream"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/fromDataURI.js",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "parse data: URIs into buffers or blobs"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/parseHeaders.js",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "parses raw header text"
+  },
+  {
+   "kind": "file",
+   "path": "lib/helpers/trackStream.js",
+   "concepts": [
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "progress-tracking stream reader"
+  },
+  {
+   "kind": "file",
+   "path": "lib/platform/browser/index.js",
+   "concepts": [
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "browser platform descriptor",
+   "auto_rejected": [
+    "arch.repository",
+    "scm.packaging"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "scripts/axios-build-instance.js",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "build script"
+  },
+  {
+   "kind": "file",
+   "path": "tests/setup/formBodyLengthCases.js",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "form body length cases"
+  },
+  {
+   "kind": "file",
+   "path": "tests/smoke/deno/tests/error.smoke.test.ts",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "deno smoke tests for errors"
+  },
+  {
+   "kind": "file",
+   "path": "tests/unit/utils/isX.test.js",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests utils.isX"
+  }
+ ]
+}

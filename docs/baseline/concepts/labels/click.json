@@ -1,0 +1,248 @@
+{
+ "repo": "click",
+ "url": "https://github.com/pallets/click",
+ "sha": "08b803cf32ceb2ae6a772c62d5da42757a897d44",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/click",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "CLI toolkit package: core, decorators, parser, termui"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_utils",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests utilities"
+  },
+  {
+   "kind": "module",
+   "path": "tests/typing",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "typing checks"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/_compat.py",
+   "concepts": [
+    {
+     "id": "xcut.compat",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.i18n",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "stream and encoding compat shims"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/_textwrap.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "text wrapper"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/_utils.py",
+   "concepts": [
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Sentinel value"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/core.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Context, Command, Group, Parameter core"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/exceptions.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "UsageError and friends"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/formatting.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "help text formatter"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/shell_completion.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "shell completion for bash, zsh, fish"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/testing.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "CliRunner test helper"
+  },
+  {
+   "kind": "file",
+   "path": "src/click/types.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ParamType hierarchy converting values"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_chain.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests chained commands"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_types/test_ParamType.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests ParamType"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_types/test_Path.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.validation",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests Path type"
+  }
+ ]
+}
