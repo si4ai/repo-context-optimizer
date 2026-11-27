@@ -176,7 +176,7 @@ def replay(repo: Path, last: int, budget: int, max_files: int,
             commits.append(row)
     if not commits:
         raise UsageError(f"no code commit to replay in the last {last} "
-                         f"({skipped} skipped: root commits or over --max-files)")
+                         f"({skipped} skipped: root or shallow-clone boundary commits, or over --max-files)")
     is_est = tokenizer.startswith("estimate")
     wo = [c["without"]["tokens"] for c in commits]
     wi = [c["with"]["tokens"] for c in commits]

@@ -74,8 +74,10 @@ def render(report: Report, fmt: Literal["markdown", "json"]) -> bytes:
     raise UsageError(f"unknown format {fmt!r} (use markdown or json)")
 
 
-def write_atomic(out: Path, data: bytes) -> None:
-    """Write FILE.tmp beside FILE, fsync, then os.replace; never leave a partial FILE."""
+def write_atomic(out: Path, data: bytes, mode: int | None = None) -> None:
+    """Write FILE.tmp beside FILE, fsync, then os.replace; never leave a partial FILE.
+
+    mode, when given, is set on the tmp file before the swap (an existing file keeps its mode)."""
     if out.is_dir():
         raise UsageError(f"--out {out} is a directory")
     if not out.parent.is_dir():
@@ -86,6 +88,8 @@ def write_atomic(out: Path, data: bytes) -> None:
             f.write(data)
             f.flush()
             os.fsync(f.fileno())
+        if mode is not None:
+            os.chmod(tmp, mode)
         os.replace(tmp, out)
     except PermissionError as e:
         tmp.unlink(missing_ok=True)
