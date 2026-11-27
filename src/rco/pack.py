@@ -1,12 +1,17 @@
 """`rco pack` (Phase 2 step 5, README slice 5, thin; forest-contract section 4).
 
-The pack is the map: the repo Forest, full Trees for the modules that own
-the --for files, and one import hop out as name and one line. Raw files are
+The pack is the map: the repo Forest and, with --for, the signatures of the
+files the --for files import (one hop in the file import graph, across
+module boundaries; card 1340), plus one import hop out of the owning
+modules as name and one line. The --for files' own outlines are left out:
+the agent opens those files anyway to edit them. Imported files are ranked
+by distance from the --for files: files more --for files import come
+first, then files whose directory is nearer, then by path. Raw files are
 fetched on demand. The budget is estimated tokens (characters / 4) of the
 rendered markdown, footer included. Over budget, cuts go in this order:
 hop lines from the end, then empty Forest lines (layer 0, no edges, nothing
-owned, no prose) from the deepest level up, then top-level Tree nodes from
-the end of each full Tree, then the remaining Forest entries. After the pack
+owned, no prose) from the deepest level up, then Tree nodes of the farthest
+imported file first, then the remaining Forest entries. After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
@@ -57,6 +62,32 @@ def _parent_id(mid: str, ids: set[str]) -> str | None:
     if "." in ids:
         return "."
     return None
+
+
+def _dir_distance(a: str, b: str) -> int:
+    """How many steps apart the directories of two repo paths are in the directory tree."""
+    da, db = a.split("/")[:-1], b.split("/")[:-1]
+    common = 0
+    for x, y in zip(da, db):
+        if x != y:
+            break
+        common += 1
+    return (len(da) - common) + (len(db) - common)
+
+
+def rank_imports(for_paths: Sequence[str], graph: dict[str, tuple[str, ...]]) -> list[str]:
+    """Files the --for files import (one hop), nearest first; the --for files are left out.
+
+    A file is nearer when more --for files import it, then when its directory is
+    closer to the nearest importing --for file, then by path, so the list is deterministic.
+    """
+    fps = set(for_paths)
+    by: dict[str, list[str]] = {}
+    for f in sorted(fps):
+        for t in graph.get(f, ()):
+            if t not in fps:
+                by.setdefault(t, []).append(f)
+    return sorted(by, key=lambda t: (-len(by[t]), min(_dir_distance(f, t) for f in by[t]), t))
 
 
 def _forest_depth(mid: str) -> int:
@@ -204,9 +235,13 @@ def pack_markdown(p: Pack, for_label: str = "") -> str:
     out += ["", "## Forest"]
     out += [forest_line(e, flagged.get(e.id, "")) for e in p.forest]
     if p.trees:
-        out += ["", f"## Trees (full, for --for {for_label})" if for_label else "## Trees (full)"]
+        out += ["", f"## Trees (files imported by --for {for_label}; the --for files are not outlined)"
+                if for_label else "## Trees (files imported by --for)"]
+        prev = None
         for t in p.trees:
-            out.append(f"### {t.module}")
+            if t.module != prev:
+                out.append(f"### {t.module}")
+                prev = t.module
             for n in t.nodes:
                 out += _tree_lines(n)
     if p.hop:
@@ -304,10 +339,27 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     hop_ids = sorted({n for o in owners for n in by_id[o].depends_on + by_id[o].used_by}
                      - set(owners), key=_hop_key)
     built = _built(repo, sha, source, owners if for_paths else None)
-    trees = [trees_by[o] for o in owners]
-    if trees:
-        idx = call_index(m.trees, _code_sources(repo, sha), focus=trees)
-        trees = [with_derived_docs(t, idx) for t in trees]
+    trees: list[Tree] = []
+    if for_paths:
+        code = _code_sources(repo, sha)
+        fps = sorted({modules.for_path(p) for p in for_paths})
+        paths = [e.path for e in gitread.ls_tree(repo, sha)]
+        ranked = rank_imports(fps, imports.file_graph(paths, code, only=fps))
+        rank = {p: i for i, p in enumerate(ranked)}
+        per_file: dict[str, list[tuple[Tree, Node]]] = {}
+        for t in m.trees:
+            for n in t.nodes:
+                if n.path in rank:
+                    per_file.setdefault(n.path, []).append((t, n))
+        # one Tree per imported file, nearest first, so cut_one (last node of
+        # the last Tree) always cuts the farthest file first
+        for p in sorted(per_file, key=rank.__getitem__):
+            t0 = per_file[p][0][0]
+            trees.append(Tree(t0.module, t0.module_hash, t0.extractors,
+                              tuple(n for _, n in per_file[p])))
+        if trees:
+            idx = call_index(m.trees, code, focus=trees)
+            trees = [with_derived_docs(t, idx) for t in trees]
     hop = [HopLine(h, _one_line(by_id[h])) for h in hop_ids]
     stale = tuple(sorted(e.id for e in entries if is_stale(e.prose, e.tree_hash)))
     label = " ".join(for_paths or ())

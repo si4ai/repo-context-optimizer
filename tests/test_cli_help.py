@@ -7,7 +7,7 @@ def test_help_names_positionals_and_requires_branches(capsys):
     assert cli.main(["pack", "--help"]) == 0
     pack = capsys.readouterr().out
     assert "commit (default: HEAD)" in pack
-    assert "paths whose owning modules get full Trees" in pack
+    assert "paths whose imported files get outlined" in pack
 
     assert cli.main(["tree", "--help"]) == 0
     assert "commit (default: HEAD)" in capsys.readouterr().out

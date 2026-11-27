@@ -213,7 +213,7 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 ### `rco pack [SHA] [--for FILES] [--budget N]`
 
 - `SHA` defaults to `HEAD`. A repository with no commits still yields an empty pack and exit 0.
-- `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
+- `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, the signatures of the files the `--for` files import (one hop in the file import graph, across module boundaries), and one import hop out of the owning modules as a name and one line. The `--for` files' own outlines are left out, since the agent opens those files to edit them. Imported files are ranked nearest first (imported by more `--for` files, then nearer by directory, then by path), and budget cuts remove the farthest file first. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
 - `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. The smallest is 128; a lower value is a usage error (exit 2). Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose). The smallest budget is 128.
 - The second line says where the pack came from: `# built from <sha> (store|git); HEAD <sha>; current | N commits behind HEAD | not on HEAD's history; working tree matches | N files differ`. With `--for`, only files in the modules that own those paths count, and a third line names them: `# warning: changed since this pack: a.py, b.py (+N more)` (up to 10 names). Both lines sit above `## Forest`, so budget cuts never remove them, and the command still exits 0. `--format json` carries the same facts under `built` (`source`, `head`, `behind`, `differs`).
 - Known limit: the check runs when the pack is built. A pack saved to a file and read later still shows the commit and the HEAD it was built at; compare those with the current HEAD yourself.
@@ -248,11 +248,10 @@ This sample is about 150 estimated tokens (characters / 4; the estimator is appr
 - server: HTTP API and schema (used by: tw, wall)
 - wall: browser UI
 
-## Trees (full, for --for tw/cli.py)
-### tw
-def run(argv: list[str]) -> int  # Run one tw command and return its exit code.
-def stop_run(run_id: str) -> None  # Stop run. Takes run_id. Calls kill. Called by cli.py:main.
-CLI: tw run, tw stop
+## Trees (files imported by --for tw/cli.py; the --for files are not outlined)
+### proc
+def spawn(argv: list[str]) -> int  # Start a child process and return its pid.
+def kill(pid: int) -> None  # Stop a child process by pid. Called by cli.py:stop_run.
 
 ## One hop (name and one line)
 - proc: process supervision for tw runs

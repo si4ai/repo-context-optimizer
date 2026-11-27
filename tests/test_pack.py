@@ -51,10 +51,12 @@ def test_whole_repo_pack_is_forest_only(tmp_path):
     assert [e.id for e in p.forest][:3] == [".", "db", "src/app"]
 
 
-def test_for_gives_full_trees_and_one_hop(tmp_path):
+def test_for_gives_imported_trees_and_one_hop(tmp_path):
     repo, sha = _repo(tmp_path)
     p = pack(repo, sha, ["src/app/core/engine.py"])
-    assert [t.module for t in p.trees] == ["src/app/core"]
+    # card 1340: the files engine.py imports, not its own module
+    assert [t.module for t in p.trees] == ["src/app/util"]
+    assert {n.path for t in p.trees for n in t.nodes} == {"src/app/util/helpers.py"}
     assert [h.id for h in p.hop] == ["src/app", "src/app/util"]
     assert pack_from_obj(pack_to_obj(p)) == p
 
@@ -339,8 +341,9 @@ def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
     used = 0
     repo = sha = None
     for _ in range(12):
-        repo, sha = fixture.make_repo(tmp_path / f"over8000_{n}", {"pkg/mod.py": _mod(n)})
-        full = pack(repo, sha, ["pkg/mod.py"], 10**6)
+        repo, sha = fixture.make_repo(tmp_path / f"over8000_{n}",
+                                      {"pkg/mod.py": _mod(n), "pkg/use.py": "from pkg import mod\n"})
+        full = pack(repo, sha, ["pkg/use.py"], 10**6)
         used = full.used
         if old < used <= old + 800:
             break
@@ -353,15 +356,15 @@ def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
     else:
         raise AssertionError(f"could not land a pack just over {old}: last used={used} n={n}")
 
-    tight = pack(repo, sha, ["pkg/mod.py"], old)
+    tight = pack(repo, sha, ["pkg/use.py"], old)
     assert tight.used <= old, tight.used
-    assert estimate_tokens(pack_markdown(tight, "pkg/mod.py")) <= old
+    assert estimate_tokens(pack_markdown(tight, "pkg/use.py")) <= old
 
-    p = pack(repo, sha, ["pkg/mod.py"])  # reported default
+    p = pack(repo, sha, ["pkg/use.py"])  # reported default
     assert p.budget == DEFAULT_BUDGET
     assert p.used <= p.budget
     assert p.used > old  # the new default keeps the pack that 8000 would have cut
-    assert estimate_tokens(pack_markdown(p, "pkg/mod.py")) == p.used
+    assert estimate_tokens(pack_markdown(p, "pkg/use.py")) == p.used
     assert not any(n.startswith("over budget:") for n in p.notes)
 
 

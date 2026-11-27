@@ -109,7 +109,7 @@ class Pack:
     budget: int  # estimated tokens
     used: int  # estimated tokens of the rendered markdown
     forest: tuple[ForestEntry, ...]
-    trees: tuple[Tree, ...]  # full Trees for the --for modules
+    trees: tuple[Tree, ...]  # with --for: one Tree per imported file, nearest first (card 1340)
     hop: tuple[HopLine, ...]  # one import hop out, name and one line
     trimmed: tuple[str, ...]  # every module or node cut for budget, in cut order
     stale: tuple[str, ...]  # module ids whose prose TreeHash != current TreeHash
