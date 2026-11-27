@@ -209,7 +209,9 @@ Triggers: a git `post-merge` hook, a CI job on push to the default branch, or a 
 
 - `SHA` defaults to `HEAD`. A repository with no commits still yields an empty pack and exit 0.
 - `--for` is optional. If omitted, the pack is the whole-repo Forest only. If present, the pack is the repo Forest, full Trees for the modules that own those paths, and one import hop out as a name and one line. Hop lists put test modules after non-test modules. A `--for` path that matches no module is a warning on stderr; the command still exits 0 and the pack is unchanged (the whole-repo Forest when nothing matched).
-- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose).
+- `--budget N` is in estimated tokens (characters / 4, approximate). Design default: 12000. Cuts start with hop lines, but a hop line is put back when later cuts leave room for it, so the One hop section appears when it fits. A pack that is still over budget after every cut is a warning on stderr and in the metrics; the command exits 0 (exit 1 still means stale prose). The smallest budget is 128.
+- The second line says where the pack came from: `# built from <sha> (store|git); HEAD <sha>; current | N commits behind HEAD | not on HEAD's history; working tree matches | N files differ`. With `--for`, only files in the modules that own those paths count, and a third line names them: `# warning: changed since this pack: a.py, b.py (+N more)` (up to 10 names). Both lines sit above `## Forest`, so budget cuts never remove them, and the command still exits 0. `--format json` carries the same facts under `built` (`source`, `head`, `behind`, `differs`).
+- Known limit: the check runs when the pack is built. A pack saved to a file and read later still shows the commit and the HEAD it was built at; compare those with the current HEAD yourself.
 
 The pack is the map; raw files are fetched on demand.
 
@@ -234,6 +236,7 @@ This sample is about 150 estimated tokens (characters / 4; the estimator is appr
 
 ```markdown
 # rco pack  (SHA=abc1234, budget=12000 estimated tokens)
+# built from abc1234 (store); HEAD abc1234; current; working tree matches
 
 ## Forest
 - tw: desk CLI and process runner (depends on: proc, client)

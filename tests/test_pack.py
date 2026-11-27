@@ -63,7 +63,7 @@ def test_for_gives_full_trees_and_one_hop(tmp_path):
 def test_never_over_budget_and_every_cut_named(tmp_path, case):
     repo, sha = _repo(tmp_path, case)
     full = fixture.git(repo, "ls-files").splitlines()
-    for budget in (MIN_BUDGET, 80, 120, 200, 400, 1000, 8000):
+    for budget in (MIN_BUDGET, 160, 200, 400, 1000, 8000):
         p = pack(repo, sha, full[:2], budget)
         text = pack_markdown(p, " ".join(full[:2]))
         assert estimate_tokens(text) <= budget, (case, budget)
@@ -145,9 +145,9 @@ def test_budget_floor_is_a_usage_error(tmp_path):
 def test_cli_json(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
     assert cli.main(["pack", "--repo", str(repo), "--format", "json", "--for",
-                     "src/app/cli.py", "--budget", "100"]) == Exit.OK
+                     "src/app/cli.py", "--budget", "128"]) == Exit.OK
     out = json.loads(capsys.readouterr().out)
-    assert out["schema"] == "rco.pack/1" and out["used"] <= 100 and out["trimmed"]
+    assert out["schema"] == "rco.pack/1" and out["used"] <= 128 and out["trimmed"]
 
 
 def test_long_for_label_still_within_budget(tmp_path):

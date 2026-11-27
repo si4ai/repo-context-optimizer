@@ -5,7 +5,7 @@ import json
 
 from rco import build, canon, cli, fixture, gitread
 from rco.output import Exit
-from rco.pack import pack
+from rco.pack import MIN_BUDGET, pack
 from rco.store import MemoryStore
 from rco.update import update
 from rco.prose import flags as prose_flags
@@ -68,9 +68,9 @@ def test_large_layout_budget_and_incremental_extract(tmp_path):
     files["app/__init__.py"] = '"""app."""\n'
     files["app/core.py"] = "def run() -> int:\n    return 0\n"
     repo, a = fixture.make_repo(tmp_path / "large", files)
-    p = pack(repo, a, budget=64)
-    assert p.used <= 64
-    assert p.trimmed  # a 24-module forest cannot all fit in 64 tokens
+    p = pack(repo, a, budget=MIN_BUDGET)
+    assert p.used <= MIN_BUDGET
+    assert p.trimmed  # a 24-module forest cannot all fit in the smallest budget
     store = MemoryStore()
     first = update(repo, store, a)
     assert first.swapped and first.extracted
