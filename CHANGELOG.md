@@ -36,6 +36,11 @@
   files in those modules (up to 10). Both lines are never cut, and the
   command still exits 0. `--format json` adds a `built` key; the schema
   stays `rco.pack/1` and its reader accepts packs with or without `built`
+- docs: `docs/guide/cloud-agents.md` (what to commit and the setup hook per
+  platform; its measured benefit says "unmeasured"), the examples
+  `docs/guide/examples/AGENTS.rco.md` and `cursor-environment.json`, and
+  `docs/baseline/cloud-ab.md` (the Bot-then-Build measurement method and an
+  empty results table)
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete
