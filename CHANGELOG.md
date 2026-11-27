@@ -22,6 +22,11 @@
   `.cursor/environment.json` when `.cursor/` exists and the file does not,
   and reports the `read: [AGENTS.md]` line to add to `.aider.conf.yml`.
   Opt-in; plain `rco init` is unchanged.
+- docs: `docs/guide/cloud-agents.md` (what to commit and the setup hook per
+  platform; its measured benefit says "unmeasured"), the examples
+  `docs/guide/examples/AGENTS.rco.md` and `cursor-environment.json`, and
+  `docs/baseline/cloud-ab.md` (the Bot-then-Build measurement method and an
+  empty results table)
 - `rco metrics measure` writes a schema-1 `rco-metrics.json` for one pull
   request (bytes and tokens without rco versus the pack); `rco metrics check`
   exits 1 if that file is missing or incomplete

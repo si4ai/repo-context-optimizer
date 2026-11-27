@@ -216,6 +216,8 @@ flowchart LR
 
 Outside any pipeline, an agent can ask rco at any time. Answers are computed from git objects with no model, no keys and no network. The LLM prose path is off; prose is mined from docstrings and READMEs.
 
+For agents that start from a fresh checkout (Cursor, Codex, Devin and the like), see [Cloud agents and rco](cloud-agents.md).
+
 | question the agent has | Command |
 |---|---|
 | what are the public contracts of this module? | `rco tree --for <path>` |

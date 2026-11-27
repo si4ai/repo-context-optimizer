@@ -633,3 +633,16 @@ sequence
 trees
 yield
 just
+aider
+claude
+cloud
+codex
+cursor
+devin
+freshness
+gemini
+grok
+measured
+nothing
+setup
+size
