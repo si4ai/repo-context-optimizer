@@ -15,7 +15,7 @@ system temp dir), never into the checkout.
 
 All three take `--repo DIR` (default: this checkout).
 
-**1 readme_ledger.** `claims.yaml` lists 42 README promises (id, kind, quote,
+**1 readme_ledger.** `claims.yaml` lists 48 README promises (id, kind, quote,
 probe). The ledger re-finds each quote (a missing quote is STALE), runs its
 probe against `git archive REF`, and writes `ledger-<sha>.md` and `.yaml`. A
 claim with no probe is UNTESTABLE. By default PASS is the only green status;

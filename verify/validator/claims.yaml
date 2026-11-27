@@ -44,3 +44,9 @@
 - {id: R40, kind: planned, quote: "A conformance test suite is the check that an adapter is honest.", probe: null}
 - {id: R41, kind: planned, quote: "Modules detected from the package layout; Trees extracted;", probe: null}
 - {id: R42, kind: planned, quote: "`rco update` re-extracts only modules whose tree ids changed", probe: null}
+- {id: R43, kind: now, quote: "`rco update` creates `.rco/events.jsonl` and writes its first line.", probe: events_update_creates}
+- {id: R44, kind: now, quote: "Every later run appends one line, `pack` and `check` included, once `.rco/` exists.", probe: events_runs_append}
+- {id: R45, kind: now, quote: "`--help` and `--version` add no line.", probe: events_runs_append}
+- {id: R46, kind: now, quote: "A `pack` or `check` in a tree with no `.rco/` writes nothing.", probe: events_not_written_without_rco_dir}
+- {id: R47, kind: now, quote: "`rco pack` and `rco check` never create a store, so no `rco.db` appears from either.", probe: readonly_commands_create_no_store}
+- {id: R48, kind: now, quote: "There is no `events` table in the SQLite store.", probe: no_events_table}

@@ -560,7 +560,7 @@ flowchart LR
    - Prose names: every name the Forest prose cites exists in the Tree.
    - The checker checks itself: maps with planted errors (a removed flag, a renamed column, a missing edge) must all be flagged.
    Alongside it: property tests (Hypothesis) that mirror the model's properties over random edit and merge sequences; a history replay where incremental updates must equal a full rebuild at every SHA of the default branch; and golden fixture repos with known Trees and Forests.
-3. **Is the running code the protocol?** A valid protocol means nothing if the code diverges from it or bypasses it. The model says what is allowed; this layer checks that real runs stay inside it, both after an incident (to debug errant behavior) and in flight (to see protocol drift). It has two halves, [divergence](#how-the-events-are-checked-against-the-protocol-divergence) and [bypass](#how-a-bypass-is-found), and a [trigger and effect table](#what-triggers-what). **Status: not built yet.** At present the CLI writes no event log, and no command prints conformance counts; the work is on mill cards `protocol-trace-conformance` (1311) and `protocol-bypass-scan` (1312), which cover the mill's own wake, hold, card and send protocols first. RCO's own events and checks are not carded separately yet.
+3. **Is the running code the protocol?** A valid protocol means nothing if the code diverges from it or bypasses it. The model says what is allowed; this layer checks that real runs stay inside it, both after an incident (to debug errant behavior) and in flight (to see protocol drift). It has two halves, [divergence](#how-the-events-are-checked-against-the-protocol-divergence) and [bypass](#how-a-bypass-is-found), and a [trigger and effect table](#what-triggers-what). **Status: partly built.** The [events log](#events-log) ships, and `rco metrics bypass` checks one bypass case. Not built yet: the SQLite events table, the protocol-order replay, the artifact-to-run bypass scan, and the conformance-count command. The mill cards `protocol-trace-conformance` (1311) and `protocol-bypass-scan` (1312) cover the mill's own wake, hold, card and send protocols first.
 
    The smoke tests, the exit-code contract, timing and budget on the replay, and the cold-agent A/B stay, but they are evidence that RCO is correct, not that it ran when it should have:
    - The zero-config acceptance table, run as smoke tests: each row's expected behavior holds on a fixture repo.
@@ -574,20 +574,24 @@ When `--budget` trims a pack, the pack names what it trimmed.
 
 #### How the events are checked against the protocol (divergence)
 
-Planned, not shipped. A CLI has no daemon, so each run is the whole story. Each `rco` invocation would append one event to an append-only `events` table in RCO's store, behind the same `Store` interface as the rest. The default store is SQLite (`.rco/rco.db`, WAL mode, tables `node`, `sha_index`, `pointer`, `prose`, `queue` and `notice`); there is no `events` table today. Each event holds:
+A CLI has no daemon, so each run is the whole story. What ships today is one JSON line per run in `.rco/events.jsonl`, a file beside the store, not a table in it:
 
-- the command and the shape of its arguments (flags and counts, not values),
-- the `rco` version,
-- the exit code and the duration,
-- the map or pack hash it read, and the hash it wrote.
+- `rco update` creates `.rco/events.jsonl` and writes its first line.
+- Every later run appends one line, `pack` and `check` included, once `.rco/` exists.
+- `--help` and `--version` add no line.
+- A `pack` or `check` in a tree with no `.rco/` writes nothing.
+- `rco pack` and `rco check` never create a store, so no `rco.db` appears from either.
+- Each line holds `cmd`, `exit`, `store` (the pointer sha at the end of the run), `head`, `ms`, `ts`, `run`, `v` and, for `pack`, `for`; the [events log](#events-log) section lists every key.
+- There is no `events` table in the SQLite store.
+- The log shows that a command ran, not that the protocol ran when it should have: it holds no pointer before the run, and nothing yet compares it with the protocol's allowed order.
 
-A deterministic replay of that table, with no LLM, then checks the events against the protocol's allowed order, the same way the SPIN model is checked: for example `rco update` runs after each merge to the default branch, the pointer only moves forward, and a pack is read before an agent's first edit. Any step the protocol forbids is reported with its event ids. The table is read the same way after an incident, over a time window, and in flight, where the counts should stay at zero.
+Not built yet: the protocol-order replay. It would be a deterministic check, with no LLM, that reads the events and reports any step the protocol forbids, the same way the SPIN model is checked: for example `rco update` runs after each merge to the default branch, the pointer only moves forward, and a pack is read before an agent's first edit. It would run over a time window after an incident, and in flight, where its counts should stay at zero.
 
-Two design points are open, because the store was built as a cache. `rco pack` and `rco check` only read a store and never create one, so logging their runs needs a stated exception to that rule. And a store restored from a CI cache, or deleted, loses its events, so where the events live long enough to survive an incident is not settled. Any other backend would need the same table, and the store conformance suite would need a check for it.
+The log lives in the working tree's `.rco/`. With the documented `path: .rco` cache the log survives between CI runs; only a fresh checkout without the cache starts empty. Events are per machine.
 
 #### How a bypass is found
 
-Planned, not shipped. A CLI cannot see what skips it, because a bypass leaves no event. So the check runs from the artifacts back to the runs:
+A CLI cannot see what skips it, because a bypass leaves no event. So the check runs from the artifacts back to the runs. One case ships: `rco metrics bypass` lists code commits that no `rco pack` run preceded, and says only that a pack ran, not that the agent read it. Not built yet, the artifact-to-run bypass scan:
 
 - A map or pack hash that is on disk or in the store with no `rco` run that wrote it means something wrote it without going through the protocol.
 - An agent session with no pack read means the agent worked without the map.
@@ -601,12 +605,12 @@ Each row is a trigger and the effect it must produce. A trigger with no effect i
 
 | trigger | required effect | evidence in the events | exists today |
 |---|---|---|---|
-| A merge lands on the default branch | `rco update` publishes the pointer for that SHA | an `update` event whose written hash is the new pointer | the command and its [SPIN model](verify/spin/README.md) exist; no event is recorded. |
-| `rco update` starts | The pointer moves forward only, by one compare-and-swap, and only to a complete SHA | the pointer hash read, then the hash written, in one event | as a model in `verify/spin/rco_update.pml`; not observed in real runs. |
-| An agent session starts on a repo with RCO | A pack read before the agent's first edit | a `pack` event, then the first edit | no event is recorded. |
-| A pack or map file changes | A `rco` run wrote that hash | the hash in a `pack` or `update` event | no event is recorded. |
+| A merge lands on the default branch | `rco update` publishes the pointer for that SHA | an `update` line whose `store` is the new pointer | the line is written; the protocol-order replay that compares it is not built. |
+| `rco update` starts | The pointer moves forward only, by one compare-and-swap, and only to a complete SHA | the pointer read, then the pointer written | modelled in `verify/spin/rco_update.pml`; the line holds only the pointer at the end, so this is not observed in real runs. |
+| An agent session starts on a repo with RCO | A pack read before the agent's first edit | a `pack` line, then the first edit | the `pack` line is written; `rco metrics bypass` checks it against commits, and nothing checks it against edits. |
+| A pack or map file changes | A `rco` run wrote that hash | the hash in a `pack` or `update` line | the log holds no written hash, so the artifact-to-run scan is not built. |
 
-The one command that should print the conformance counts (forbidden steps, silent no-ops, orphans, out-of-order) **does not exist yet**. When it lands it will be named here, and its zero output on a real window of events becomes the evidence for this layer.
+The conformance-count command (forbidden steps, silent no-ops, orphans, out-of-order) **does not exist yet**. When it lands it will be named here, and its zero output on a real window of events becomes the evidence for this layer.
 
 ## Open questions
 
