@@ -36,8 +36,6 @@ paths = [
   "tests/fixtures/**",
   "tests/golden/**",
   "pyproject.toml",
-  # card 1338: tests/test_concept_baseline.py checks this data
-  "docs/baseline/concepts/**",
 ]
 jobs = ["pytest"]
 
