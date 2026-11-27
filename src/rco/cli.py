@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
@@ -350,18 +351,37 @@ def run(args: argparse.Namespace) -> Exit:
     raise UsageError(f"unknown command {args.cmd}")
 
 
+def _event_cmd(args: object | None) -> str | None:
+    """The events-log command name: the subcommand, plus the metrics subcommand."""
+    cmd = getattr(args, "cmd", None)
+    if not cmd:
+        return None
+    sub = getattr(args, "metrics_cmd", None) if cmd == "metrics" else None
+    return f"{cmd} {sub}" if sub else cmd
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    t0 = time.monotonic()
+    start_wall = time.time()
+    args = None
+    code = int(Exit.INTERNAL)
     try:
         args = make_parser().parse_args(argv)
-        return int(run(args))
+        code = int(run(args))
     except UsageError as e:
         text = str(e) if isinstance(e, _ParserError) else f"rco: {e}"
         print(text, file=sys.stderr)
-        return int(Exit.USAGE)
-    except SystemExit as e:  # --help / --version
+        code = int(Exit.USAGE)
+    except SystemExit as e:  # --help / --version: not a run, no event
         return int(e.code or 0)
     except Exception as e:  # noqa: BLE001 - the exit-3 contract
         if os.environ.get("RCO_DEBUG") == "1":
             raise
         print(f"rco: internal error: {type(e).__name__}: {e}", file=sys.stderr)
-        return int(Exit.INTERNAL)
+        code = int(Exit.INTERNAL)
+    cmd = _event_cmd(args)
+    if cmd is not None:
+        from rco import events
+        for_paths = (getattr(args, "for_paths", None) or []) if args.cmd == "pack" else None
+        events.record(Path(getattr(args, "repo", ".")), cmd, code, t0, start_wall, for_paths)
+    return code

@@ -26,6 +26,9 @@ declare -A V=(
   [bcas_touch]="-DGUARD=2 -DTOUCH=1 -DSTALE=0 -DQAFTER=0"
   [bcas_derived]="-DGUARD=2 -DTOUCH=0 -DSTALE=1 -DQAFTER=0"
   [bcas_qafter]="-DGUARD=2 -DTOUCH=0 -DSTALE=0 -DQAFTER=1"
+  # card 1318: a kill after the pointer write, then a rerun (property 8 only)
+  [code010]="-DGUARD=2 -DTOUCH=1 -DSTALE=1 -DQAFTER=1 -DPCRASH=1 -DQFROM=1"
+  [code1318]="-DGUARD=2 -DTOUCH=1 -DSTALE=1 -DQAFTER=1 -DPCRASH=1 -DQFROM=2"
 )
 ORDER="a b bcas fixed bcas_touch bcas_derived bcas_qafter"
 # property -> bounds
@@ -33,6 +36,7 @@ declare -A B=(
   [1]="-DMAXCRASH=1 -DMAXDUP=1" [2]="-DMAXCRASH=1 -DMAXDUP=1" [3]="-DMAXCRASH=1 -DMAXDUP=1"
   [4]="-DMAXCRASH=0 -DMAXDUP=1" [5]="-DMAXCRASH=1 -DMAXDUP=0"
   [6]="-DMAXCRASH=1 -DMAXDUP=1" [7]="-DMAXCRASH=0 -DMAXDUP=1"
+  [8]="-DMAXCRASH=1 -DMAXDUP=1"
 )
 
 # Expected verdict for each variant:property, from the Results tables in README.md.
@@ -43,15 +47,23 @@ declare -A EXPECT=(
   [fixed:1]=PASS [fixed:2]=PASS [fixed:3]=PASS [fixed:4]=PASS [fixed:5]=PASS [fixed:6]=PASS [fixed:7]=PASS
   [bcas_touch:1]=PASS [bcas_touch:2]=PASS [bcas_touch:3]=FAIL [bcas_touch:4]=PASS [bcas_touch:5]=PASS [bcas_touch:6]=PASS [bcas_touch:7]=FAIL
   [bcas_derived:1]=PASS [bcas_derived:2]=FAIL [bcas_derived:3]=PASS [bcas_derived:4]=PASS [bcas_derived:5]=FAIL [bcas_derived:6]=PASS [bcas_derived:7]=FAIL
+  [code010:8]=FAIL [code1318:8]=PASS
   [bcas_qafter:1]=PASS [bcas_qafter:2]=FAIL [bcas_qafter:3]=FAIL [bcas_qafter:4]=PASS [bcas_qafter:5]=FAIL [bcas_qafter:6]=PASS [bcas_qafter:7]=PASS
 )
 
-VARS=${1:-$ORDER}; PROPS=${2:-"1 2 3 4 5 6 7"}
+# with no arguments: every variant in ORDER against P1-P7, then EXTRA cells
+EXTRA="code010:8 code1318:8"
+if [ $# -gt 0 ]; then
+  CELLS=""; for v in $1; do for p in ${2:-"1 2 3 4 5 6 7"}; do CELLS="$CELLS $v:$p"; done; done
+else
+  CELLS=""; for v in $ORDER; do for p in 1 2 3 4 5 6 7; do CELLS="$CELLS $v:$p"; done; done
+  CELLS="$CELLS $EXTRA"
+fi
 fail=0; n=0; npass=0; nfail=0
 t0=$(date +%s)
 emit "$(printf "%-12s %-4s %-6s %-5s %8s  %s" variant prop expect got states detail)"
 
-for v in $VARS; do for p in $PROPS; do
+for cell in $CELLS; do v=${cell%%:*}; p=${cell#*:}
   n=$((n+1))
   expect="${EXPECT[$v:$p]:-}"
   if [ -z "$expect" ]; then
@@ -124,7 +136,7 @@ for v in $VARS; do for p in $PROPS; do
   fi
   if [ "$got" = PASS ]; then npass=$((npass+1)); else nfail=$((nfail+1)); fi
   emit "$(printf "%-12s P%-3s %-6s %-5s %8s  %s" "$v" "$p" "$expect" "$got" "$st" "$det$mark")"
-done; done
+done
 
 secs=$(( $(date +%s) - t0 ))
 emit "spin: $(spin -V)"
