@@ -10,7 +10,4 @@
 module app.core.engine
   def run() -> int  # Run. Returns int. Calls helpers.py:clamp. Called by cli.py:main.
 
-## One hop (name and one line)
-- src/app/core: layer 1; Defines function run.
-
-# budget used: ~191 / 12000 estimated tokens
+# budget used: ~169 / 12000 estimated tokens
