@@ -65,7 +65,7 @@ jobs:
         with:
           python-version: "3.12"
       - name: Install pytest
-        run: pip install pytest==9.2.0 tiktoken
+        run: pip install pytest==9.2.0
       - name: Run pytest
         run: pytest
 
