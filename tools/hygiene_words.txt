@@ -839,3 +839,9 @@ unused
 util
 widget
 wrap
+# card 1363 build files
+bnd
+directory
+dup
+lib
+reader
