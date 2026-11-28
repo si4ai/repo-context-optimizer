@@ -39,7 +39,9 @@ Test files: Python `test_*.py` and `*_test.py` (pytest's default); Go
 `.rs` directly in a `tests/` directory; Java `*Test.java`, `*Tests.java`,
 `*IT.java`, `*TestCase.java`, `Test*.java` or under `test/` or `tests/`; C#
 `*Test.cs`, `*Tests.cs`, `*TestCase.cs`, `*Fixture.cs` or under `test/`,
-`tests/` or a `*.Tests` directory; PHP `*Test.php`, `*Tests.php`,
+`tests/` or a `*.Tests` directory; Kotlin `*Test.kt`, `*Tests.kt`, `*IT.kt`,
+`*TestCase.kt`, `*Spec.kt` or under `test/`, `tests/` or a `*Test` source set;
+PHP `*Test.php`, `*Tests.php`,
 `*TestCase.php` or under `tests/` or `test/`.
 """
 from __future__ import annotations
@@ -79,6 +81,8 @@ BUILD_FILES: dict[str, tuple[str, ...]] = {
     "java": ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle",
              "settings.gradle.kts", "gradle.properties", "libs.versions.toml", "*.gradle",
              "*.gradle.kts"),
+    "kotlin": ("build.gradle.kts", "build.gradle", "settings.gradle.kts", "settings.gradle",
+               "gradle.properties", "libs.versions.toml", "pom.xml", "*.gradle.kts"),
     "php": ("composer.json", "composer.lock", "phpunit.xml", "phpunit.xml.dist", "phpunit.dist.xml"),
     "csharp": ("*.csproj", "*.sln", "*.slnx", "*.props", "*.targets", "global.json",
                "nuget.config", "NuGet.Config"),
@@ -116,6 +120,9 @@ def is_test(path: str) -> bool:
         return (name.removesuffix(".cs").endswith(("Test", "Tests", "TestCase", "Fixture"))
                 or any(d.lower() in ("test", "tests") or d.endswith((".Tests", ".Test", ".UnitTests"))
                        for d in dirs))
+    if lang == "kotlin":  # Gradle src/test, src/jvmTest, src/commonTest, and *Test names
+        return (name.removesuffix(".kt").endswith(("Test", "Tests", "IT", "TestCase", "Spec"))
+                or any(d in ("test", "tests") or (d.endswith("Test") and d != "Test") for d in dirs))
     if lang == "php":  # PHPUnit: tests/ or *Test.php
         return name.removesuffix(".php").endswith(("Test", "Tests", "TestCase")) or "tests" in dirs or "test" in dirs
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs

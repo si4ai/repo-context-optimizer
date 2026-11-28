@@ -127,6 +127,8 @@ class RepoFacts:
     java_dirs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # directory -> .java paths
     java_pkg: Mapping[str, str] = field(default_factory=dict)  # .java path -> its package as a path
     java_pkgs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # package path -> .java paths
+    kt_pkg: Mapping[str, str] = field(default_factory=dict)  # .kt path -> its package as a path
+    kt_names: Mapping[str, Mapping[str, tuple[str, ...]]] = field(default_factory=dict)  # package -> name -> .kt paths
     cs_types: Mapping[str, Mapping[str, tuple[str, ...]]] = field(default_factory=dict)  # ns -> type -> files
     cs_global: tuple[str, ...] = ()  # namespaces every file uses (global using)
     cs_projects: tuple[str, ...] = ()  # directories holding a .csproj, longest first
@@ -198,6 +200,17 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
         if p.endswith(".php") and p in sources:
             for fq in _php_file_facts(sources[p].decode("utf-8-sig", "replace"))[1]:
                 decls.setdefault(fq, []).append(p)
+    kt_pkg: dict[str, str] = {}
+    kt_names: dict[str, dict[str, list[str]]] = {}
+    for p in sorted(paths):
+        if p.endswith(".kt") and p in sources:
+            pk, names, _imports = _kt_file_facts(sources[p].decode("utf-8-sig", "replace"))
+            kt_pkg[p] = pk
+            for nm in names:
+                if nm.startswith("@facade:"):  # the JVM class of the file's top-level functions
+                    nm = nm[8:] or PurePosixPath(p).stem + "Kt"
+                kt_names.setdefault(pk, {}).setdefault(nm, []).append(p)
+    for p in sorted(paths):
         if p.endswith(".java"):
             stems.setdefault(PurePosixPath(p).stem, []).append(p)
             jdirs.setdefault(dir_of(p), []).append(p)
@@ -211,7 +224,8 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
                      {k: tuple(v) for k, v in stems.items()},
                      {k: tuple(v) for k, v in jdirs.items()}, jpkg,
-                     {k: tuple(v) for k, v in jpkgs.items()},
+                     {k: tuple(v) for k, v in jpkgs.items()}, kt_pkg,
+                     {pk: {nm: tuple(v) for nm, v in d.items()} for pk, d in kt_names.items()},
                      cs_types, cs_global, cs_projects, cs_visible,
                      tuple(sorted(set(psr4), key=lambda x: (-len(x[0]), x))), php_decls,
                      frozenset(k.rsplit("\\", 1)[-1] for k in php_decls))
@@ -507,6 +521,68 @@ def _token_overlap(a: str, b: str) -> float:
     return len(x & y) / len(x | y) if x | y else 0.0
 
 
+_KT_ID = r"[A-Za-z_]\w*"
+_KT_MODS = ("public|private|protected|internal|open|abstract|final|sealed|data|enum|annotation|inner|"
+            "value|inline|companion|const|lateinit|override|operator|infix|suspend|tailrec|external|"
+            "expect|actual")
+_KT_TOP = re.compile(
+    rf"^[ \t]*(?:(?:{_KT_MODS}|@\w+(?::\w+)?(?:\([^)\n]*\))?)[ \t]+)*"
+    rf"(?:(?:class|interface|object|typealias)[ \t]+(?P<n>{_KT_ID})|fun[ \t]+interface[ \t]+(?P<n2>{_KT_ID})"
+    rf"|(?:fun|val|var)[ \t]+(?:<[^>\n]*>[ \t]*)?(?:[\w<>?,. ]*\.)?(?P<f>{_KT_ID}))", re.M)
+_KT_JVMNAME = re.compile(r'@file:JvmName\(\s*(?:name\s*=\s*)?"([A-Za-z_]\w*)"\s*\)')
+_KT_PACKAGE = re.compile(rf"^[ \t]*package[ \t]+(?P<name>{_KT_ID}(?:[ \t]*\.[ \t]*{_KT_ID})*)", re.M)
+_KT_IMPORT = re.compile(rf"^[ \t]*import[ \t]+(?P<name>{_KT_ID}(?:[ \t]*\.[ \t]*{_KT_ID})*)(?P<star>[ \t]*\.[ \t]*\*)?"
+                        rf"(?:[ \t]+as[ \t]+(?P<alias>{_KT_ID}))?", re.M)
+
+
+def _kt_file_facts(text: str) -> tuple[str, tuple[str, ...], tuple[tuple[str, bool, str], ...]]:
+    """(package as a path, top-level names, imports (dotted name, star, alias)) of a Kotlin file."""
+    def compute():
+        s = scan(text, "kotlin")
+        code = s.code
+        pm = _KT_PACKAGE.search(code)
+        pk = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
+        tops = [m for m in _KT_TOP.finditer(code)
+                if s.depth_at(m.start("n") if m.group("n") else m.start()) == 0]
+        names = {m.group("n") or m.group("n2") or m.group("f") for m in tops}
+        if any(m.group("f") for m in tops):  # Java sees top-level functions through the file facade
+            jn = _KT_JVMNAME.search(s.nc)
+            names.add("@facade:" + (jn.group(1) if jn else ""))
+        imps = tuple((re.sub(r"\s+", "", m.group("name")), bool(m.group("star")), m.group("alias") or "")
+                     for m in _KT_IMPORT.finditer(code))
+        return pk, tuple(sorted(n for n in names if n)), imps
+    from rco import memo
+    return memo.cached("kt_facts", text, compute)
+
+
+def _kt_croot(c: str, f: RepoFacts) -> str:
+    pk, d = f.kt_pkg.get(c, ""), dir_of(c)
+    if d == pk:
+        return ""
+    return d[:len(d) - len(pk) - 1] if pk and d.endswith("/" + pk) else d
+
+
+def _kt_pick(hits: tuple[str, ...], root: str, here: str, f: RepoFacts) -> list[str]:
+    """Twin declarations (common and jvm source sets, say): own root, nearest; ties all stay."""
+    if len(hits) == 1:
+        return list(hits)
+
+    def key(c: str) -> tuple:
+        cr = _kt_croot(c, f)
+        return (cr != root, -_common_dirs(dir_of(c), here), -_token_overlap(cr, root))
+    best = min(key(c) for c in hits)
+    return sorted(c for c in hits if key(c) == best)
+
+
+def _kt_lookup(parts: list[str], f: RepoFacts, root: str, here: str) -> list[str]:
+    """Kotlin files a dotted name points at: a.b.C, a.b.C.Inner, a.b.topLevelFun."""
+    for i in range(len(parts), 0, -1):
+        got = f.kt_names.get("/".join(parts[:i - 1]), {}).get(parts[i - 1])
+        if got:
+            return _kt_pick(got, root, here, f)
+    return []
+
+
 _PHP_ID = r"[A-Za-z_\x80-\uffff][\w\x80-\uffff]*"
 _PHP_NS = re.compile(rf"\bnamespace\s+(?P<name>{_PHP_ID}(?:\\{_PHP_ID})*)\s*[;{{]")
 _PHP_TYPE = re.compile(rf"(?<![:\w$>\\])(?P<kw>class|interface|trait|enum)\s+(?P<name>{_PHP_ID})")
@@ -707,7 +783,7 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
         fq = re.sub(r"\s+", "", m.group("name"))
         if not m.group("star"):
             imported.add(fq.rsplit(".", 1)[-1])
-        t = _java_class(fq, f, root, here)
+        t = _java_class(fq, f, root, here) or (_kt_lookup(fq.split("."), f, root, here) if f.kt_names else [])
         if t and (not m.group("star") or fq.rsplit(".", 1)[-1][:1].isupper()):
             hits.update(t)
             continue
@@ -724,6 +800,12 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
                 for x in by_dir:
                     if dkey(x) == best:
                         hits.update(by_dir[x])
+    if f.kt_names:  # Kotlin declarations of the same package or of a wildcard import
+        for pk in [fq.replace(".", "/") for fq in (re.sub(r"\s+", "", m.group("name"))
+                                                    for m in _JAVA_IMPORT.finditer(s.code) if m.group("star"))] + [pdir]:
+            for nm, files in f.kt_names.get(pk, {}).items():
+                if nm in idents and (pk != pdir or nm not in imported):
+                    hits.update(_kt_pick(files, root, here, f))
     # same package: no import needed, and the package may sit under another source root
     # (src/test/java names a class of src/main/java). A file with no package line is in the
     # default package, shared by every other file with none.
@@ -735,6 +817,52 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
     for stem, cands in by_stem.items():
         hits.update(_java_pick(cands, root, here, len(pdir + "/" + stem + ".java") if pdir else len(stem) + 5))
     return hits
+
+
+def _kt(path: str, text: str, f: RepoFacts) -> set[str]:
+    if not f.kt_pkg and not f.java_stems:
+        return set()
+    s = scan(text, "kotlin")
+    here = dir_of(path)
+    pk, _names, imports = _kt_file_facts(text)
+    root = _kt_root(here, pk)
+    idents = set(re.findall(_KT_ID, s.code))
+    hits: set[str] = set()
+    imported: set[str] = set()
+    for name, star, alias in imports:
+        parts = name.split(".")
+        if not star:
+            imported.add(alias or parts[-1])
+        got = _kt_lookup(parts, f, root, here)
+        if not got and not star:
+            got = _java_class(name, f, root, here)
+        if got:
+            hits.update(got)
+            if not star:
+                continue
+        if star:  # a package: the declarations of it this file names
+            pkg = "/".join(parts)
+            for nm, files in f.kt_names.get(pkg, {}).items():
+                if nm in idents:
+                    hits.update(_kt_pick(files, root, here, f))
+            for c in _java_pkg_files(f, pkg):
+                if PurePosixPath(c).stem in idents:
+                    hits.add(c)
+    # same package: no import needed, in any source root that holds it
+    for nm, files in f.kt_names.get(pk, {}).items():
+        if nm in idents and nm not in imported:
+            hits.update(_kt_pick(files, root, here, f))
+    for c in _java_pkg_files(f, pk, None):
+        stem = PurePosixPath(c).stem
+        if stem in idents and stem not in imported:
+            hits.add(c)
+    return hits
+
+
+def _kt_root(here: str, pk: str) -> str:
+    if here == pk:
+        return ""
+    return here[:len(here) - len(pk) - 1] if pk and here.endswith("/" + pk) else here
 
 
 def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
@@ -753,6 +881,8 @@ def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
         got = _java(path, text, f)
     elif lang == "csharp":
         got = _cs(path, text, f)
+    elif lang == "kotlin":
+        got = _kt(path, text, f)
     elif lang == "php":
         got = _php(path, text, f)
     else:

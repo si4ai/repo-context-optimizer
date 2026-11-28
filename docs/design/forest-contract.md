@@ -247,6 +247,17 @@ step-0 follow-up PR, sent to every open step first.
   nearest project. A `.csproj` `ProjectReference` (followed transitively)
   limits which projects a file can see; a file under no project sees all
   projects. Twin types in projects equally near the file all get an edge.
+  Kotlin (0.2.0, card 1364): the `package` line of every file is indexed,
+  not the folder, with the top-level names it declares (classes, objects,
+  typealiases, functions, properties). `import a.b.C` (also `as`, nested
+  names such as `a.b.C.Inner`, and `a.b.*`) maps to the files declaring that
+  name in package `a.b`; a Java class is found the same way, and a Java file
+  sees Kotlin declarations by its imports and its own package. A file sees
+  the other files of its own package in any source root. Twin declarations
+  (a `commonMain` and a `jvmMain` file, say) that tie on every rule all get
+  an edge. A file with top-level functions or properties is also known by
+  its JVM facade class (`FooKt`, or the name of `@file:JvmName`), so a Java
+  file that imports or names it reaches the file.
   PHP (0.2.0, card 1365): `use A\B\C;` (also a group `use A\{B, C as D}`,
   `use function` and aliases) and a name the file writes in its own
   namespace or fully qualified (`\A\B`) map through the composer.json

@@ -535,6 +535,25 @@ Applied in 0.2.0 (card 1363):
   `sealed`, `static`, `virtual`, `override`, `readonly` and `partial` where
   present. `[Attr]` lists are skipped by `rco/extract/brace.py`.
 
+Applied in 0.2.0 (card 1364):
+
+- Applied: a `kotlin` extractor (`rco/extract/kotlin.py`) on the same scanner
+  (`scan.py`, lang `kotlin`: nested block comments, strings with `${...}`
+  templates, `"""` raw strings, and backtick names). Top-level functions and
+  properties are children of the SRCMODULE (as in Go), whose `package` attr
+  is the file's package line. Children: CLASS (`kind` is `class`,
+  `interface`, `object`, `enum`, `annotation` or `typealias`; a
+  `companion object` is `Companion`), METHOD (a secondary constructor is
+  `constructor`; an extension function is named `Receiver.name`), FIELD
+  (properties, including extension properties and enum entries) and CONSTANT
+  (`const val`). Public means not `private` and not `internal` (Kotlin's
+  default is public; an interface member is public unless marked
+  `private`). A function or property ends where the next declaration
+  starts, so expression bodies, delegates (`by`) and `get`/`set` accessors
+  on the lines after it work.
+  Attrs record `open`, `abstract`, `sealed`, `data`, `inner`, `value`,
+  `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,
+  `tailrec`, `expect`, `actual` and `var` where present.
 Applied in 0.2.0 (card 1365):
 
 - Applied: a `php` extractor (`rco/extract/php.py`) on the same scanner
