@@ -24,8 +24,9 @@ keeps a symlinked `CLAUDE.md` or `AGENTS.md` as a link.
 ## The block
 
 [`examples/AGENTS.rco.md`](examples/AGENTS.rco.md) is exactly what
-`rco init --agents` writes. It is under 1 KiB and carries no version, so it
-does not change between rco releases:
+`rco init --agents` writes. It is under 1 KiB and carries no version. When a
+release changes it, rerun `rco init --agents` and the block is replaced
+(`updated`).
 
 ```markdown
 <!-- rco:begin (rco init --agents) -->
@@ -34,6 +35,7 @@ does not change between rco releases:
 - Before you read code, run `rco pack --for FILE...` for the files you will touch.
 - Read the pack first; open a raw file only when the pack does not answer.
 - If the pack's second line does not say `current`, run `rco update` and pack again; read any file on its `changed since this pack` line directly.
+- After a compaction, rerun `rco pack --for FILE...` instead of rereading the files.
 <!-- rco:end -->
 ```
 
