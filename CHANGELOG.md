@@ -17,7 +17,7 @@
   package line, with Java and Kotlin seeing each other, so the pack,
   `rco replay` and `rco metrics measure` see Kotlin files and their
   importers. The replay on square/okhttp is in `docs/baseline/lang-kotlin.md`
-  (card 1364)
+  (#117, card 1364)
 
 ## 0.1.8 - 2026-11-27
 
