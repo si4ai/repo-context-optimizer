@@ -387,7 +387,10 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         paths = [e.path for e in gitread.ls_tree(repo, sha)]
         # card 1349: drop imported paths that are not code files (a JS/TS
         # import of package.json used to KeyError on the code-only dict)
-        ranked = [p for p in rank_imports(fps, imports.file_graph(paths, code, only=fps))
+        # card 1350: file_graph needs manifests (go.mod, Cargo.toml, package.json)
+        # in sources so module-path and workspace imports resolve; 1349 still
+        # drops non-code paths from the outline list
+        ranked = [p for p in rank_imports(fps, imports.file_graph(paths, sources, only=fps))
                   if p in code]
         if fit_to_imports and owners and not ranked:
             # card 1341: nothing in the repo to outline; any pack would cost more
