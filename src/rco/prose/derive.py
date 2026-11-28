@@ -213,6 +213,61 @@ def _label(path: str, qn: str) -> str:
     return f"{PurePosixPath(path).name}:{qn}"
 
 
+def _imp(st: ast.AST) -> tuple:
+    """An import statement as plain data: what bind() needs, nothing else."""
+    if isinstance(st, ast.Import):
+        return ("import", tuple((a.name, a.asname) for a in st.names))
+    return ("from", st.level, st.module, tuple((a.name, a.asname) for a in st.names))
+
+
+def _py_call_facts(path: str, data: bytes) -> tuple | None:
+    """What _py_calls reads from a file, as plain data; None when it does not parse.
+
+    (top-level imports, ((qualname, class, imports in it, call shapes), ...)).
+    A call shape is ("name", id) or ("attr", receiver, attr). It depends only
+    on the file's bytes, so a replay run caches it (rco.memo).
+    """
+    def compute() -> tuple | None:
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                tree = ast.parse(data, filename=path)
+        except (SyntaxError, ValueError, RecursionError, MemoryError):
+            return None
+        top: list[tuple] = []
+        for st in tree.body:
+            if not isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                for x in ast.walk(st):
+                    if isinstance(x, (ast.Import, ast.ImportFrom)):
+                        top.append(_imp(x))
+
+        def facts(fn: ast.AST, qn: str, cls: str) -> tuple:
+            imps: list[tuple] = []
+            calls: list[tuple] = []
+            for x in ast.walk(fn):
+                if isinstance(x, ast.Call):
+                    f = x.func
+                    if isinstance(f, ast.Name):
+                        calls.append(("name", f.id))
+                    elif isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name):
+                        calls.append(("attr", f.value.id, f.attr))
+                elif isinstance(x, (ast.Import, ast.ImportFrom)):
+                    imps.append(_imp(x))
+            return (qn, cls, tuple(imps), tuple(calls))
+
+        fns: list[tuple] = []
+        for st in tree.body:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                fns.append(facts(st, st.name, ""))
+            elif isinstance(st, ast.ClassDef):
+                for m in st.body:
+                    if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                        fns.append(facts(m, f"{st.name}.{m.name}", st.name))
+        return (tuple(top), tuple(fns))
+    from rco import memo
+    return memo.cached("py_call_facts", (path, data), compute)
+
+
 def _py_calls(path: str, data: bytes, defs: Mapping[str, set[str]],
               index: Mapping[str, str]) -> dict[str, set[Sym]]:
     """qualname -> resolved in-repo callees, for top-level functions and methods.
@@ -223,76 +278,60 @@ def _py_calls(path: str, data: bytes, defs: Mapping[str, set[str]],
     on any other receiver is not resolved, so it is not counted.
     """
     from rco.imports import _package_of
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tree = ast.parse(data, filename=path)
-    except (SyntaxError, ValueError, RecursionError, MemoryError):
+    got_facts = _py_call_facts(path, data)
+    if got_facts is None:
         return {}
+    top, fns = got_facts
     file_names: dict[str, Sym] = {n: (path, n) for n in defs.get(path, set()) if "." not in n}
     file_mods: dict[str, str] = {}
 
-    def bind(st: ast.AST, names: dict[str, Sym], mods: dict[str, str]) -> None:
-        if isinstance(st, ast.Import):
-            for a in st.names:
-                hit = index.get(a.name)
-                if hit and (a.asname or "." not in a.name):
-                    mods[a.asname or a.name] = hit
+    def bind(st: tuple, names: dict[str, Sym], mods: dict[str, str]) -> None:
+        if st[0] == "import":
+            for name, asname in st[1]:
+                hit = index.get(name)
+                if hit and (asname or "." not in name):
+                    mods[asname or name] = hit
             return
-        if st.level:
+        _, level, module, aliases = st
+        if level:
             pkg = _package_of(path)
-            up = st.level - 1
+            up = level - 1
             if up > len(pkg):
                 return
-            base = pkg[: len(pkg) - up] + ((st.module or "").split(".") if st.module else [])
+            base = pkg[: len(pkg) - up] + ((module or "").split(".") if module else [])
         else:
-            base = (st.module or "").split(".")
-        for a in st.names:
-            local = a.asname or a.name
-            sub = index.get(".".join(base + [a.name]))
+            base = (module or "").split(".")
+        for name, asname in aliases:
+            local = asname or name
+            sub = index.get(".".join(base + [name]))
             if sub:
                 mods[local] = sub
                 continue
             src = index.get(".".join(base)) if base and base != [""] else None
-            if src and a.name in defs.get(src, set()):
-                names[local] = (src, a.name)
+            if src and name in defs.get(src, set()):
+                names[local] = (src, name)
 
-    for st in tree.body:
-        if not isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
-            for x in ast.walk(st):
-                if isinstance(x, (ast.Import, ast.ImportFrom)):
-                    bind(x, file_names, file_mods)
-
-    def called(fn: ast.AST, cls: str) -> set[Sym]:
-        """One walk: imports inside the function count for its own calls."""
-        names, mods = dict(file_names), dict(file_mods)
-        calls: list[ast.Call] = []
-        for x in ast.walk(fn):
-            if isinstance(x, ast.Call):
-                calls.append(x)
-            elif isinstance(x, (ast.Import, ast.ImportFrom)):
-                bind(x, names, mods)
-        got: set[Sym] = set()
-        for x in calls:
-            f = x.func
-            if isinstance(f, ast.Name) and f.id in names:
-                got.add(names[f.id])
-            elif isinstance(f, ast.Attribute) and isinstance(f.value, ast.Name):
-                recv = f.value.id
-                if recv in ("self", "cls") and cls and f"{cls}.{f.attr}" in defs.get(path, set()):
-                    got.add((path, f"{cls}.{f.attr}"))
-                elif recv in mods and f.attr in defs.get(mods[recv], set()):
-                    got.add((mods[recv], f.attr))
-        return got
+    for st in top:
+        bind(st, file_names, file_mods)
 
     out: dict[str, set[Sym]] = {}
-    for st in tree.body:
-        if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef)):
-            out[st.name] = called(st, "")
-        elif isinstance(st, ast.ClassDef):
-            for m in st.body:
-                if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                    out[f"{st.name}.{m.name}"] = called(m, st.name)
+    for qn, cls, imps, calls in fns:
+        # imports inside the function count for its own calls
+        names, mods = dict(file_names), dict(file_mods)
+        for st in imps:
+            bind(st, names, mods)
+        got: set[Sym] = set()
+        for c in calls:
+            if c[0] == "name":
+                if c[1] in names:
+                    got.add(names[c[1]])
+                continue
+            _, recv, attr = c
+            if recv in ("self", "cls") and cls and f"{cls}.{attr}" in defs.get(path, set()):
+                got.add((path, f"{cls}.{attr}"))
+            elif recv in mods and attr in defs.get(mods[recv], set()):
+                got.add((mods[recv], attr))
+        out[qn] = got
     return out
 
 
