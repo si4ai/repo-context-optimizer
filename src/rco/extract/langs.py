@@ -1,5 +1,7 @@
 """Code contracts for JavaScript/TypeScript, Go, Rust and shell (no LLM, no deps).
 
+Java lives in rco.extract.java (card 1362) and shares these helpers.
+
 A deterministic scanner (rco.extract.scan) masks comments and strings and
 tracks brace depth; declarations are read at the top level only (plus the
 body of a top-level IIFE in JS scripts). Bodies are dropped. Each file is
@@ -740,7 +742,7 @@ def _sh_value_end(s: Scan, i: int) -> int:
     return len(s.code) if j < 0 else j
 
 
-LANG_OF = {**{e: "js" for e in JS_EXT}, ".go": "go", ".rs": "rust",
+LANG_OF = {**{e: "js" for e in JS_EXT}, ".go": "go", ".rs": "rust", ".java": "java",
            **{e: "sh" for e in SH_EXT}}
 
 

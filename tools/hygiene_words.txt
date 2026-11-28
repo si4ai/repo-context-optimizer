@@ -799,3 +799,15 @@ threshold
 twenty
 two
 unknown
+# card 1362: Java language names and ordinary identifiers used in docs and tests
+deprecated
+gradle
+guava
+hidden
+inner
+java
+maven
+nullable
+runnable
+strings
+tagged

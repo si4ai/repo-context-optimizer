@@ -99,8 +99,11 @@ def interface_changed(path: str, base_data: bytes | None, head_data: bytes | Non
 
 def changed_names(path: str, base_data: bytes | None, head_data: bytes | None) -> frozenset[str]:
     """Public qualnames (and their last component) whose contract changed."""
-    before = {(k, q): (s, a) for k, q, s, a in public_contract(path, base_data)}
-    after = {(k, q): (s, a) for k, q, s, a in public_contract(path, head_data)}
+    before: dict[tuple[str, str], set[tuple]] = {}
+    after: dict[tuple[str, str], set[tuple]] = {}
+    for table, data in ((before, base_data), (after, head_data)):
+        for k, q, s, a in public_contract(path, data):  # overloads share a name: keep every shape
+            table.setdefault((k, q), set()).add((s, a))
     names: set[str] = set()
     for key in set(before) | set(after):
         if before.get(key) != after.get(key):
