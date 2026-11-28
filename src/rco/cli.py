@@ -101,7 +101,8 @@ def make_parser() -> argparse.ArgumentParser:
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
 
-    k = sub.add_parser("pack", help="Forest plus Trees for an agent, within a token budget")
+    k = sub.add_parser("pack", help="module map for an agent; with --for, the nearby modules "
+                                   "and the signatures of the files they import, within a token budget")
     k.add_argument("sha", nargs="?", default="HEAD", help="commit (default: HEAD)")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE",
                    help="paths whose imported files get outlined, plus one module hop")
@@ -109,7 +110,10 @@ def make_parser() -> argparse.ArgumentParser:
     _common(k)
 
     rp = sub.add_parser("replay", help="estimate rco's saving on this repo's last code commits")
-    rp.add_argument("--last", type=int, default=10, help="code commits to replay (default: 10)")
+    rp.add_argument("--last", type=int, default=None,
+                    help="code commits to replay (default: 10, or all with --since)")
+    rp.add_argument("--since", default=None, metavar="DATE",
+                    help="only commits since DATE (YYYY-MM-DD means midnight local time)")
     rp.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
                     help=f"pack budget, estimated tokens (default: {DEFAULT_BUDGET})")
     rp.add_argument("--max-files", type=int, default=50,
@@ -360,7 +364,9 @@ def run(args: argparse.Namespace) -> Exit:
     if args.cmd == "replay":
         from rco import metrics, replay
         name, count = metrics.counter()
-        return emit(replay.replay(repo, args.last, args.budget, args.max_files, count, name),
+        last = args.last if args.last is not None or args.since else 10
+        return emit(replay.replay(repo, last, args.budget, args.max_files, count, name,
+                                  since=args.since),
                     args.format, args.out)
     if args.cmd == "pin":
         from rco import pin

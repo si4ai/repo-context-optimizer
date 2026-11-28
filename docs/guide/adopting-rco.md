@@ -81,7 +81,7 @@ Codes are used in every table and diagram. Shipped = in the 0.1.7 CLI or wheel. 
 | IN | `rco init [--hooks] [--metrics]` | set up `rco.toml`, a CI workflow (DF, TS, DR, NT on PRs; UP on push; optional rco-metrics.json artifact) and hooks in one step | 0 |
 | AG | `rco init --agents` | point agent instruction files at `rco pack` with one marked block; see [Cloud agents and rco](cloud-agents.md) | 0 |
 | EV | `.rco/events.jsonl` | one line per rco run, once `.rco/` exists: what ran, its exit, the store pointer and HEAD | n/a |
-| RP | `rco replay [--last N]` | what would rco have saved on my last N code commits? A labelled estimate, not an agent measurement | 0; 2 if no commit qualifies |
+| RP | `rco replay [--last N] [--since DATE]` | what would rco have saved on my last N code commits, or every code commit since DATE? A labelled estimate, not an agent measurement | 0; 2 if no commit qualifies |
 | MX | `rco metrics measure` / `summary` / `bypass` | tokens per pull request, a roll-up, and which code commits no pack run preceded | 0; `bypass --strict` 1 on any uncovered commit |
 | HK | post-merge hook from `rco init --hooks` | keep the store current after each merge | 0 |
 | RO | `rco live [SHA] --schema/--openapi/--help-text` | does the map match a real schema dump, OpenAPI file or `--help` output? | 0 ok, 1 findings |

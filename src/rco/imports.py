@@ -58,6 +58,30 @@ def _local(path: str, dotted: str, index: Mapping[str, str]) -> str | None:
     return _resolve(f"{pkg}.{dotted}", index)
 
 
+def _import_refs(path: str, data: bytes) -> tuple[tuple, ...] | None:
+    """The file's import statements, None when it does not parse.
+
+    ("import", (names...)) or ("from", level, module, (names...)); they depend
+    only on the file's bytes, so a replay run caches them (rco.memo).
+    """
+    def compute() -> tuple[tuple, ...] | None:
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                tree = ast.parse(data, filename=path)
+        except (SyntaxError, ValueError):
+            return None
+        refs: list[tuple] = []
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                refs.append(("import", tuple(a.name for a in node.names)))
+            elif isinstance(node, ast.ImportFrom):
+                refs.append(("from", node.level, node.module, tuple(a.name for a in node.names)))
+        return tuple(refs)
+    from rco import memo
+    return memo.cached("import_refs", (path, data), compute)
+
+
 def file_imports(path: str, data: bytes, index: Mapping[str, str],
                  local: bool = False) -> tuple[str, ...]:
     """Repo paths of the in-repo files that path imports, sorted, unique.
@@ -65,35 +89,33 @@ def file_imports(path: str, data: bytes, index: Mapping[str, str],
     local=True also tries an unresolved absolute import against the file's
     own directory, as a script or a pytest test module run from there sees it.
     """
-    try:
-        with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
-            tree = ast.parse(data, filename=path)
-    except (SyntaxError, ValueError):
+    refs = _import_refs(path, data)
+    if refs is None:
         return ()
     hits: set[str] = set()
-    for node in ast.walk(tree):
-        if isinstance(node, ast.Import):
-            for a in node.names:
-                t = _resolve(a.name, index) or (_local(path, a.name, index) if local else None)
+    for ref in refs:
+        if ref[0] == "import":
+            for name in ref[1]:
+                t = _resolve(name, index) or (_local(path, name, index) if local else None)
                 if t:
                     hits.add(t)
-        elif isinstance(node, ast.ImportFrom):
-            if node.level:
+        else:
+            _, level, module, names = ref
+            if level:
                 pkg = _package_of(path)
-                up = node.level - 1
+                up = level - 1
                 if up > len(pkg):
                     continue  # beyond the top: unresolved
                 base = pkg[: len(pkg) - up]
-                if node.module:
-                    base = base + node.module.split(".")
+                if module:
+                    base = base + module.split(".")
             else:
-                base = (node.module or "").split(".")
-            for a in node.names:
-                cand = ".".join(base + [a.name]) if a.name != "*" else ""
+                base = (module or "").split(".")
+            for name in names:
+                cand = ".".join(base + [name]) if name != "*" else ""
                 t = (index.get(cand) if cand else None) or _resolve(".".join(base), index)
-                if t is None and local and not node.level and node.module:
-                    t = _local(path, cand or node.module, index) or _local(path, node.module, index)
+                if t is None and local and not level and module:
+                    t = _local(path, cand or module, index) or _local(path, module, index)
                 if t:
                     hits.add(t)
     hits.discard(path)

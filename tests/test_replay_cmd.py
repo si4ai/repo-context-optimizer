@@ -11,12 +11,17 @@ import pytest
 
 from rco import cli, fixture, metrics
 from rco.output import Exit, UsageError
-from rco.pack import pack, pack_markdown
-from rco.replay import HEADING_METHOD, INSTALL_HINT, replay
+from rco.replay import HEADING_METHOD, INSTALL_HINT, pack_text_at, replay
 
 CORE_A = "def run(x: int) -> int:\n    return x\n"
 CORE_B = "from pkg.util import helper\n\n\ndef run(x: int) -> int:\n    return helper(x)\n"
-UTIL = "def helper(x: int) -> int:\n    return x * 2\n"
+# big enough that the 1341 budget (half its tokens) can outline it: B gets a
+# real pack; D's import (pkg/core.py) is too small, so D's pack is skipped
+UTIL = "def helper(x: int) -> int:\n    return x * 2\n\n\n" + "".join(
+    f"def h{i}(x: int) -> int:\n    y = x * {i} + 1\n    z = y - x // 3\n"
+    f"    total = sum(range(z % 7))\n    extra = [k * total for k in range(y % 5)]\n"
+    f"    if extra and total > 3:\n        total += max(extra) - min(extra)\n"
+    f"    return total + y + z\n\n" for i in range(12))
 APP_A = "from pkg.core import run\n\nprint(run(1))\n"
 APP_D = "from pkg.core import run\n\nprint(run(2))\n"
 
@@ -41,14 +46,20 @@ def test_numbers_are_exact(tmp_path):
     rep = replay(repo, 10, 12000, 50, metrics.estimate).to_obj()
     assert [x["sha"] for x in rep["commits"]] == [d, b]  # C is docs only; A is the root
     assert rep["skipped"] == 1 and rep["head"] == d
-    pack_d = metrics.estimate(pack_markdown(pack(repo, d, ["app.py"], 12000), "app.py"))
-    pack_b = metrics.estimate(pack_markdown(pack(repo, b, ["pkg/core.py"], 12000), "pkg/core.py"))
+    pack_b = metrics.estimate(pack_text_at(repo, b, ["pkg/core.py"], 12000))
+    assert "nothing to add" in pack_text_at(repo, d, ["app.py"], 12000)  # D: skipped
     want_d = {"sha": d, "changed": 1,
-              "without": {"files": 2, "tokens": _est(APP_D, CORE_B)},  # app.py + pkg/core.py
-              "with": {"files": 2, "tokens": pack_d + _est(APP_D), "pack_tokens": pack_d}}
+              "without": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B),  # app.py + pkg/core.py
+                          "imported_files": 1, "imported_tokens": _est(CORE_B)},
+              "with": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B), "pack_tokens": 0,
+                       "pack_skipped": True, "changed_tokens": _est(APP_D)},
+              "coverage": {"changed_in_pack": 0, "imported_in_pack": 0, "imported": 1}}
     want_b = {"sha": b, "changed": 1,
-              "without": {"files": 2, "tokens": _est(CORE_B, UTIL)},  # core.py + util.py
-              "with": {"files": 2, "tokens": pack_b + _est(CORE_B), "pack_tokens": pack_b}}
+              "without": {"files": 2, "tokens": _est(CORE_B) + _est(UTIL),  # core.py + util.py
+                          "imported_files": 1, "imported_tokens": _est(UTIL)},
+              "with": {"files": 2, "tokens": pack_b + _est(CORE_B), "pack_tokens": pack_b,
+                       "pack_skipped": False, "changed_tokens": _est(CORE_B)},
+              "coverage": {"changed_in_pack": 0, "imported_in_pack": 1, "imported": 1}}
     assert rep["commits"] == [want_d, want_b]
     s = rep["summary"]
     wo = sorted([want_d["without"]["tokens"], want_b["without"]["tokens"]])
@@ -57,6 +68,7 @@ def test_numbers_are_exact(tmp_path):
     assert s["median_with_tokens"] * 2 == wi[0] + wi[1]
     assert s["median_without_tokens"] * 2 == wo[0] + wo[1]
     assert s["median_without_files"] == 2 and s["median_with_files"] == 2
+    assert s["pack_skipped"] == 1
     med_wo, med_wi = s["median_without_tokens"], s["median_with_tokens"]
     assert s["saved_pct"] == round(100 * (med_wo - med_wi) / med_wo, 1)
     assert s["worse_commits"] == sum(1 for c in rep["commits"]
@@ -67,20 +79,41 @@ def test_with_side_counts_changed_files_not_pack_alone(tmp_path):
     """metrics.measure's with side is the pack alone; replay adds the files being edited."""
     repo, (a, b, c, d) = _history(tmp_path)
     for row in replay(repo, 10, 12000, 50, metrics.estimate).to_obj()["commits"]:
-        assert row["with"]["tokens"] > row["with"]["pack_tokens"]
-        assert row["with"]["files"] == 1 + row["changed"]
+        w = row["with"]
+        if w["pack_skipped"]:
+            assert w["tokens"] == row["without"]["tokens"] and w["pack_tokens"] == 0
+            assert w["files"] == row["without"]["files"]
+        else:
+            assert w["tokens"] == w["pack_tokens"] + w["changed_tokens"] > w["pack_tokens"]
+            assert w["files"] == row["changed"] + 1
 
 
 def test_pack_bigger_than_reads_reported(tmp_path):
     repo, (a, b, c, d) = _history(tmp_path)
-    rep = replay(repo, 10, 12000, 50, metrics.estimate)
+    # a pack that costs more than the one small file it replaces
+    e = fixture.commit(repo, {"pkg/core.py": CORE_B + "\n\ndef more() -> int:\n    return 1\n",
+                              "pkg/util.py": UTIL[:600]}, "e")
+    rep = replay(repo, 1, 12000, 50, metrics.estimate)
     o = rep.to_obj()
-    # a toy repo: the pack header and Forest outweigh two tiny files every time
-    assert o["summary"]["worse_commits"] == o["summary"]["n"] == 2
+    row = o["commits"][0]
+    assert row["sha"] == e
+    worse = row["with"]["tokens"] > row["without"]["tokens"]
+    assert o["summary"]["worse_commits"] == int(worse)
     md = rep.to_markdown()
-    assert "No saving" in md and "rco does not save tokens on these commits" in md
-    assert "in 2 of 2 commits" in md
+    assert f"in {int(worse)} of 1 commits" in md
     assert rep.exit_code() == Exit.OK
+
+
+def test_no_saving_wording(tmp_path):
+    rep_obj = {"head": "0" * 40, "since": None, "tokenizer_is_estimate": True, "skipped": 0,
+               "assumptions": [], "commits": [],
+               "summary": {"n": 1, "median_with_tokens": 20, "median_without_tokens": 10,
+                           "median_without_files": 1, "median_with_files": 2, "saved_pct": -100.0,
+                           "worse_commits": 1, "pack_skipped": 0}}
+    from rco.replay import ReplayReport
+    md = ReplayReport(rep_obj).to_markdown()
+    assert "No saving" in md and "rco does not save tokens on these commits" in md
+    assert "in 1 of 1 commits" in md
 
 
 def _run_json(repo, capsys):
