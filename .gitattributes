@@ -1,0 +1,3 @@
+# Keep LF in this repository checkout on every OS, including Windows.
+# This does not change line endings in repositories that rco scans.
+* text=auto eol=lf

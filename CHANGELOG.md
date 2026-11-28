@@ -4,6 +4,7 @@
 
 ### added
 
+- a root `.gitattributes` pins LF checkout, so a checkout on any OS keeps LF bytes in fixtures and goldens (card 1220)
 - concept taxonomy v2.0.0: a documented superset of the 54 v1 concepts,
   with `status` (`trained`, `untrained`, or `dropped`), optional
   aliases, and a record that stays in the file when a concept is later
