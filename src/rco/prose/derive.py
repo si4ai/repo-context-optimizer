@@ -343,6 +343,8 @@ _DECL = {  # declaration shapes per language; {n} is the name
     "java": (r"^[ \t]*(?:(?!return\b|new\b|else\b|throw\b|case\b|yield\b)[^\s(){};=]+[ \t]+)+{n}\s*\(",),
     "csharp": (r"^[ \t]*(?:(?!return\b|new\b|else\b|throw\b|case\b|yield\b|await\b)[^\s(){};=]+[ \t]+)+"
                r"{n}\s*[(<]",),
+    "kotlin": (r"^[ \t]*(?:[\w@:]+[ \t]+)*fun[ \t]+(?:<[^>\n]*>[ \t]*)?(?:[\w<>?, ]+\.)?{n}\s*[(<]",
+               r"^[ \t]*(?:[\w@:]+[ \t]+)*(?:class|interface|object|typealias|val|var)[ \t]+{n}\b"),
     "go": (r"^func\s*(?:\([^)]*\)\s*)?{n}\s*[\[(]",),
     "rust": (r"\bfn\s+{n}\b",),
     "sh": (r"^[ \t]*function\s+{n}\b", r"^[ \t]*{n}\s*\(\s*\)"),

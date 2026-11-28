@@ -845,3 +845,24 @@ directory
 dup
 lib
 reader
+# card 1364
+anywhere
+companion
+foo
+four
+fun
+int
+kotlin
+old
+receiver
+registry
+shape
+spare
+spec
+three
+twin
+# card 1364 facade
+fac
+greeter
+named
+zero

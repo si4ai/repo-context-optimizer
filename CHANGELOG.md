@@ -18,6 +18,13 @@
   shared brace helpers. The replay on JamesNK/Newtonsoft.Json (84% median
   saving, 0 losses over 37 commits) is in `docs/baseline/lang-csharp.md`
   (#116, card 1363)
+- Kotlin: signatures in the Tree (classes, interfaces, objects, enums,
+  annotations, typealiases, functions, extension functions, properties and
+  constants; not private, not internal) and import edges by each file's
+  package line, with Java and Kotlin seeing each other, so the pack,
+  `rco replay` and `rco metrics measure` see Kotlin files and their
+  importers. The replay on square/okhttp is in `docs/baseline/lang-kotlin.md`
+  (#117, card 1364)
 - `rco affected`: a changed build file selects every test for each language
   (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
   like), even when a source file only names it; a test walks every language

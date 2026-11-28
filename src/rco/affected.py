@@ -21,8 +21,8 @@ each reason listed:
   `package.json`, `go.mod`, `Cargo.toml`, `Makefile`, `rco.toml`, CI
   workflows, and each language's build files in `BUILD_FILES`: `*.csproj`,
   `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and so on; see
-  `is_infra`), even when a code file names one (a build file under a
-  fixture directory such as `fixtures/`, `testdata/` or `golden/` is test
+  `is_infra`), even when a code file names one (an infra file under
+  `fixtures/`, `testdata/`, `test_data/`, `golden/` or `__tests__/` is test
   data; one under `test/` or `tests/` is not);
 - a changed file that is not code, not docs, and named by no code file.
 
@@ -75,6 +75,8 @@ BUILD_FILES: dict[str, tuple[str, ...]] = {
     "java": ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle",
              "settings.gradle.kts", "gradle.properties", "libs.versions.toml", "*.gradle",
              "*.gradle.kts"),
+    "kotlin": ("build.gradle.kts", "build.gradle", "settings.gradle.kts", "settings.gradle",
+               "gradle.properties", "libs.versions.toml", "pom.xml", "*.gradle.kts"),
     "csharp": ("*.csproj", "*.sln", "*.slnx", "*.props", "*.targets", "global.json",
                "nuget.config", "NuGet.Config"),
 }
@@ -111,6 +113,9 @@ def is_test(path: str) -> bool:
         return (name.removesuffix(".cs").endswith(("Test", "Tests", "TestCase", "Fixture"))
                 or any(d.lower() in ("test", "tests") or d.endswith((".Tests", ".Test", ".UnitTests"))
                        for d in dirs))
+    if lang == "kotlin":  # Gradle src/test, src/jvmTest, src/commonTest, and *Test names
+        return (name.removesuffix(".kt").endswith(("Test", "Tests", "IT", "TestCase", "Spec"))
+                or any(d in ("test", "tests") or (d.endswith("Test") and d != "Test") for d in dirs))
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False
