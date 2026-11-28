@@ -2,7 +2,17 @@
 
 ## unreleased
 
+### added
+
+- concept taxonomy v2.0.0: a documented superset of the 54 v1 concepts,
+  with `status` (`trained`, `untrained`, or `dropped`), optional
+  aliases, and a record that stays in the file when a concept is later
+  dropped. A check fails if a v1 id is deleted instead of marked
+  dropped. Labels and the baseline run stay on taxonomy 1.0.0; nothing
+  was relabelled (card 1352)
+
 ### changed
+
 
 - `rco replay` counts each changed file once (the pack no longer outlines
   them), sends nothing when the pack skips (a tie), and renders each pack's

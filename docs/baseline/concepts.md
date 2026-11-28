@@ -1,10 +1,12 @@
-# Concept labels and the no-ML baseline (card 1338)
+# Concept labels and the no-ML baseline (cards 1338 and 1352)
 
-Card 1338 (`the-mill/rco-concept-model`), steps 1 and 2. The goal is a
-concept classifier that suggests module boundaries (the forest) and links
-them to files (the trees), including in repos that keep every file in one
-place. This page is the labelled set and the number any model has to beat.
-Steps 3 (a trained model) and 4 (optional embeddings) are later cards.
+Card 1338 (`the-mill/rco-concept-model`), steps 1 and 2, and card 1352
+(`the-mill/rco-concept-taxonomy-v2`). The goal is a concept classifier
+that suggests module boundaries (the forest) and links them to files
+(the trees), including in repos that keep every file in one place. This
+page is the concept set, the labelled subset, and the number any model
+has to beat. steps 3 (a trained model) and 4 (optional embeddings) are
+later cards.
 
 Everything here is deterministic and offline once the corpus is fetched.
 Nothing in it is part of the rco package or its runtime; it adds no
@@ -14,7 +16,7 @@ dependency.
 
 | Path | What it is |
 |---|---|
-| [`concepts/taxonomy.json`](concepts/taxonomy.json) | The concept set, version 1.0.0: 54 concepts with id, group, one-line definition, source, and lowercase hint words |
+| [`concepts/taxonomy.json`](concepts/taxonomy.json) | The concept set, version 2.0.0: a superset of v1 with id, group, definition, source, status (`trained`, `untrained`, or `dropped`), optional aliases, and lowercase hint words on trained concepts |
 | [`concepts/corpus.json`](concepts/corpus.json) | 26 public repos: URL, pinned commit, licence, language, layout, split |
 | [`concepts/labels/`](concepts/labels/) | One file per repo: labelled module directories and files |
 | [`concepts/baseline-run.json`](concepts/baseline-run.json) | Full output of the baseline run below, per concept |
@@ -26,31 +28,118 @@ the corpus repos is copied into rco.
 
 ## Concept set
 
-Fifty-four concepts in nine groups, each with a source:
+Version 2.0.0 is a superset of v1.0.0. Every v1 id is unchanged. The
+baseline labels and `baseline-run.json` still name taxonomy version
+1.0.0; they were not relabelled. New concepts start as `untrained`. A
+later A/B test per concept decides what earns its tokens.
 
-- **layer** (11): cli, api, ui, persistence, domain, config, io, tests,
-  build, util, os.
-- **pattern** (10), from the GoF catalogue: factory, adapter, observer,
-  strategy, decorator, command, visitor, chain (of responsibility), proxy,
-  iterator.
-- **arch** (7): repository, pipeline (pipes and filters), plugin
-  (microkernel), mvc, di, messaging, client_server.
-- **ood** (4), from UML 2.5.1 and object-oriented design: interface,
-  value_object, state_machine, inheritance.
-- **xcut** (9), cross-cutting concerns: auth, security, logging, errors,
-  concurrency, caching, validation, compat, i18n.
-- **parse** (4), compilers: lexer, parser, ast, codegen.
-- **net** (4): http, transport, client, server.
-- **ser** (1): serialization. **cs** (2): data_structures, ml.
-  **scm** (2): vcs, packaging.
+Counts by group (trained in v1, plus untrained additions):
+
+- **layer** (11, all trained): cli, api, ui, persistence, domain, config,
+  io, tests, build, util, os.
+- **pattern** (22): the 10 v1 GoF patterns (factory, which covers Factory
+  Method and Abstract Factory, plus adapter, observer, strategy,
+  decorator, command, visitor, chain, proxy, iterator) and the other 12
+  GoF patterns (builder, prototype, singleton, bridge, composite,
+  facade, flyweight, interpreter, mediator, memento, state,
+  template_method).
+- **arch** (37): the 7 v1 styles (repository, pipeline, plugin, mvc, di,
+  messaging, client_server) plus layered, hexagonal, onion, clean,
+  event_sourcing, cqrs, broker, blackboard, event_driven, microservices,
+  modular_monolith, monolith, soa, rest, peer_to_peer, space_based,
+  serverless, lambda, kappa, saga, strangler, api_gateway, bff, sidecar,
+  ambassador, service_mesh, mvp, mvvm, pac, cqrs_read_model. Pipes and
+  Filters and Microkernel stay as aliases of pipeline and plugin.
+- **ood** (13): the 4 v1 concepts plus encapsulation, polymorphism,
+  abstraction, composition, delegation, generic, mixin, trait,
+  abstract_class.
+- **xcut** (13): the 9 v1 concerns plus audit, privacy,
+  rate_limit_concern, feature_toggle_concern.
+- **parse** (6): lexer, parser, ast, codegen, plus typecheck, optimizer.
+- **net** (7): http, transport, client, server, plus rpc, websocket,
+  graphql.
+- **ser** (3): serialization, plus schema, migration.
+- **cs** (24): data_structures, ml, plus complexity, recursion, graphs,
+  automata, formal_languages, sorting, searching, hashing, trees,
+  dynamic_programming, greedy, divide_and_conquer, backtracking,
+  string_algorithms, computability, types, memory_management, numeric,
+  probability, information_theory, distributed_algorithms, logic.
+- **scm** (4): vcs, packaging, plus branching, codeowners.
+- **poeaa** (46), from the poeaa catalogue (unit of work, data
+  mapper, active record, the gateways, service layer, identity map, and
+  the rest). repository, domain model, MVC, value object and plugin are
+  aliases of the v1 ids, not new ids.
+- **eip** (43): EIP highlights (channels, routers, translators,
+  messages, scatter-gather, outbox, and related).
+- **concur** (22): concurrency patterns (mutex, monitor, actor, reactor,
+  thread_pool, and related).
+- **principle** (25): SOLID, GRASP, law of demeter, composition over
+  inheritance, DRY, YAGNI, KISS, tell don't ask, CQS, design by
+  contract, and related.
+- **uml** (25): class, sequence, state, component and deployment views,
+  plus association, aggregation, composition and the other UML 2.5.1
+  relations and building blocks listed in the file.
+- **se** (37): testing kinds, CI and CD, refactoring, versioning,
+  observability, documentation, release practices, and related.
+- **ddd** (17): entity, aggregate, bounded context, domain event, and
+  the other DDD building blocks. Repository and value object stay as
+  aliases of the v1 ids.
+- **resilience** (7): circuit_breaker, bulkhead, retry, timeout,
+  rate_limit, cache_aside, idempotency_key.
 
 Sources are SWEBOK v4, the GoF and POSA pattern books, PoEAA,
 Domain-Driven Design, UML 2.5.1, the ACM CCS 2012, Enterprise
-Integration Patterns, ISO/IEC 25010 and the design-by-contract
-literature; each concept names its own. Ids are stable. A changed
-definition bumps the minor version; a removed or renamed id bumps the
-major version, and the corpus and every label file name the version they
-use.
+Integration Patterns, ISO/IEC 25010, the design-by-contract literature,
+CLRS, the theory-of-computation texts, and the other books named on
+each concept. ids are stable. A changed definition bumps the minor
+version. adding concepts
+bumps the minor version; this file is 2.0.0 because the schema gained
+status, aliases and dropped records. A concept is never removed: mark
+it dropped instead. A renamed concept keeps the old id as dropped. The
+corpus and every label file name the taxonomy version they were
+labelled against.
+
+## Schema
+
+Each concept has:
+
+- `id` (stable, `group.name`)
+- `group`
+- `definition` (one line)
+- `source` (book or catalogue)
+- `status`: `trained`, `untrained`, or `dropped`
+- `aliases` (optional list of synonyms, used for lookup)
+- `names` and `imports` (lowercase hint tokens; used only when
+  `status` is `trained`)
+
+A `dropped` concept also has `dropped_reason` (one line, for example
+"A/B gain near zero over N tasks"), `evidence` (a path to the
+measurement), `dropped_on` (the date), and `revisit_when` (what would
+bring it back). No concept is dropped in v2.0.0; the fields and the
+check are in place for the later A/B tests.
+
+## dropped concepts
+
+A dropped concept is a deliberate decision, not a gap. It stays in the
+file. future agents must not re-add a dropped id as if it had been
+missed. To drop a concept, set `status` to `dropped` and fill the four
+fields above; do not delete the entry. A check in
+`tools/concept_baseline.py` fails if a v1 id disappears from the file
+instead of being marked dropped.
+
+## adding a concept
+
+Before adding a concept that seems to be missing, look it up in
+`taxonomy.json` by id and by aliases.
+
+- If it is `dropped`, read `dropped_reason` and `evidence`. revive it
+  only if its `revisit_when` condition has happened, and record why
+  (change `status` to `untrained` or `trained`, and keep a note of the
+  revival in the card or changelog).
+- If it is already `trained` or `untrained`, use that id (add an alias
+  if the name you had in mind was a synonym).
+- If it is absent, it is a real gap: add it as `untrained`, with its
+  source.
 
 ## Corpus
 

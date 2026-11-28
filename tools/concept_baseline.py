@@ -76,6 +76,66 @@ W_IMPORT = 0.5    # an import listed in a concept's `imports`
 W_GRAPH = 0.5     # mean name score of import neighbours, or of the import cluster
 CONFIGS = ("names", "names+imports", "names+imports+graph", "names+imports+clusters")
 THRESHOLDS = [round(0.25 + 0.05 * i, 2) for i in range(36)]  # 0.25 .. 2.0
+# Status and the v1 id allow-list. A v1 concept may later be marked dropped
+# but must stay in the file; check() fails if one disappears.
+STATUSES = ("trained", "untrained", "dropped")
+DROPPED_FIELDS = ("dropped_reason", "evidence", "dropped_on", "revisit_when")
+V1_CONCEPT_IDS = frozenset({
+    "layer.cli",
+    "layer.api",
+    "layer.ui",
+    "layer.persistence",
+    "layer.domain",
+    "layer.config",
+    "layer.io",
+    "layer.tests",
+    "layer.build",
+    "layer.util",
+    "layer.os",
+    "pattern.factory",
+    "pattern.adapter",
+    "pattern.observer",
+    "pattern.strategy",
+    "pattern.decorator",
+    "pattern.command",
+    "pattern.visitor",
+    "pattern.chain",
+    "pattern.proxy",
+    "pattern.iterator",
+    "arch.repository",
+    "arch.pipeline",
+    "arch.plugin",
+    "arch.mvc",
+    "arch.di",
+    "arch.messaging",
+    "arch.client_server",
+    "ood.interface",
+    "ood.value_object",
+    "ood.state_machine",
+    "ood.inheritance",
+    "xcut.auth",
+    "xcut.security",
+    "xcut.logging",
+    "xcut.errors",
+    "xcut.concurrency",
+    "xcut.caching",
+    "xcut.validation",
+    "xcut.compat",
+    "xcut.i18n",
+    "parse.lexer",
+    "parse.parser",
+    "parse.ast",
+    "parse.codegen",
+    "net.http",
+    "net.transport",
+    "net.client",
+    "net.server",
+    "ser.serialization",
+    "cs.data_structures",
+    "cs.ml",
+    "scm.vcs",
+    "scm.packaging",
+})
 
 
 # ---------------------------------------------------------------- data
@@ -101,10 +161,44 @@ def check(tax: dict, corpus: dict, labels: dict[str, dict]) -> list[str]:
         for k in ("id", "group", "definition", "source"):
             if not c.get(k):
                 errs.append(f"taxonomy: {c.get('id')} lacks {k}")
-    if not 30 <= len(ids) <= 60:
-        errs.append(f"taxonomy: {len(ids)} concepts, expected 30-60")
-    if corpus.get("taxonomy_version") != tax.get("version"):
-        errs.append("corpus: taxonomy_version does not match taxonomy version")
+        st = c.get("status")
+        if st not in STATUSES:
+            errs.append(f"taxonomy: {c.get('id')} status {st!r}")
+        if st == "dropped":
+            for k in DROPPED_FIELDS:
+                if not c.get(k):
+                    errs.append(f"taxonomy: {c.get('id')} dropped but lacks {k}")
+        else:
+            for k in DROPPED_FIELDS:
+                if c.get(k):
+                    errs.append(f"taxonomy: {c.get('id')} has {k} but status is {st}")
+        aliases = c.get("aliases") or []
+        if not isinstance(aliases, list) or any(
+            not isinstance(a, str) or not a.strip() for a in aliases
+        ):
+            errs.append(f"taxonomy: {c.get('id')} aliases must be a list of non-empty strings")
+    seen_lookup: dict[str, str] = {}
+    for c in tax["concepts"]:
+        for key in [c.get("id"), *(c.get("aliases") or [])]:
+            if not key:
+                continue
+            lk = str(key).casefold()
+            if lk in seen_lookup:
+                errs.append(
+                    f"taxonomy: lookup collision {key!r} on {c.get('id')} and {seen_lookup[lk]}"
+                )
+            else:
+                seen_lookup[lk] = c.get("id")
+    missing_v1 = [i for i in sorted(V1_CONCEPT_IDS) if i not in known]
+    if missing_v1:
+        errs.append(
+            "taxonomy: v1 id missing (mark dropped, do not delete): " + ", ".join(missing_v1)
+        )
+    labelled = corpus.get("taxonomy_version")
+    if labelled != tax.get("version"):
+        # Labels may stay on v1 while the taxonomy is a later superset.
+        if not (labelled == "1.0.0" and tax.get("version") == "2.0.0" and not missing_v1):
+            errs.append("corpus: taxonomy_version does not match taxonomy version")
     rids = [r["id"] for r in corpus["repos"]]
     if len(rids) != len(set(rids)):
         errs.append("corpus: duplicate repo id")
@@ -175,7 +269,9 @@ def tokens(name: str) -> list[str]:
 def name_index(tax: dict) -> dict[str, list[str]]:
     idx: dict[str, list[str]] = defaultdict(list)
     for c in tax["concepts"]:
-        for n in c["names"]:
+        if c.get("status", "trained") != "trained":
+            continue
+        for n in c.get("names") or []:
             idx[n].append(c["id"])
     return dict(idx)
 
@@ -183,7 +279,9 @@ def name_index(tax: dict) -> dict[str, list[str]]:
 def import_index(tax: dict) -> dict[str, list[str]]:
     idx: dict[str, list[str]] = defaultdict(list)
     for c in tax["concepts"]:
-        for n in c["imports"]:
+        if c.get("status", "trained") != "trained":
+            continue
+        for n in c.get("imports") or []:
             idx[n].append(c["id"])
     return dict(idx)
 
@@ -607,7 +705,7 @@ def run_score(dirpath: Path, clones: Path) -> dict:
     errs = check(tax, corpus, labels)
     if errs:
         raise SystemExit("check failed:\n" + "\n".join(errs))
-    cids = [c["id"] for c in tax["concepts"]]
+    cids = [c["id"] for c in tax["concepts"] if c.get("status", "trained") == "trained"]
     repos = {r["id"]: r for r in corpus["repos"]}
     for rid, r in repos.items():
         if not (clones / rid / ".git").is_dir():
