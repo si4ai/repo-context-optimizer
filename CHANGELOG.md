@@ -1,5 +1,16 @@
 # Changelog
 
+## Unreleased (0.2.0)
+
+### added
+
+- Java: signatures in the Tree (classes, interfaces, enums, records,
+  annotations, methods, constructors, fields and constants, public and
+  protected only) and import edges through packages and any source root,
+  so the pack, `rco replay` and `rco metrics measure` see Java files and
+  their importers. A deterministic scanner, no new dependency. The
+  replay on google/guava (84% median saving, 0 losses over 43 commits) is in `docs/baseline/lang-java.md` (card 1362)
+
 ## 0.1.8 - 2026-11-27
 
 `rco pack --for` now outlines only the files those paths import, caps

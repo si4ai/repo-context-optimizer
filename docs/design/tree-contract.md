@@ -69,7 +69,7 @@ class Kind(str, Enum):
     # order of declaration == sort order (KIND_ORDER)
     FILE = "file"            # outline fallback: unknown language, LFS pointer, parse error
     PYMODULE = "pymodule"    # one per .py file; children below
-    SRCMODULE = "srcmodule"  # one per JS/TS, Go, Rust, shell or PowerShell file
+    SRCMODULE = "srcmodule"  # one per JS/TS, Go, Rust, Java, shell or PowerShell file
     CLASS = "class"
     FUNCTION = "function"
     METHOD = "method"
@@ -288,7 +288,7 @@ def build_map(repo: Path, sha: str, only: Sequence[str] | None = None) -> Map
 | Kind | Owner | name | sig | attrs (shape) |
 |---|---|---|---|---|
 | PYMODULE | python | dotted module (`src/` stripped, `__init__` dropped) | `""` | none |
-| SRCMODULE | js, go, rust, shell | the file path | `""` | `lang` (`js`, `ts`, `go`, `rust`, `sh`, `powershell`); `module`=`esm` or `script` (JS/TS); `package` (Go) |
+| SRCMODULE | js, go, rust, java, shell | the file path | `""` | `lang` (`js`, `ts`, `go`, `rust`, `java`, `sh`, `powershell`); `module`=`esm` or `script` (JS/TS); `package` (Go, Java) |
 | CLASS | python | class name | `(Base1, Base2)` from `ast.unparse` of bases and keywords, or `""` | `decorators` = comma-joined unparsed decorators |
 | FUNCTION / METHOD | python | def name | `(args) -> ret` from `ast.unparse(node.args)` and `returns`; a default that is not a literal of 40 chars or fewer becomes `...` | `async`=`1`; `decorators` |
 | FIELD | python | attribute | annotation, unparsed | `value` (literal or `...`) |
@@ -500,6 +500,22 @@ Applied in 0.1.2 (bundled parsers for other languages):
   name not starting with `_` (JS scripts); capitalized (Go); `pub` (Rust);
   every function (shell, PowerShell). The doc is the first line of the
   comment right above a declaration.
+
+Applied in 0.2.0 (card 1362):
+
+- Applied: a `java` extractor (`rco/extract/java.py`) on the same scanner
+  (`scan.py`, lang `java`: it also masks `\"\"\"` text blocks and char
+  literals). Declarations are read in order, so annotations, modifiers and
+  one-line declarations work. Children: CLASS (`kind` is `class`,
+  `interface`, `enum`, `record` or `annotation`; a record's components are
+  in its sig), METHOD (a constructor is named `constructor`), FIELD and
+  CONSTANT (`static final`, and every interface field). Overloads keep one
+  node each, told apart by sig. Public means: a `public` top-level type; a
+  `public` or `protected` member; every non-`private` member of an
+  interface or annotation; every enum constant. Attrs record `abstract`,
+  `final`, `static`, `sealed` and `default` where present. The helpers for
+  annotations, modifiers and brackets are in `rco/extract/brace.py` so the
+  other brace languages can share them.
 
 Applied in 0.1.2 (modules from manifests and an override file):
 

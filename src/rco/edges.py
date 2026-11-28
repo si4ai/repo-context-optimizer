@@ -20,6 +20,13 @@ commented-out import adds no edge.
   directory or the repo root ($(dirname "$0"), $SCRIPT_DIR and similar
   prefixes are read as the file's directory). PowerShell: `. $PSScriptRoot/x`
   and `Import-Module` with a relative path.
+- Java: `import a.b.C;` (and `import static a.b.C.m;`, nested `a.b.C.D`) maps
+  to the file whose path ends in a/b/C.java, under whatever source root the
+  repo uses (src/main/java, src/, a Maven or Gradle module). The importer's
+  own `package` line says which root it sits in, and a match under that root
+  wins; otherwise the nearest one. `import a.b.*;` maps to the files of that
+  package the importer names. A same-package class the importer names needs
+  no import and still counts.
 """
 from __future__ import annotations
 
@@ -27,7 +34,7 @@ import json
 import posixpath
 import re
 import tomllib
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import PurePosixPath
 from typing import Mapping
 
@@ -96,6 +103,8 @@ class RepoFacts:
     go_modules: tuple[tuple[str, str], ...]  # (module path, directory), longest first
     rust_crates: Mapping[str, str]  # crate name (with _) -> crate src root directory
     rust_roots: tuple[str, ...]  # crate src root directories, longest first
+    java_stems: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # stem -> paths of stem.java
+    java_dirs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # directory -> .java paths
 
 
 def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts:
@@ -143,7 +152,15 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     # longest module path first; same path prefers the shallower tree (card 1350)
     go.sort(key=lambda x: (-len(x[0]), _go_dir_depth(x[1]), x[0], x[1]))
     roots = sorted(set(roots), key=lambda x: (-len(x), x))
-    return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots))
+    stems: dict[str, list[str]] = {}
+    jdirs: dict[str, list[str]] = {}
+    for p in sorted(paths):
+        if p.endswith(".java"):
+            stems.setdefault(PurePosixPath(p).stem, []).append(p)
+            jdirs.setdefault(dir_of(p), []).append(p)
+    return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
+                     {k: tuple(v) for k, v in stems.items()},
+                     {k: tuple(v) for k, v in jdirs.items()})
 
 
 def _norm(path: str) -> str | None:
@@ -303,6 +320,88 @@ def _sh(path: str, text: str, f: RepoFacts, ps: bool) -> set[str]:
     return hits
 
 
+_JAVA_ID = r"[A-Za-z_$][\w$]*"
+_JAVA_IMPORT = re.compile(rf"\bimport\s+(?:static\s+)?(?P<name>{_JAVA_ID}(?:\s*\.\s*{_JAVA_ID})*)"
+                          r"(?P<star>\s*\.\s*\*)?\s*;")
+_JAVA_PACKAGE = re.compile(rf"\bpackage\s+(?P<name>{_JAVA_ID}(?:\s*\.\s*{_JAVA_ID})*)\s*;")
+
+
+def _common_dirs(a: str, b: str) -> int:
+    n = 0
+    for x, y in zip(a.split("/"), b.split("/")):
+        if x != y:
+            break
+        n += 1
+    return n
+
+
+def _java_pick(hits: list[str], root: str, here: str, tail: int) -> str:
+    """Several files match one name (android/ and guava/, say): own root, then nearest."""
+    if len(hits) == 1:
+        return hits[0]
+
+    def key(c: str) -> tuple:
+        croot = c[:len(c) - tail].rstrip("/")
+        same = 0
+        for x, y in zip(croot, root):  # guava-tests/test sits nearer guava/src than android/
+            if x != y:
+                break
+            same += 1
+        return (croot != root, -_common_dirs(dir_of(c), here), -same, c)
+    return min(hits, key=key)
+
+
+def _java_class(fq: str, f: RepoFacts, root: str, here: str) -> str | None:
+    """File of the class a dotted name points at: a.b.C, or a.b.C.member, or a.b.C.D."""
+    parts = fq.split(".")
+    for i in range(len(parts), 0, -1):
+        suffix = "/".join(parts[:i]) + ".java"
+        hits = [c for c in f.java_stems.get(parts[i - 1], ()) if c == suffix or c.endswith("/" + suffix)]
+        if hits:
+            return _java_pick(hits, root, here, len(suffix))
+    return None
+
+
+def _java(path: str, text: str, f: RepoFacts) -> set[str]:
+    if not f.java_stems:
+        return set()
+    s = scan(text, "java")
+    here = dir_of(path)
+    root = here if here != "." else ""
+    pm = _JAVA_PACKAGE.search(s.code)
+    if pm:
+        pdir = re.sub(r"\s+", "", pm.group("name")).replace(".", "/")
+        if here == pdir:
+            root = ""
+        elif here.endswith("/" + pdir):
+            root = here[:len(here) - len(pdir) - 1]
+    idents = set(re.findall(_JAVA_ID, s.code))
+    hits: set[str] = set()
+    imported: set[str] = set()
+    for m in _JAVA_IMPORT.finditer(s.code):
+        fq = re.sub(r"\s+", "", m.group("name"))
+        if not m.group("star"):
+            imported.add(fq.rsplit(".", 1)[-1])
+        t = _java_class(fq, f, root, here)
+        if t and (not m.group("star") or fq.rsplit(".", 1)[-1][:1].isupper()):
+            hits.add(t)
+            continue
+        if m.group("star"):  # a package: the classes of it this file names
+            pkg = fq.replace(".", "/")
+            dirs = sorted(d for d in f.java_dirs if d == pkg or d.endswith("/" + pkg))
+            if dirs:
+                d = min(dirs, key=lambda x: (x != (root + "/" + pkg if root else pkg),
+                                             -_common_dirs(x, here), x))
+                for c in f.java_dirs[d]:
+                    if PurePosixPath(c).stem in idents:
+                        hits.add(c)
+    for c in f.java_dirs.get(here, ()):  # same package: no import needed
+        stem = PurePosixPath(c).stem
+        if stem in idents and stem not in imported:
+            hits.add(c)
+    return hits
+
+
 def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
     """In-repo paths a non-Python file imports, sorted, itself excluded."""
     lang = lang_of(path)
@@ -315,6 +414,8 @@ def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
         got = _go(path, text, f)
     elif lang == "rust":
         got = _rs(path, text, f)
+    elif lang == "java":
+        got = _java(path, text, f)
     else:
         got = _sh(path, text, f, ps=path.endswith(".ps1"))
     got.discard(path)

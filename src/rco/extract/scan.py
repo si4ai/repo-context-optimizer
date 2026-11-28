@@ -13,6 +13,10 @@ from dataclasses import dataclass
 
 SIG_MAX = 240
 
+# brace languages with """ text blocks, single-line "string" and 'c' literals (card 1362);
+# later brace languages join this set as their cards land.
+_TRIPLE_LANGS = ("java",)
+
 # JS: a "/" after one of these (or at the start) starts a regex literal.
 _REGEX_PREV = set("(,=:[!&|?{};+-*%<>~^") | {""}
 _REGEX_KW = ("return", "typeof", "case", "do", "else", "in", "of", "new", "delete",
@@ -38,7 +42,7 @@ def _blank(chars: list[str], a: int, b: int) -> None:
 
 
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust" or "sh". A replay run caches it by text (rco.memo)."""
+    """lang: "js", "go", "rust", "java" or "sh". A replay run caches it by text (rco.memo)."""
     from rco import memo
     return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
 
@@ -101,8 +105,24 @@ def _scan(text: str, lang: str) -> Scan:
             continue
         # strings
         q = ""
+        if lang in _TRIPLE_LANGS and text.startswith('"""', i):  # text block: no escapes end it
+            j, e = i + 3, n
+            while j < n:
+                if text[j] == "\\":
+                    j += 2
+                    continue
+                if text.startswith('"""', j):
+                    e = j
+                    break
+                j += 1
+            _blank(code, i + 3, min(e, n))
+            i = min(e + 3, n)
+            last = '"'
+            continue
         if c in "\"'`":
             q = c
+            if lang in _TRIPLE_LANGS and c == "`":
+                q = ""
             if lang == "rust" and c == "'":
                 # char literal 'x' or '\n'; otherwise a lifetime
                 if not (nxt == "\\" or (i + 2 < n and text[i + 2] == "'")):
@@ -163,7 +183,7 @@ def _scan(text: str, lang: str) -> Scan:
                     continue
                 if ch == q:
                     break
-                if ch == "\n" and q in "\"'" and lang in ("js", "go"):
+                if ch == "\n" and q in "\"'" and lang in ("js", "go") + tuple(_TRIPLE_LANGS):
                     break  # unterminated single-line string
                 j += 1
             end = min(j, n)

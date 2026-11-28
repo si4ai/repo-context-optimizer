@@ -81,6 +81,9 @@ def is_test(path: str) -> bool:
     if lang == "js":
         stem = name.split(".")
         return "__tests__" in dirs or (len(stem) > 2 and stem[-2] in ("test", "spec"))
+    if lang == "java":  # Maven/Gradle src/test/java, and the usual *Test class names
+        return (name.removesuffix(".java").endswith(("Test", "Tests", "IT", "TestCase"))
+                or name.startswith("Test") or "test" in dirs or "tests" in dirs)
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False
