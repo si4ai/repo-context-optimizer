@@ -188,6 +188,22 @@ def test_same_package_under_another_source_root_counts_too():
     assert g["m/src/test/java/com/acme/other/StrayOne.java"] == ()  # another package: needs an import
 
 
+def test_a_one_segment_package_does_not_match_an_unrelated_directory_of_the_same_name():
+    g = _edges({
+        "s/util/Tool.java": "package util;\npublic class Tool {}\n",
+        "x/y/util/Tool.java": "package other.util;\npublic class Tool {}\n",
+        "x/y/util/ToolB.java": "package other.util;\npublic class ToolB {}\n",
+        "t/util/ToolTest.java": "package util;\nclass ToolTest { Tool t; ToolB g; }\n",
+    })
+    assert g["t/util/ToolTest.java"] == ("s/util/Tool.java",)
+    h = _edges({
+        "s/util/Tool.java": "package util;\npublic class Tool {}\n",
+        "x/y/util/ToolB.java": "package other.util;\npublic class ToolB {}\n",
+        "u/WildOne.java": "package u;\nimport util.*;\nclass WildOne { Tool t; ToolB g; }\n",
+    })
+    assert h["u/WildOne.java"] == ("s/util/Tool.java",)
+
+
 def test_a_twin_root_picks_its_own_copy_for_a_same_package_class_in_another_root():
     g = _edges({
         "guava/src/p/Strings.java": "package p;\npublic class Strings {}\n",

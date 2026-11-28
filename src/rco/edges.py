@@ -105,6 +105,7 @@ class RepoFacts:
     rust_roots: tuple[str, ...]  # crate src root directories, longest first
     java_stems: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # stem -> paths of stem.java
     java_dirs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # directory -> .java paths
+    java_pkg: Mapping[str, str] = field(default_factory=dict)  # .java path -> its package as a path
 
 
 def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts:
@@ -154,13 +155,17 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     roots = sorted(set(roots), key=lambda x: (-len(x), x))
     stems: dict[str, list[str]] = {}
     jdirs: dict[str, list[str]] = {}
+    jpkg: dict[str, str] = {}
     for p in sorted(paths):
         if p.endswith(".java"):
             stems.setdefault(PurePosixPath(p).stem, []).append(p)
             jdirs.setdefault(dir_of(p), []).append(p)
+            if p in sources:
+                pm = _JAVA_PACKAGE.search(scan(sources[p].decode("utf-8-sig", "replace"), "java").code)
+                jpkg[p] = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
                      {k: tuple(v) for k, v in stems.items()},
-                     {k: tuple(v) for k, v in jdirs.items()})
+                     {k: tuple(v) for k, v in jdirs.items()}, jpkg)
 
 
 def _norm(path: str) -> str | None:
@@ -391,20 +396,26 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
             continue
         if m.group("star"):  # a package: the classes of it this file names
             pkg = fq.replace(".", "/")
-            dirs = sorted(d for d in f.java_dirs if d == pkg or d.endswith("/" + pkg))
+            dirs = sorted(d for d in f.java_dirs if (d == pkg or d.endswith("/" + pkg))
+                          and any(f.java_pkg.get(c, pkg) == pkg for c in f.java_dirs[d]))
             if dirs:
                 d = min(dirs, key=lambda x: (x != (root + "/" + pkg if root else pkg),
                                              -_common_dirs(x, here), x))
                 for c in f.java_dirs[d]:
-                    if PurePosixPath(c).stem in idents:
+                    if PurePosixPath(c).stem in idents and f.java_pkg.get(c, pkg) == pkg:
                         hits.add(c)
     # same package: no import needed, and the package may sit under another source
     # root (src/test/java names a class of src/main/java), so every directory of it counts
+    # A directory only ends with the package path by accident (`a/b/util` for `package util;`),
+    # so a file counts when its own package line is this package; one with no known line, when
+    # its directory ends with the package path.
     pkg_dirs = sorted({here} | {d for d in f.java_dirs if pdir and (d == pdir or d.endswith("/" + pdir))})
     by_stem: dict[str, list[str]] = {}
     for d in pkg_dirs:
         for c in f.java_dirs.get(d, ()):
             stem = PurePosixPath(c).stem
+            if pdir and f.java_pkg.get(c, pdir) != pdir:
+                continue
             if stem in idents and stem not in imported:
                 by_stem.setdefault(stem, []).append(c)
     for stem, cands in by_stem.items():
