@@ -2,6 +2,10 @@
 
 ## unreleased
 
+### fixed
+
+- `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (card 1349)
+
 ### changed
 
 - `rco pack` counts its budget in tiktoken `o200k_base` tokens when the
