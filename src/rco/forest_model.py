@@ -168,6 +168,12 @@ def estimate_tokens(text: str) -> int:
     return (len(text) * 2 + 6) // 7 if text else 0
 
 
+def token_method() -> str:
+    """How estimate_tokens is counting, after the same one-time probe."""
+    estimate_tokens("")
+    return "tiktoken o200k_base" if _enc is not None else "characters / 3.5"
+
+
 # ---- canonical JSON ----------------------------------------------------------
 
 def _strict(o: object, allowed: frozenset[str], what: str) -> dict:
