@@ -104,3 +104,40 @@ def test_since_bare_date_means_midnight_not_now(tmp_path, monkeypatch):
     repo, root, u, s, h = _history(tmp_path)
     early = fixture.commit(repo, {"app/user.py": USER_B}, "early", date="1773532830 +0000")
     assert early in _rows(repo, last=None, since="2026-03-15")
+
+
+def test_tiny_import_skip_is_a_tie(tmp_path):
+    # card 1344 (validator 7176 D1, probe E2b): imported file too small to
+    # outline is a skip, and with rco equals without rco (a tie)
+    tiny = "def g() -> int:\n    return 1\n"
+    a1 = "from pkg.b import g\n\n\ndef a() -> int:\n    return g()\n"
+    a2 = "from pkg.b import g\n\n\ndef a() -> int:\n    return g() + 1\n"
+    repo, _ = fixture.make_repo(tmp_path / "e2b", {
+        "pkg/__init__.py": "", "pkg/a.py": a1, "pkg/b.py": tiny})
+    sha = fixture.commit(repo, {"pkg/a.py": a2}, "edit a")
+    r = _rows(repo)[sha]
+    assert r["with"]["pack_skipped"] is True and r["with"]["pack_tokens"] == 0
+    assert r["without"]["imported_files"] == 1 and r["without"]["imported_tokens"] > 0
+    assert r["with"]["tokens"] == r["without"]["tokens"]
+    assert r["with"]["files"] == r["without"]["files"] == 2
+
+
+def test_import_cache_keys_on_path_and_bytes(tmp_path):
+    # card 1344 (validator 7176 W1, mutant V_M2): the same path with different
+    # imports in two replayed commits must not reuse the first file's imports
+    tiny = "def g() -> int:\n    return 1\n"
+    repo, _ = fixture.make_repo(tmp_path / "vm2", {
+        "app/__init__.py": "",
+        "app/use.py": "def use() -> int:\n    return 0\n",
+        "lib/__init__.py": "", "lib/big.py": BIG, "lib/tiny.py": tiny})
+    sha_big = fixture.commit(repo, {"app/use.py": USER_A}, "to big")
+    sha_tiny = fixture.commit(repo, {
+        "app/use.py": "from lib.tiny import g\n\n\ndef use() -> int:\n    return g()\n"}, "to tiny")
+    rows = _rows(repo, use_memo=True)
+    est = metrics.estimate
+    assert rows[sha_big]["without"]["imported_files"] == 1
+    assert rows[sha_big]["without"]["imported_tokens"] == est(BIG)
+    assert rows[sha_big]["with"]["pack_skipped"] is False
+    assert rows[sha_tiny]["without"]["imported_files"] == 1
+    assert rows[sha_tiny]["without"]["imported_tokens"] == est(tiny)
+    assert rows[sha_tiny]["with"]["pack_skipped"] is True

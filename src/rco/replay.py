@@ -186,11 +186,16 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
     p, pack_text, skipped = _pack_at(repo, sha, changed, budget)
     in_pack = {n.path for t in p.trees for n in t.nodes}
     pack_tokens = 0 if skipped else count(pack_text)
+    # a skip (nothing imported, or imports too small) sends nothing: a tie
+    if skipped:
+        with_files, with_tokens = len(reads), changed_tokens + imported_tokens
+    else:
+        with_files, with_tokens = len(changed) + 1, pack_tokens + changed_tokens
     return {"sha": sha, "changed": len(changed),
             "without": {"files": len(reads), "tokens": changed_tokens + imported_tokens,
                         "imported_files": len(imported), "imported_tokens": imported_tokens},
-            "with": {"files": len(changed) + (0 if skipped else 1),
-                     "tokens": pack_tokens + changed_tokens, "pack_tokens": pack_tokens,
+            "with": {"files": with_files,
+                     "tokens": with_tokens, "pack_tokens": pack_tokens,
                      "pack_skipped": skipped, "changed_tokens": changed_tokens},
             "coverage": {"changed_in_pack": sum(1 for x in changed if x in in_pack),
                          "imported_in_pack": sum(1 for x in imported if x in in_pack),

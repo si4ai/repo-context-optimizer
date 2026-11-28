@@ -51,7 +51,7 @@ def test_numbers_are_exact(tmp_path):
     want_d = {"sha": d, "changed": 1,
               "without": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B),  # app.py + pkg/core.py
                           "imported_files": 1, "imported_tokens": _est(CORE_B)},
-              "with": {"files": 1, "tokens": _est(APP_D), "pack_tokens": 0,
+              "with": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B), "pack_tokens": 0,
                        "pack_skipped": True, "changed_tokens": _est(APP_D)},
               "coverage": {"changed_in_pack": 0, "imported_in_pack": 0, "imported": 1}}
     want_b = {"sha": b, "changed": 1,
@@ -67,7 +67,7 @@ def test_numbers_are_exact(tmp_path):
     assert s["n"] == 2
     assert s["median_with_tokens"] * 2 == wi[0] + wi[1]
     assert s["median_without_tokens"] * 2 == wo[0] + wo[1]
-    assert s["median_without_files"] == 2 and s["median_with_files"] == 1.5
+    assert s["median_without_files"] == 2 and s["median_with_files"] == 2
     assert s["pack_skipped"] == 1
     med_wo, med_wi = s["median_without_tokens"], s["median_with_tokens"]
     assert s["saved_pct"] == round(100 * (med_wo - med_wi) / med_wo, 1)
@@ -80,8 +80,12 @@ def test_with_side_counts_changed_files_not_pack_alone(tmp_path):
     repo, (a, b, c, d) = _history(tmp_path)
     for row in replay(repo, 10, 12000, 50, metrics.estimate).to_obj()["commits"]:
         w = row["with"]
-        assert w["tokens"] == w["pack_tokens"] + w["changed_tokens"] > w["pack_tokens"]
-        assert w["files"] == row["changed"] + (0 if w["pack_skipped"] else 1)
+        if w["pack_skipped"]:
+            assert w["tokens"] == row["without"]["tokens"] and w["pack_tokens"] == 0
+            assert w["files"] == row["without"]["files"]
+        else:
+            assert w["tokens"] == w["pack_tokens"] + w["changed_tokens"] > w["pack_tokens"]
+            assert w["files"] == row["changed"] + 1
 
 
 def test_pack_bigger_than_reads_reported(tmp_path):
