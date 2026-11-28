@@ -554,6 +554,7 @@ Applied in 0.2.0 (card 1364):
   Attrs record `open`, `abstract`, `sealed`, `data`, `inner`, `value`,
   `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,
   `tailrec`, `expect`, `actual` and `var` where present.
+
 Applied in 0.2.0 (card 1365):
 
 - Applied: a `php` extractor (`rco/extract/php.py`) on the same scanner

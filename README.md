@@ -124,7 +124,7 @@ The first rule whose glob matches a path owns it. `*` and `?` stay inside one pa
 
 A Tree is a deterministic contract extracted from a module. It is never written by an LLM.
 
-- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, Java, C#, Kotlin, PHP, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`, Java `public` and `protected`, Kotlin not `private` and not `internal`, C# `public`, `protected` and `protected internal`).
+- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, Java, C#, Kotlin, PHP, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`, Java `public` and `protected`, C# `public`, `protected` and `protected internal`, Kotlin not `private` and not `internal`, PHP not `private`).
 - **Non-code contracts,** which often matter more across a repo than signatures alone: CLI commands and flags, SQL schema tables and columns, HTTP routes, and message or event shapes.
 
 Output is canonical (sorted JSON, no line numbers), so identical input always yields byte-identical output. The Tree hash is the sha256 of that JSON.
