@@ -3,7 +3,8 @@ import math
 from pathlib import Path
 
 import pytest
-import tiktoken
+
+tiktoken = pytest.importorskip("tiktoken")
 
 from rco import gitread
 from rco.forest_model import estimate_tokens
