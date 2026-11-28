@@ -19,7 +19,7 @@
 
 ### changed
 
-- `rco init --agents` tells the agent that after a compaction it should rerun `rco pack` rather than rereading files (card 1355)
+- `rco init --agents` tells the agent that after a compaction it should rerun `rco pack --for FILE...` instead of rereading the files (card 1355)
 - `rco pack` counts its budget in tiktoken `o200k_base` tokens when the
   `tokens` extra is installed, otherwise characters / 3.5, rounded up, so
   signature-dense packs stay within `--budget`. After every content cut,
