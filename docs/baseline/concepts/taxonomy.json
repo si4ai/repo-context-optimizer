@@ -1,1575 +1,5236 @@
 {
- "name": "rco-concepts",
- "version": "1.0.0",
- "note": "Concept labels for card 1338 (rco-concept-model). Ids are stable; a changed definition bumps the minor version, a removed or renamed id bumps the major version. names and imports are lowercase hint tokens: names feed the auto labels and the name signal, imports feed the import-lexicon signal.",
- "concepts": [
-  {
-   "id": "layer.cli",
-   "group": "layer",
-   "definition": "Command-line entry points: argument parsing, subcommands, console scripts.",
-   "source": "ACM CCS 2012: Human-centered computing / Command line interfaces",
-   "names": [
-    "__main__",
-    "app",
-    "cli",
-    "cmd",
-    "cmds",
-    "command",
-    "commands",
-    "console",
-    "entrypoint",
-    "entrypoints",
-    "main",
-    "shell"
-   ],
-   "imports": [
-    "argparse",
-    "click",
-    "cobra",
-    "commander",
-    "flag",
-    "optparse",
-    "typer",
-    "yargs"
-   ]
-  },
-  {
-   "id": "layer.api",
-   "group": "layer",
-   "definition": "The public programmatic or HTTP surface others call: routes, endpoints, facades.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Design: interface design",
-   "names": [
-    "api",
-    "apis",
-    "application",
-    "applications",
-    "endpoint",
-    "endpoints",
-    "handler",
-    "handlers",
-    "route",
-    "router",
-    "routers",
-    "routes",
-    "routing",
-    "view",
-    "views"
-   ],
-   "imports": []
-  },
-  {
-   "id": "layer.ui",
-   "group": "layer",
-   "definition": "Presentation for humans: terminal rendering, formatting, HTML templates, widgets.",
-   "source": "ACM CCS 2012: Human-centered computing / Interaction paradigms",
-   "names": [
-    "box",
-    "color",
-    "console",
-    "display",
-    "emoji",
-    "highlighter",
-    "layout",
-    "live",
-    "markdown",
-    "panel",
-    "pretty",
-    "progress",
-    "prompt",
-    "prompts",
-    "render",
-    "renderer",
-    "renderers",
-    "rendering",
-    "segment",
-    "style",
-    "styles",
-    "syntax",
-    "table",
-    "template",
-    "templates",
-    "templating",
-    "terminal",
-    "text",
-    "theme",
-    "themes",
-    "tui",
-    "ui",
-    "widget",
-    "widgets"
-   ],
-   "imports": [
-    "colorama",
-    "curses",
-    "html/template",
-    "jinja2",
-    "prompt_toolkit",
-    "rich"
-   ]
-  },
-  {
-   "id": "layer.persistence",
-   "group": "layer",
-   "definition": "Durable storage access: databases, ORM, files used as stores, migrations.",
-   "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Data Source Architectural Patterns",
-   "names": [
-    "backend",
-    "backends",
-    "cache_db",
-    "dao",
-    "database",
-    "databases",
-    "db",
-    "migration",
-    "migrations",
-    "models_db",
-    "orm",
-    "persistence",
-    "repositories",
-    "repository",
-    "session",
-    "sql",
-    "sqlite",
-    "storage",
-    "store",
-    "stores"
-   ],
-   "imports": [
-    "alembic",
-    "asyncpg",
-    "database/sql",
-    "peewee",
-    "psycopg2",
-    "pymongo",
-    "sqlalchemy",
-    "sqlite3",
-    "sqlite_utils"
-   ]
-  },
-  {
-   "id": "layer.domain",
-   "group": "layer",
-   "definition": "Domain model: the core entities and rules of the problem the software solves.",
-   "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Domain Model; Domain-Driven Design (2003)",
-   "names": [
-    "core",
-    "domain",
-    "entities",
-    "entity",
-    "item",
-    "items",
-    "message",
-    "messages",
-    "model",
-    "models",
-    "package",
-    "packages",
-    "project",
-    "request",
-    "response",
-    "spider",
-    "spiders"
-   ],
-   "imports": []
-  },
-  {
-   "id": "layer.config",
-   "group": "layer",
-   "definition": "Configuration: loading, merging and validating settings, defaults, environment.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: construction for configurability",
-   "names": [
-    "conf",
-    "config",
-    "configs",
-    "configuration",
-    "default",
-    "defaults",
-    "env",
-    "environment",
-    "ini",
-    "option",
-    "options",
-    "preferences",
-    "pyproject",
-    "setting",
-    "settings",
-    "toml"
-   ],
-   "imports": [
-    "configparser",
-    "dotenv",
-    "tomli",
-    "tomllib",
-    "viper"
-   ]
-  },
-  {
-   "id": "layer.io",
-   "group": "layer",
-   "definition": "File system and stream input/output: reading, writing, paths, archives.",
-   "source": "ACM CCS 2012: Software and its engineering / File systems management",
-   "names": [
-    "archive",
-    "archives",
-    "download",
-    "downloads",
-    "file",
-    "filepost",
-    "files",
-    "filesystem",
-    "fs",
-    "io",
-    "path",
-    "paths",
-    "reader",
-    "stream",
-    "streaming",
-    "streams",
-    "upload",
-    "uploads",
-    "writer"
-   ],
-   "imports": [
-    "bufio",
-    "fs",
-    "glob",
-    "io",
-    "os.path",
-    "pathlib",
-    "shutil",
-    "tarfile",
-    "tempfile",
-    "zipfile"
-   ]
-  },
-  {
-   "id": "layer.tests",
-   "group": "layer",
-   "definition": "Test code: unit, integration and acceptance tests, fixtures and test helpers.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Testing",
-   "names": [
-    "__tests__",
-    "conftest",
-    "fixture",
-    "fixtures",
-    "mock",
-    "mocks",
-    "pytester",
-    "spec",
-    "specs",
-    "test",
-    "testing",
-    "tests",
-    "testutils"
-   ],
-   "imports": [
-    "hypothesis",
-    "jest",
-    "mocha",
-    "mock",
-    "pytest",
-    "testing",
-    "unittest",
-    "vitest"
-   ]
-  },
-  {
-   "id": "layer.build",
-   "group": "layer",
-   "definition": "Build, packaging of this repo, release, CI and developer scripts.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: release management and delivery",
-   "names": [
-    "build",
-    "builds",
-    "ci",
-    "gulpfile",
-    "make",
-    "noxfile",
-    "release",
-    "rollup",
-    "script",
-    "scripts",
-    "setup",
-    "tasks",
-    "tool",
-    "tools",
-    "tox",
-    "webpack"
-   ],
-   "imports": [
-    "invoke",
-    "nox",
-    "setuptools"
-   ]
-  },
-  {
-   "id": "layer.util",
-   "group": "layer",
-   "definition": "General helpers with no single domain: utilities, compatibility glue, small helpers.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: construction for reuse",
-   "names": [
-    "_internal",
-    "common",
-    "functional",
-    "helper",
-    "helpers",
-    "internal",
-    "lib",
-    "misc",
-    "shared",
-    "tools",
-    "toolz",
-    "util",
-    "utilities",
-    "utility",
-    "utils"
-   ],
-   "imports": []
-  },
-  {
-   "id": "layer.os",
-   "group": "layer",
-   "definition": "Operating-system integration: processes, signals, environment, platform detection.",
-   "source": "ACM CCS 2012: Software and its engineering / Operating systems",
-   "names": [
-    "env",
-    "environment",
-    "exec",
-    "executor",
-    "locations",
-    "os",
-    "platform",
-    "platforms",
-    "proc",
-    "process",
-    "processes",
-    "run",
-    "runner",
-    "shell",
-    "signal",
-    "signals",
-    "subprocess",
-    "sys",
-    "system",
-    "venv",
-    "virtualenv"
-   ],
-   "imports": [
-    "child_process",
-    "ctypes",
-    "os",
-    "os/exec",
-    "platform",
-    "psutil",
-    "signal",
-    "subprocess",
-    "syscall"
-   ]
-  },
-  {
-   "id": "pattern.factory",
-   "group": "pattern",
-   "definition": "Factory Method or Abstract Factory: an object or function that decides which concrete class to create.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Factory Method, Abstract Factory",
-   "names": [
-    "builder",
-    "builders",
-    "create",
-    "creator",
-    "factories",
-    "factory",
-    "maker",
-    "provider",
-    "providers",
-    "registry"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.adapter",
-   "group": "pattern",
-   "definition": "Adapter: converts one interface into another the caller expects (transport adapters, backends).",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Adapter",
-   "names": [
-    "adapter",
-    "adapters",
-    "backend",
-    "backends",
-    "binding",
-    "bindings",
-    "bridge",
-    "shim",
-    "shims",
-    "transport",
-    "transports",
-    "wrapper",
-    "wrappers"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.observer",
-   "group": "pattern",
-   "definition": "Observer: subscribers are notified of events through signals, hooks, callbacks or listeners.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Observer",
-   "names": [
-    "callback",
-    "callbacks",
-    "dispatch",
-    "dispatcher",
-    "emitter",
-    "event",
-    "events",
-    "hook",
-    "hooks",
-    "hookspec",
-    "hookspecs",
-    "interceptor",
-    "interceptors",
-    "listener",
-    "listeners",
-    "notify",
-    "observer",
-    "observers",
-    "pubsub",
-    "signal",
-    "signals",
-    "subscriber"
-   ],
-   "imports": [
-    "blinker",
-    "events",
-    "pluggy"
-   ]
-  },
-  {
-   "id": "pattern.strategy",
-   "group": "pattern",
-   "definition": "Strategy: interchangeable algorithms behind one interface, chosen at run time.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Strategy",
-   "names": [
-    "algorithm",
-    "algorithms",
-    "policies",
-    "policy",
-    "resolver",
-    "resolvers",
-    "retry",
-    "scheduler",
-    "selector",
-    "selectors",
-    "strategies",
-    "strategy"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.decorator",
-   "group": "pattern",
-   "definition": "Decorator: wraps an object or function to add behaviour without changing it.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Decorator",
-   "names": [
-    "decorate",
-    "decorator",
-    "decorators",
-    "mark",
-    "marks",
-    "wrapped",
-    "wraps"
-   ],
-   "imports": [
-    "functools"
-   ]
-  },
-  {
-   "id": "pattern.command",
-   "group": "pattern",
-   "definition": "Command: requests packaged as objects (named commands, actions, undo, tasks).",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Command",
-   "names": [
-    "action",
-    "actions",
-    "coder",
-    "coders",
-    "command",
-    "commands",
-    "job",
-    "jobs",
-    "op",
-    "operation",
-    "operations",
-    "ops",
-    "task",
-    "tasks"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.visitor",
-   "group": "pattern",
-   "definition": "Visitor: an operation applied across a structure of nodes, as in tree or AST walkers.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Visitor",
-   "names": [
-    "nodes",
-    "transformer",
-    "transformers",
-    "traverse",
-    "visit",
-    "visitor",
-    "visitors",
-    "walk",
-    "walker"
-   ],
-   "imports": [
-    "ast"
-   ]
-  },
-  {
-   "id": "pattern.chain",
-   "group": "pattern",
-   "definition": "Chain of Responsibility: a request passes along a chain of handlers, as in middleware.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Chain of Responsibility",
-   "names": [
-    "chain",
-    "filter",
-    "filters",
-    "handler",
-    "handlers",
-    "interceptor",
-    "interceptors",
-    "middleware",
-    "middlewares",
-    "pipeline_handler"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.proxy",
-   "group": "pattern",
-   "definition": "Proxy: a stand-in object that controls access to another, such as lazy or context-local proxies.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Proxy",
-   "names": [
-    "ctx",
-    "globals",
-    "lazy",
-    "local",
-    "locals",
-    "proxies",
-    "proxy"
-   ],
-   "imports": []
-  },
-  {
-   "id": "pattern.iterator",
-   "group": "pattern",
-   "definition": "Iterator: sequential access to elements of a collection without exposing its structure.",
-   "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Iterator",
-   "names": [
-    "cursor",
-    "iter",
-    "iterate",
-    "iterator",
-    "iterators",
-    "paginate",
-    "pagination"
-   ],
-   "imports": [
-    "itertools"
-   ]
-  },
-  {
-   "id": "arch.repository",
-   "group": "arch",
-   "definition": "Repository: a collection-like interface over stored domain objects, hiding the data source.",
-   "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Repository; Domain-Driven Design (2003)",
-   "names": [
-    "catalog",
-    "index",
-    "indexes",
-    "registry",
-    "repo",
-    "repos",
-    "repositories",
-    "repository"
-   ],
-   "imports": []
-  },
-  {
-   "id": "arch.pipeline",
-   "group": "arch",
-   "definition": "Pipes and Filters: data flows through a sequence of independent processing stages.",
-   "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Pipes and Filters",
-   "names": [
-    "chain",
-    "exporter",
-    "exporters",
-    "extractor",
-    "extractors",
-    "flow",
-    "loader",
-    "loaders",
-    "pipe",
-    "pipeline",
-    "pipelines",
-    "pipes",
-    "postprocess",
-    "preprocess",
-    "processor",
-    "processors",
-    "stage",
-    "stages",
-    "transforms"
-   ],
-   "imports": []
-  },
-  {
-   "id": "arch.plugin",
-   "group": "arch",
-   "definition": "Plugin or Microkernel: extensions discovered and loaded at run time through a defined extension point.",
-   "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Plugin; POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Microkernel",
-   "names": [
-    "addon",
-    "addons",
-    "contrib",
-    "entry_points",
-    "ext",
-    "extension",
-    "extensions",
-    "hookspec",
-    "hookspecs",
-    "loader",
-    "plugin",
-    "plugins"
-   ],
-   "imports": [
-    "importlib.metadata",
-    "pkg_resources",
-    "pluggy",
-    "stevedore"
-   ]
-  },
-  {
-   "id": "arch.mvc",
-   "group": "arch",
-   "definition": "Model-View-Controller and web application structure: controllers or views over models with templates.",
-   "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Model-View-Controller",
-   "names": [
-    "app",
-    "asgi",
-    "blueprint",
-    "blueprints",
-    "controller",
-    "controllers",
-    "mvc",
-    "view",
-    "views",
-    "web",
-    "webapp",
-    "wsgi"
-   ],
-   "imports": []
-  },
-  {
-   "id": "arch.di",
-   "group": "arch",
-   "definition": "Dependency injection: components receive collaborators from outside rather than constructing them.",
-   "source": "\"Inversion of Control Containers and the Dependency Injection pattern\" (2004 article)",
-   "names": [
-    "container",
-    "containers",
-    "dependencies",
-    "dependency",
-    "di",
-    "inject",
-    "injection",
-    "injector",
-    "provide"
-   ],
-   "imports": []
-  },
-  {
-   "id": "arch.messaging",
-   "group": "arch",
-   "definition": "Messaging: asynchronous exchange through queues, brokers, channels or pub/sub.",
-   "source": "Enterprise Integration Patterns (2003)",
-   "names": [
-    "amqp",
-    "broker",
-    "brokers",
-    "channel",
-    "channels",
-    "kafka",
-    "messaging",
-    "mq",
-    "pubsub",
-    "queue",
-    "queues",
-    "stream",
-    "streams"
-   ],
-   "imports": [
-    "amqp",
-    "kombu",
-    "pika",
-    "queue"
-   ]
-  },
-  {
-   "id": "arch.client_server",
-   "group": "arch",
-   "definition": "Client-server split: client libraries and server implementations of a protocol.",
-   "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Broker; SWEBOK v4 (IEEE CS 2024), Software Architecture: architectural styles",
-   "names": [
-    "client",
-    "clients",
-    "connection",
-    "connections",
-    "pool",
-    "server",
-    "servers",
-    "session",
-    "sessions"
-   ],
-   "imports": []
-  },
-  {
-   "id": "ood.interface",
-   "group": "ood",
-   "definition": "Interfaces and abstract types: abstract base classes, protocols, typed contracts between parts.",
-   "source": "UML 2.5.1 (OMG 2017): Interface (10.4); Object-Oriented Software Construction, 2nd ed. (1997): Design by Contract",
-   "names": [
-    "abc",
-    "abstract",
-    "base",
-    "contract",
-    "contracts",
-    "interface",
-    "interfaces",
-    "protocol",
-    "protocols",
-    "spec",
-    "structures",
-    "typedefs",
-    "types",
-    "typing"
-   ],
-   "imports": [
-    "abc",
-    "typing",
-    "typing_extensions"
-   ]
-  },
-  {
-   "id": "ood.value_object",
-   "group": "ood",
-   "definition": "Value objects and data classes: immutable or plain data carriers with structural equality.",
-   "source": "Domain-Driven Design (2003): Value Object",
-   "names": [
-    "attr",
-    "attrs",
-    "data",
-    "dataclass",
-    "dataclasses",
-    "datastructures",
-    "field",
-    "fields",
-    "namedtuple",
-    "record",
-    "records",
-    "struct",
-    "structs",
-    "tuple",
-    "value",
-    "values"
-   ],
-   "imports": [
-    "attr",
-    "attrs",
-    "collections",
-    "dataclasses",
-    "enum",
-    "pydantic"
-   ]
-  },
-  {
-   "id": "ood.state_machine",
-   "group": "ood",
-   "definition": "State machines: explicit states and transitions driving behaviour.",
-   "source": "UML 2.5.1 (OMG 2017): StateMachines (14)",
-   "names": [
-    "fsm",
-    "lifecycle",
-    "state",
-    "statemachine",
-    "states",
-    "status",
-    "transition",
-    "transitions"
-   ],
-   "imports": [
-    "transitions"
-   ]
-  },
-  {
-   "id": "ood.inheritance",
-   "group": "ood",
-   "definition": "Class hierarchies: base classes with specialised subclasses that override behaviour.",
-   "source": "UML 2.5.1 (OMG 2017): Generalization (9.9); SWEBOK v4 (IEEE CS 2024), Software Design: object-oriented design",
-   "names": [
-    "base",
-    "bases",
-    "mixin",
-    "mixins",
-    "subclass",
-    "subclasses"
-   ],
-   "imports": []
-  },
-  {
-   "id": "xcut.auth",
-   "group": "xcut",
-   "definition": "Authentication and authorization: credentials, logins, tokens, permissions.",
-   "source": "ACM CCS 2012: Security and privacy / Authentication; Access control",
-   "names": [
-    "auth",
-    "authentication",
-    "authorization",
-    "basic",
-    "credential",
-    "credentials",
-    "digest",
-    "keyring",
-    "login",
-    "logout",
-    "netrc",
-    "oauth",
-    "password",
-    "passwords",
-    "permission",
-    "permissions",
-    "session",
-    "sessions",
-    "token",
-    "tokens"
-   ],
-   "imports": [
-    "jwt",
-    "keyring",
-    "netrc",
-    "oauthlib"
-   ]
-  },
-  {
-   "id": "xcut.security",
-   "group": "xcut",
-   "definition": "Security mechanisms other than login: hashing, signing, TLS, sandboxing, CSRF.",
-   "source": "ACM CCS 2012: Security and privacy / Security services",
-   "names": [
-    "cert",
-    "certificate",
-    "certificates",
-    "certs",
-    "crypto",
-    "cryptography",
-    "csrf",
-    "hash",
-    "hashes",
-    "hashing",
-    "sandbox",
-    "secure",
-    "security",
-    "sign",
-    "signature",
-    "signing",
-    "ssl",
-    "tls"
-   ],
-   "imports": [
-    "certifi",
-    "crypto",
-    "cryptography",
-    "hashlib",
-    "hmac",
-    "secrets",
-    "ssl"
-   ]
-  },
-  {
-   "id": "xcut.logging",
-   "group": "xcut",
-   "definition": "Logging and diagnostics: log records, handlers, tracing, debug output, telemetry.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Maintenance: maintainability support",
-   "names": [
-    "analytics",
-    "debug",
-    "debugging",
-    "diagnostics",
-    "dump",
-    "log",
-    "logger",
-    "loggers",
-    "logging",
-    "logs",
-    "report",
-    "reporter",
-    "reporting",
-    "reports",
-    "telemetry",
-    "trace",
-    "traceback",
-    "tracebacks",
-    "tracing",
-    "warning",
-    "warnings"
-   ],
-   "imports": [
-    "log",
-    "logging",
-    "opentelemetry",
-    "slog",
-    "structlog",
-    "traceback",
-    "warnings"
-   ]
-  },
-  {
-   "id": "xcut.errors",
-   "group": "xcut",
-   "definition": "Error handling: exception types, error mapping, recovery.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: error handling, exception handling and fault tolerance",
-   "names": [
-    "error",
-    "errors",
-    "exc",
-    "exception",
-    "exceptions",
-    "failure",
-    "failures",
-    "fault",
-    "faults",
-    "outcomes",
-    "raise",
-    "recover",
-    "recovery"
-   ],
-   "imports": []
-  },
-  {
-   "id": "xcut.concurrency",
-   "group": "xcut",
-   "definition": "Concurrency: threads, processes, async IO, event loops, locks, workers, schedulers.",
-   "source": "ACM CCS 2012: Computing methodologies / Concurrent computing methodologies",
-   "names": [
-    "aio",
-    "anyio",
-    "async",
-    "asyncio",
-    "concurrency",
-    "concurrent",
-    "executor",
-    "futures",
-    "lock",
-    "locks",
-    "loop",
-    "multiprocessing",
-    "parallel",
-    "pool",
-    "reactor",
-    "schedule",
-    "scheduler",
-    "sync",
-    "task",
-    "tasks",
-    "thread",
-    "threading",
-    "threads",
-    "trio",
-    "twisted",
-    "worker",
-    "workers"
-   ],
-   "imports": [
-    "anyio",
-    "asyncio",
-    "concurrent",
-    "gevent",
-    "multiprocessing",
-    "sync",
-    "threading",
-    "trio",
-    "twisted"
-   ]
-  },
-  {
-   "id": "xcut.caching",
-   "group": "xcut",
-   "definition": "Caching: storing computed or fetched results for reuse, with keys and invalidation.",
-   "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Identity Map; SWEBOK v4 (IEEE CS 2024), Software Construction: performance",
-   "names": [
-    "cache",
-    "cachecontrol",
-    "cached",
-    "caches",
-    "caching",
-    "lru",
-    "memo",
-    "memoize"
-   ],
-   "imports": [
-    "cachetools",
-    "diskcache",
-    "functools"
-   ]
-  },
-  {
-   "id": "xcut.validation",
-   "group": "xcut",
-   "definition": "Validation and contracts at the boundary: checking input against schemas or rules.",
-   "source": "\"Applying Design by Contract\" (IEEE Computer, 1992)",
-   "names": [
-    "assert",
-    "assertion",
-    "assertions",
-    "check",
-    "checker",
-    "checks",
-    "constraint",
-    "constraints",
-    "lint",
-    "linter",
-    "linters",
-    "schema",
-    "schemas",
-    "validate",
-    "validation",
-    "validator",
-    "validators",
-    "verify"
-   ],
-   "imports": [
-    "cerberus",
-    "jsonschema",
-    "voluptuous"
-   ]
-  },
-  {
-   "id": "xcut.compat",
-   "group": "xcut",
-   "definition": "Compatibility and portability shims across Python versions, platforms or dependency versions.",
-   "source": "ISO/IEC 25010:2011: Portability",
-   "names": [
-    "_compat",
-    "backport",
-    "backports",
-    "compat",
-    "compatibility",
-    "platform",
-    "platforms",
-    "polyfill",
-    "posix",
-    "py3",
-    "shim",
-    "shims",
-    "six",
-    "win",
-    "windows"
-   ],
-   "imports": [
-    "platform",
-    "six",
-    "sys"
-   ]
-  },
-  {
-   "id": "xcut.i18n",
-   "group": "xcut",
-   "definition": "Text encoding and internationalisation: charsets, unicode handling, locale.",
-   "source": "ACM CCS 2012: Software and its engineering / Software notations and tools (character encodings)",
-   "names": [
-    "cells",
-    "charset",
-    "charsets",
-    "encoding",
-    "encodings",
-    "i18n",
-    "idna",
-    "l10n",
-    "locale",
-    "locales",
-    "unicode",
-    "wcwidth"
-   ],
-   "imports": [
-    "chardet",
-    "charset_normalizer",
-    "codecs",
-    "gettext",
-    "idna",
-    "locale",
-    "unicodedata"
-   ]
-  },
-  {
-   "id": "parse.lexer",
-   "group": "parse",
-   "definition": "Lexical analysis: turning characters into tokens.",
-   "source": "ACM CCS 2012: Software and its engineering / Compilers / Parsers (lexical analysis)",
-   "names": [
-    "lex",
-    "lexer",
-    "lexers",
-    "lexing",
-    "scan",
-    "scanner",
-    "token",
-    "tokenize",
-    "tokenizer",
-    "tokens"
-   ],
-   "imports": [
-    "pygments",
-    "tokenize"
-   ]
-  },
-  {
-   "id": "parse.parser",
-   "group": "parse",
-   "definition": "Parsing: turning tokens or text into structured trees by grammar rules.",
-   "source": "ACM CCS 2012: Software and its engineering / Compilers / Parsers",
-   "names": [
-    "cyk",
-    "earley",
-    "grammar",
-    "grammars",
-    "lalr",
-    "parse",
-    "parser",
-    "parsers",
-    "parsing",
-    "peg",
-    "syntax"
-   ],
-   "imports": [
-    "lark",
-    "ply",
-    "pyparsing"
-   ]
-  },
-  {
-   "id": "parse.ast",
-   "group": "parse",
-   "definition": "Syntax trees and intermediate representations: node types and tree utilities.",
-   "source": "ACM CCS 2012: Software and its engineering / Compilers / Intermediate representations",
-   "names": [
-    "ast",
-    "cst",
-    "ir",
-    "node",
-    "nodes",
-    "parse_tree",
-    "tree",
-    "trees"
-   ],
-   "imports": [
-    "ast",
-    "libcst"
-   ]
-  },
-  {
-   "id": "parse.codegen",
-   "group": "parse",
-   "definition": "Code generation, compilation and interpretation: emitting or running code from a tree or template.",
-   "source": "ACM CCS 2012: Software and its engineering / Compilers / Code generation; Interpreters",
-   "names": [
-    "bytecode",
-    "codegen",
-    "compile",
-    "compiler",
-    "emit",
-    "eval",
-    "generate",
-    "generator",
-    "generators",
-    "interpret",
-    "interpreter",
-    "runtime",
-    "sandbox"
-   ],
-   "imports": [
-    "compile",
-    "dis"
-   ]
-  },
-  {
-   "id": "net.http",
-   "group": "net",
-   "definition": "HTTP protocol handling: requests, responses, headers, cookies, status, multipart.",
-   "source": "ACM CCS 2012: Networks / Network protocols / Application layer protocols",
-   "names": [
-    "asgi",
-    "cookie",
-    "cookies",
-    "fetch",
-    "formdata",
-    "h11",
-    "h2",
-    "header",
-    "headers",
-    "http",
-    "http1",
-    "http2",
-    "https",
-    "multipart",
-    "request",
-    "requests",
-    "response",
-    "responses",
-    "status",
-    "statuses",
-    "url",
-    "urls",
-    "web",
-    "websocket",
-    "websockets",
-    "ws",
-    "wsgi",
-    "xhr"
-   ],
-   "imports": [
-    "aiohttp",
-    "h11",
-    "h2",
-    "http",
-    "http.client",
-    "httpx",
-    "multidict",
-    "net/http",
-    "requests",
-    "starlette",
-    "urllib",
-    "urllib3",
-    "werkzeug",
-    "yarl"
-   ]
-  },
-  {
-   "id": "net.transport",
-   "group": "net",
-   "definition": "Transport and connections: sockets, TLS streams, connection pools, proxies, DNS.",
-   "source": "ACM CCS 2012: Networks / Network protocols / Transport protocols",
-   "names": [
-    "connection",
-    "connections",
-    "connector",
-    "dns",
-    "net",
-    "network",
-    "networking",
-    "pool",
-    "pools",
-    "proxies",
-    "proxy",
-    "resolver",
-    "retries",
-    "retry",
-    "socket",
-    "sockets",
-    "tcp",
-    "timeout",
-    "timeouts",
-    "transport",
-    "transports",
-    "udp"
-   ],
-   "imports": [
-    "dns",
-    "net",
-    "selectors",
-    "socket",
-    "ssl"
-   ]
-  },
-  {
-   "id": "net.client",
-   "group": "net",
-   "definition": "Client side of a protocol: code that issues requests to remote services.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Architecture: client-server style",
-   "names": [
-    "adapter",
-    "adapters",
-    "api_client",
-    "client",
-    "clients",
-    "download",
-    "downloader",
-    "fetch",
-    "llm",
-    "llms",
-    "sdk",
-    "session",
-    "sessions"
-   ],
-   "imports": [
-    "aiohttp",
-    "httpx",
-    "litellm",
-    "openai",
-    "redis",
-    "requests",
-    "urllib3"
-   ]
-  },
-  {
-   "id": "net.server",
-   "group": "net",
-   "definition": "Server side of a protocol: listening, accepting and serving requests.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Architecture: client-server style",
-   "names": [
-    "app",
-    "asgi",
-    "daemon",
-    "devserver",
-    "listener",
-    "runner",
-    "serve",
-    "server",
-    "servers",
-    "serving",
-    "web",
-    "worker",
-    "workers",
-    "wsgi"
-   ],
-   "imports": [
-    "gunicorn",
-    "http.server",
-    "socketserver",
-    "uvicorn",
-    "wsgiref"
-   ]
-  },
-  {
-   "id": "ser.serialization",
-   "group": "ser",
-   "definition": "Serialization: encoding and decoding data to and from wire or file formats (JSON, YAML, TOML, pickle).",
-   "source": "ACM CCS 2012: Information systems / Data management systems / Data structures (data exchange formats)",
-   "names": [
-    "binding",
-    "bindings",
-    "codec",
-    "codecs",
-    "convert",
-    "converter",
-    "converters",
-    "csv",
-    "decode",
-    "decoder",
-    "decoders",
-    "deserialize",
-    "dump",
-    "dumps",
-    "encode",
-    "encoder",
-    "encoders",
-    "format",
-    "formats",
-    "formatter",
-    "formatters",
-    "json",
-    "load",
-    "loads",
-    "marshal",
-    "marshalling",
-    "msgpack",
-    "pickle",
-    "render",
-    "serialization",
-    "serialize",
-    "serializer",
-    "serializers",
-    "tag",
-    "toml",
-    "xml",
-    "yaml"
-   ],
-   "imports": [
-    "csv",
-    "encoding/json",
-    "encoding/xml",
-    "json",
-    "marshal",
-    "msgpack",
-    "orjson",
-    "pickle",
-    "simplejson",
-    "toml",
-    "tomli",
-    "tomlkit",
-    "tomllib",
-    "xml",
-    "yaml"
-   ]
-  },
-  {
-   "id": "cs.data_structures",
-   "group": "cs",
-   "definition": "Data structures: containers, mappings, trees, graphs and their algorithms.",
-   "source": "ACM CCS 2012: Theory of computation / Design and analysis of algorithms / Data structures design and analysis",
-   "names": [
-    "collection",
-    "collections",
-    "containers",
-    "datastructure",
-    "datastructures",
-    "dict",
-    "dicts",
-    "graph",
-    "graphs",
-    "heap",
-    "list",
-    "lists",
-    "multidict",
-    "ordered",
-    "queue",
-    "set",
-    "sets",
-    "sorted",
-    "struct",
-    "structs",
-    "structures",
-    "tree",
-    "trees"
-   ],
-   "imports": [
-    "bisect",
-    "collections",
-    "heapq"
-   ]
-  },
-  {
-   "id": "cs.ml",
-   "group": "cs",
-   "definition": "Machine learning and numeric models: training, inference, model definitions, LLM calls.",
-   "source": "ACM CCS 2012: Computing methodologies / Machine learning",
-   "names": [
-    "bench",
-    "dataset",
-    "datasets",
-    "embedding",
-    "embeddings",
-    "gpt",
-    "inference",
-    "llm",
-    "llms",
-    "model",
-    "models",
-    "neural",
-    "nn",
-    "prepare",
-    "sample",
-    "sampling",
-    "tokenizer",
-    "train",
-    "training"
-   ],
-   "imports": [
-    "anthropic",
-    "jax",
-    "litellm",
-    "numpy",
-    "openai",
-    "sklearn",
-    "tensorflow",
-    "tiktoken",
-    "torch",
-    "transformers"
-   ]
-  },
-  {
-   "id": "scm.vcs",
-   "group": "scm",
-   "definition": "Version control integration: reading or driving git, hg or svn.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: software configuration control",
-   "names": [
-    "bazaar",
-    "blame",
-    "bzr",
-    "commit",
-    "commits",
-    "diff",
-    "diffs",
-    "git",
-    "hg",
-    "mercurial",
-    "patch",
-    "patches",
-    "repo",
-    "subversion",
-    "svn",
-    "vcs"
-   ],
-   "imports": [
-    "dulwich",
-    "git",
-    "pygit2"
-   ]
-  },
-  {
-   "id": "scm.packaging",
-   "group": "scm",
-   "definition": "Package and dependency management as the product: resolving, installing, publishing packages.",
-   "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: software building and release",
-   "names": [
-    "dependencies",
-    "dependency",
-    "dist",
-    "distribution",
-    "distributions",
-    "env",
-    "environment",
-    "environments",
-    "index",
-    "install",
-    "installation",
-    "installed",
-    "installer",
-    "lock",
-    "locker",
-    "markers",
-    "metadata",
-    "package",
-    "packages",
-    "packaging",
-    "provision",
-    "publish",
-    "publishing",
-    "pypi",
-    "req",
-    "requirements",
-    "resolution",
-    "resolve",
-    "resolvelib",
-    "resolver",
-    "resolvers",
-    "sdist",
-    "specifiers",
-    "venv",
-    "version",
-    "versions",
-    "virtualenv",
-    "wheel",
-    "wheels"
-   ],
-   "imports": [
-    "importlib.metadata",
-    "installer",
-    "packaging",
-    "pip",
-    "pkg_resources",
-    "resolvelib",
-    "setuptools",
-    "virtualenv"
-   ]
-  }
- ]
+  "name": "rco-concepts",
+  "version": "2.0.0",
+  "note": "Concept labels for the RCO classifier (card 1338 v1; card 1352 v2). ids are stable. A changed definition bumps the minor version. adding concepts bumps the minor version; this file is 2.0.0 because the schema gained status, aliases, and dropped records. A concept is never removed: mark it dropped instead, with dropped_reason, evidence, dropped_on, and revisit_when. A renamed concept keeps the old id as dropped. status is trained (has labels), untrained (listed, no labels yet), or dropped (kept as a deliberate decision, not a gap). aliases are optional synonyms for lookup before adding a concept. names and imports are lowercase hint tokens used only for trained concepts: names feed auto labels and the name signal, imports feed the import-lexicon signal. Labels and the baseline run stay on taxonomy version 1.0.0 until they are redone; v2 is a superset.",
+  "concepts": [
+    {
+      "id": "layer.cli",
+      "group": "layer",
+      "definition": "Command-line entry points: argument parsing, subcommands, console scripts.",
+      "source": "ACM CCS 2012: Human-centered computing / Command line interfaces",
+      "status": "trained",
+      "aliases": [
+        "command line",
+        "command-line interface",
+        "console script"
+      ],
+      "names": [
+        "__main__",
+        "app",
+        "cli",
+        "cmd",
+        "cmds",
+        "command",
+        "commands",
+        "console",
+        "entrypoint",
+        "entrypoints",
+        "main",
+        "shell"
+      ],
+      "imports": [
+        "argparse",
+        "click",
+        "cobra",
+        "commander",
+        "flag",
+        "optparse",
+        "typer",
+        "yargs"
+      ]
+    },
+    {
+      "id": "layer.api",
+      "group": "layer",
+      "definition": "The public programmatic or HTTP surface others call: routes, endpoints, facades.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Design: interface design",
+      "status": "trained",
+      "aliases": [
+        "application programming interface",
+        "http api",
+        "rest api",
+        "public surface"
+      ],
+      "names": [
+        "api",
+        "apis",
+        "application",
+        "applications",
+        "endpoint",
+        "endpoints",
+        "handler",
+        "handlers",
+        "route",
+        "router",
+        "routers",
+        "routes",
+        "routing",
+        "view",
+        "views"
+      ],
+      "imports": []
+    },
+    {
+      "id": "layer.ui",
+      "group": "layer",
+      "definition": "Presentation for humans: terminal rendering, formatting, HTML templates, widgets.",
+      "source": "ACM CCS 2012: Human-centered computing / Interaction paradigms",
+      "status": "trained",
+      "aliases": [
+        "user interface",
+        "tui",
+        "presentation layer",
+        "view layer"
+      ],
+      "names": [
+        "box",
+        "color",
+        "console",
+        "display",
+        "emoji",
+        "highlighter",
+        "layout",
+        "live",
+        "markdown",
+        "panel",
+        "pretty",
+        "progress",
+        "prompt",
+        "prompts",
+        "render",
+        "renderer",
+        "renderers",
+        "rendering",
+        "segment",
+        "style",
+        "styles",
+        "syntax",
+        "table",
+        "template",
+        "templates",
+        "templating",
+        "terminal",
+        "text",
+        "theme",
+        "themes",
+        "tui",
+        "ui",
+        "widget",
+        "widgets"
+      ],
+      "imports": [
+        "colorama",
+        "curses",
+        "html/template",
+        "jinja2",
+        "prompt_toolkit",
+        "rich"
+      ]
+    },
+    {
+      "id": "layer.persistence",
+      "group": "layer",
+      "definition": "Durable storage access: databases, ORM, files used as stores, migrations.",
+      "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Data Source Architectural Patterns",
+      "status": "trained",
+      "aliases": [
+        "storage",
+        "database access",
+        "orm",
+        "datastore"
+      ],
+      "names": [
+        "backend",
+        "backends",
+        "cache_db",
+        "dao",
+        "database",
+        "databases",
+        "db",
+        "migration",
+        "migrations",
+        "models_db",
+        "orm",
+        "persistence",
+        "repositories",
+        "repository",
+        "session",
+        "sql",
+        "sqlite",
+        "storage",
+        "store",
+        "stores"
+      ],
+      "imports": [
+        "alembic",
+        "asyncpg",
+        "database/sql",
+        "peewee",
+        "psycopg2",
+        "pymongo",
+        "sqlalchemy",
+        "sqlite3",
+        "sqlite_utils"
+      ]
+    },
+    {
+      "id": "layer.domain",
+      "group": "layer",
+      "definition": "Domain model: the core entities and rules of the problem the software solves.",
+      "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Domain Model; Domain-Driven Design (2003)",
+      "status": "trained",
+      "aliases": [
+        "domain model",
+        "business logic",
+        "core domain"
+      ],
+      "names": [
+        "core",
+        "domain",
+        "entities",
+        "entity",
+        "item",
+        "items",
+        "message",
+        "messages",
+        "model",
+        "models",
+        "package",
+        "packages",
+        "project",
+        "request",
+        "response",
+        "spider",
+        "spiders"
+      ],
+      "imports": []
+    },
+    {
+      "id": "layer.config",
+      "group": "layer",
+      "definition": "Configuration: loading, merging and validating settings, defaults, environment.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: construction for configurability",
+      "status": "trained",
+      "aliases": [
+        "settings",
+        "configuration",
+        "environment config"
+      ],
+      "names": [
+        "conf",
+        "config",
+        "configs",
+        "configuration",
+        "default",
+        "defaults",
+        "env",
+        "environment",
+        "ini",
+        "option",
+        "options",
+        "preferences",
+        "pyproject",
+        "setting",
+        "settings",
+        "toml"
+      ],
+      "imports": [
+        "configparser",
+        "dotenv",
+        "tomli",
+        "tomllib",
+        "viper"
+      ]
+    },
+    {
+      "id": "layer.io",
+      "group": "layer",
+      "definition": "File system and stream input/output: reading, writing, paths, archives.",
+      "source": "ACM CCS 2012: Software and its engineering / File systems management",
+      "status": "trained",
+      "aliases": [
+        "filesystem",
+        "file i/o",
+        "streams"
+      ],
+      "names": [
+        "archive",
+        "archives",
+        "download",
+        "downloads",
+        "file",
+        "filepost",
+        "files",
+        "filesystem",
+        "fs",
+        "io",
+        "path",
+        "paths",
+        "reader",
+        "stream",
+        "streaming",
+        "streams",
+        "upload",
+        "uploads",
+        "writer"
+      ],
+      "imports": [
+        "bufio",
+        "fs",
+        "glob",
+        "io",
+        "os.path",
+        "pathlib",
+        "shutil",
+        "tarfile",
+        "tempfile",
+        "zipfile"
+      ]
+    },
+    {
+      "id": "layer.tests",
+      "group": "layer",
+      "definition": "Test code: unit, integration and acceptance tests, fixtures and test helpers.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Testing",
+      "status": "trained",
+      "aliases": [
+        "test suite",
+        "test package",
+        "test code"
+      ],
+      "names": [
+        "__tests__",
+        "conftest",
+        "fixture",
+        "fixtures",
+        "mock",
+        "mocks",
+        "pytester",
+        "spec",
+        "specs",
+        "test",
+        "testing",
+        "tests",
+        "testutils"
+      ],
+      "imports": [
+        "hypothesis",
+        "jest",
+        "mocha",
+        "mock",
+        "pytest",
+        "testing",
+        "unittest",
+        "vitest"
+      ]
+    },
+    {
+      "id": "layer.build",
+      "group": "layer",
+      "definition": "Build, packaging of this repo, release, CI and developer scripts.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: release management and delivery",
+      "status": "trained",
+      "aliases": [
+        "build scripts",
+        "release scripts",
+        "developer tooling"
+      ],
+      "names": [
+        "build",
+        "builds",
+        "ci",
+        "gulpfile",
+        "make",
+        "noxfile",
+        "release",
+        "rollup",
+        "script",
+        "scripts",
+        "setup",
+        "tasks",
+        "tool",
+        "tools",
+        "tox",
+        "webpack"
+      ],
+      "imports": [
+        "invoke",
+        "nox",
+        "setuptools"
+      ]
+    },
+    {
+      "id": "layer.util",
+      "group": "layer",
+      "definition": "General helpers with no single domain: utilities, compatibility glue, small helpers.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: construction for reuse",
+      "status": "trained",
+      "aliases": [
+        "utils",
+        "helpers",
+        "miscellaneous"
+      ],
+      "names": [
+        "_internal",
+        "common",
+        "functional",
+        "helper",
+        "helpers",
+        "internal",
+        "lib",
+        "misc",
+        "shared",
+        "tools",
+        "toolz",
+        "util",
+        "utilities",
+        "utility",
+        "utils"
+      ],
+      "imports": []
+    },
+    {
+      "id": "layer.os",
+      "group": "layer",
+      "definition": "Operating-system integration: processes, signals, environment, platform detection.",
+      "source": "ACM CCS 2012: Software and its engineering / Operating systems",
+      "status": "trained",
+      "aliases": [
+        "platform integration",
+        "process control",
+        "signals"
+      ],
+      "names": [
+        "env",
+        "environment",
+        "exec",
+        "executor",
+        "locations",
+        "os",
+        "platform",
+        "platforms",
+        "proc",
+        "process",
+        "processes",
+        "run",
+        "runner",
+        "shell",
+        "signal",
+        "signals",
+        "subprocess",
+        "sys",
+        "system",
+        "venv",
+        "virtualenv"
+      ],
+      "imports": [
+        "child_process",
+        "ctypes",
+        "os",
+        "os/exec",
+        "platform",
+        "psutil",
+        "signal",
+        "subprocess",
+        "syscall"
+      ]
+    },
+    {
+      "id": "pattern.factory",
+      "group": "pattern",
+      "definition": "Factory Method or Abstract Factory: an object or function that decides which concrete class to create.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Factory Method, Abstract Factory",
+      "status": "trained",
+      "aliases": [
+        "factory method",
+        "abstract factory",
+        "simple factory"
+      ],
+      "names": [
+        "builder",
+        "builders",
+        "create",
+        "creator",
+        "factories",
+        "factory",
+        "maker",
+        "provider",
+        "providers",
+        "registry"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.adapter",
+      "group": "pattern",
+      "definition": "Adapter: converts one interface into another the caller expects (transport adapters, backends).",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Adapter",
+      "status": "trained",
+      "aliases": [
+        "wrapper adapter",
+        "interface adapter"
+      ],
+      "names": [
+        "adapter",
+        "adapters",
+        "backend",
+        "backends",
+        "binding",
+        "bindings",
+        "bridge",
+        "shim",
+        "shims",
+        "transport",
+        "transports",
+        "wrapper",
+        "wrappers"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.observer",
+      "group": "pattern",
+      "definition": "Observer: subscribers are notified of events through signals, hooks, callbacks or listeners.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Observer",
+      "status": "trained",
+      "aliases": [
+        "publish-subscribe",
+        "pub/sub",
+        "event listener",
+        "signals and slots"
+      ],
+      "names": [
+        "callback",
+        "callbacks",
+        "dispatch",
+        "dispatcher",
+        "emitter",
+        "event",
+        "events",
+        "hook",
+        "hooks",
+        "hookspec",
+        "hookspecs",
+        "interceptor",
+        "interceptors",
+        "listener",
+        "listeners",
+        "notify",
+        "observer",
+        "observers",
+        "pubsub",
+        "signal",
+        "signals",
+        "subscriber"
+      ],
+      "imports": [
+        "blinker",
+        "events",
+        "pluggy"
+      ]
+    },
+    {
+      "id": "pattern.strategy",
+      "group": "pattern",
+      "definition": "Strategy: interchangeable algorithms behind one interface, chosen at run time.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Strategy",
+      "status": "trained",
+      "aliases": [
+        "policy pattern",
+        "interchangeable algorithm"
+      ],
+      "names": [
+        "algorithm",
+        "algorithms",
+        "policies",
+        "policy",
+        "resolver",
+        "resolvers",
+        "retry",
+        "scheduler",
+        "selector",
+        "selectors",
+        "strategies",
+        "strategy"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.decorator",
+      "group": "pattern",
+      "definition": "Decorator: wraps an object or function to add behaviour without changing it.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Decorator",
+      "status": "trained",
+      "aliases": [
+        "wrapper decorator",
+        "decorating wrapper"
+      ],
+      "names": [
+        "decorate",
+        "decorator",
+        "decorators",
+        "mark",
+        "marks",
+        "wrapped",
+        "wraps"
+      ],
+      "imports": [
+        "functools"
+      ]
+    },
+    {
+      "id": "pattern.command",
+      "group": "pattern",
+      "definition": "Command: requests packaged as objects (named commands, actions, undo, tasks).",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Command",
+      "status": "trained",
+      "aliases": [
+        "action object",
+        "request object",
+        "undo command"
+      ],
+      "names": [
+        "action",
+        "actions",
+        "coder",
+        "coders",
+        "command",
+        "commands",
+        "job",
+        "jobs",
+        "op",
+        "operation",
+        "operations",
+        "ops",
+        "task",
+        "tasks"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.visitor",
+      "group": "pattern",
+      "definition": "Visitor: an operation applied across a structure of nodes, as in tree or AST walkers.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Visitor",
+      "status": "trained",
+      "aliases": [
+        "double dispatch",
+        "tree walker"
+      ],
+      "names": [
+        "nodes",
+        "transformer",
+        "transformers",
+        "traverse",
+        "visit",
+        "visitor",
+        "visitors",
+        "walk",
+        "walker"
+      ],
+      "imports": [
+        "ast"
+      ]
+    },
+    {
+      "id": "pattern.chain",
+      "group": "pattern",
+      "definition": "Chain of Responsibility: a request passes along a chain of handlers, as in middleware.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Chain of Responsibility",
+      "status": "trained",
+      "aliases": [
+        "chain of responsibility",
+        "middleware chain",
+        "handler chain"
+      ],
+      "names": [
+        "chain",
+        "filter",
+        "filters",
+        "handler",
+        "handlers",
+        "interceptor",
+        "interceptors",
+        "middleware",
+        "middlewares",
+        "pipeline_handler"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.proxy",
+      "group": "pattern",
+      "definition": "Proxy: a stand-in object that controls access to another, such as lazy or context-local proxies.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Proxy",
+      "status": "trained",
+      "aliases": [
+        "surrogate",
+        "virtual proxy",
+        "lazy proxy"
+      ],
+      "names": [
+        "ctx",
+        "globals",
+        "lazy",
+        "local",
+        "locals",
+        "proxies",
+        "proxy"
+      ],
+      "imports": []
+    },
+    {
+      "id": "pattern.iterator",
+      "group": "pattern",
+      "definition": "Iterator: sequential access to elements of a collection without exposing its structure.",
+      "source": "GoF, Design Patterns: Elements of Reusable Object-Oriented Software (1994): Iterator",
+      "status": "trained",
+      "aliases": [
+        "cursor",
+        "enumerator"
+      ],
+      "names": [
+        "cursor",
+        "iter",
+        "iterate",
+        "iterator",
+        "iterators",
+        "paginate",
+        "pagination"
+      ],
+      "imports": [
+        "itertools"
+      ]
+    },
+    {
+      "id": "arch.repository",
+      "group": "arch",
+      "definition": "Repository: a collection-like interface over stored domain objects, hiding the data source.",
+      "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Repository; Domain-Driven Design (2003)",
+      "status": "trained",
+      "aliases": [
+        "ddd repository",
+        "collection-like store",
+        "poeaa repository"
+      ],
+      "names": [
+        "catalog",
+        "index",
+        "indexes",
+        "registry",
+        "repo",
+        "repos",
+        "repositories",
+        "repository"
+      ],
+      "imports": []
+    },
+    {
+      "id": "arch.pipeline",
+      "group": "arch",
+      "definition": "Pipes and Filters: data flows through a sequence of independent processing stages.",
+      "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Pipes and Filters",
+      "status": "trained",
+      "aliases": [
+        "pipes and filters",
+        "pipe and filter",
+        "posa pipes and filters"
+      ],
+      "names": [
+        "chain",
+        "exporter",
+        "exporters",
+        "extractor",
+        "extractors",
+        "flow",
+        "loader",
+        "loaders",
+        "pipe",
+        "pipeline",
+        "pipelines",
+        "pipes",
+        "postprocess",
+        "preprocess",
+        "processor",
+        "processors",
+        "stage",
+        "stages",
+        "transforms"
+      ],
+      "imports": []
+    },
+    {
+      "id": "arch.plugin",
+      "group": "arch",
+      "definition": "Plugin or Microkernel: extensions discovered and loaded at run time through a defined extension point.",
+      "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Plugin; POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Microkernel",
+      "status": "trained",
+      "aliases": [
+        "microkernel",
+        "plugin architecture",
+        "extension point",
+        "add-in"
+      ],
+      "names": [
+        "addon",
+        "addons",
+        "contrib",
+        "entry_points",
+        "ext",
+        "extension",
+        "extensions",
+        "hookspec",
+        "hookspecs",
+        "loader",
+        "plugin",
+        "plugins"
+      ],
+      "imports": [
+        "importlib.metadata",
+        "pkg_resources",
+        "pluggy",
+        "stevedore"
+      ]
+    },
+    {
+      "id": "arch.mvc",
+      "group": "arch",
+      "definition": "Model-View-Controller and web application structure: controllers or views over models with templates.",
+      "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Model-View-Controller",
+      "status": "trained",
+      "aliases": [
+        "model-view-controller",
+        "model view controller"
+      ],
+      "names": [
+        "app",
+        "asgi",
+        "blueprint",
+        "blueprints",
+        "controller",
+        "controllers",
+        "mvc",
+        "view",
+        "views",
+        "web",
+        "webapp",
+        "wsgi"
+      ],
+      "imports": []
+    },
+    {
+      "id": "arch.di",
+      "group": "arch",
+      "definition": "Dependency injection: components receive collaborators from outside rather than constructing them.",
+      "source": "\"Inversion of Control Containers and the Dependency Injection pattern\" (2004 article)",
+      "status": "trained",
+      "aliases": [
+        "dependency injection",
+        "inversion of control",
+        "ioc container"
+      ],
+      "names": [
+        "container",
+        "containers",
+        "dependencies",
+        "dependency",
+        "di",
+        "inject",
+        "injection",
+        "injector",
+        "provide"
+      ],
+      "imports": []
+    },
+    {
+      "id": "arch.messaging",
+      "group": "arch",
+      "definition": "Messaging: asynchronous exchange through queues, brokers, channels or pub/sub.",
+      "source": "Enterprise Integration Patterns (2003)",
+      "status": "trained",
+      "aliases": [
+        "message queue",
+        "message broker",
+        "asynchronous messaging"
+      ],
+      "names": [
+        "amqp",
+        "broker",
+        "brokers",
+        "channel",
+        "channels",
+        "kafka",
+        "messaging",
+        "mq",
+        "pubsub",
+        "queue",
+        "queues",
+        "stream",
+        "streams"
+      ],
+      "imports": [
+        "amqp",
+        "kombu",
+        "pika",
+        "queue"
+      ]
+    },
+    {
+      "id": "arch.client_server",
+      "group": "arch",
+      "definition": "Client-server split: client libraries and server implementations of a protocol.",
+      "source": "POSA vol. 1, Pattern-Oriented Software Architecture: A System of Patterns (1996): Broker; SWEBOK v4 (IEEE CS 2024), Software Architecture: architectural styles",
+      "status": "trained",
+      "aliases": [
+        "client/server",
+        "client-server architecture"
+      ],
+      "names": [
+        "client",
+        "clients",
+        "connection",
+        "connections",
+        "pool",
+        "server",
+        "servers",
+        "session",
+        "sessions"
+      ],
+      "imports": []
+    },
+    {
+      "id": "ood.interface",
+      "group": "ood",
+      "definition": "Interfaces and abstract types: abstract base classes, protocols, typed contracts between parts.",
+      "source": "UML 2.5.1 (OMG 2017): Interface (10.4); Object-Oriented Software Construction, 2nd ed. (1997): Design by Contract",
+      "status": "trained",
+      "aliases": [
+        "protocol",
+        "abstract type",
+        "abstract base class",
+        "abc"
+      ],
+      "names": [
+        "abc",
+        "abstract",
+        "base",
+        "contract",
+        "contracts",
+        "interface",
+        "interfaces",
+        "protocol",
+        "protocols",
+        "spec",
+        "structures",
+        "typedefs",
+        "types",
+        "typing"
+      ],
+      "imports": [
+        "abc",
+        "typing",
+        "typing_extensions"
+      ]
+    },
+    {
+      "id": "ood.value_object",
+      "group": "ood",
+      "definition": "Value objects and data classes: immutable or plain data carriers with structural equality.",
+      "source": "Domain-Driven Design (2003): Value Object",
+      "status": "trained",
+      "aliases": [
+        "data class",
+        "value type",
+        "ddd value object"
+      ],
+      "names": [
+        "attr",
+        "attrs",
+        "data",
+        "dataclass",
+        "dataclasses",
+        "datastructures",
+        "field",
+        "fields",
+        "namedtuple",
+        "record",
+        "records",
+        "struct",
+        "structs",
+        "tuple",
+        "value",
+        "values"
+      ],
+      "imports": [
+        "attr",
+        "attrs",
+        "collections",
+        "dataclasses",
+        "enum",
+        "pydantic"
+      ]
+    },
+    {
+      "id": "ood.state_machine",
+      "group": "ood",
+      "definition": "State machines: explicit states and transitions driving behaviour.",
+      "source": "UML 2.5.1 (OMG 2017): StateMachines (14)",
+      "status": "trained",
+      "aliases": [
+        "fsm",
+        "finite state machine",
+        "state chart",
+        "uml state machine"
+      ],
+      "names": [
+        "fsm",
+        "lifecycle",
+        "state",
+        "statemachine",
+        "states",
+        "status",
+        "transition",
+        "transitions"
+      ],
+      "imports": [
+        "transitions"
+      ]
+    },
+    {
+      "id": "ood.inheritance",
+      "group": "ood",
+      "definition": "Class hierarchies: base classes with specialised subclasses that override behaviour.",
+      "source": "UML 2.5.1 (OMG 2017): Generalization (9.9); SWEBOK v4 (IEEE CS 2024), Software Design: object-oriented design",
+      "status": "trained",
+      "aliases": [
+        "generalization",
+        "subclassing",
+        "class hierarchy"
+      ],
+      "names": [
+        "base",
+        "bases",
+        "mixin",
+        "mixins",
+        "subclass",
+        "subclasses"
+      ],
+      "imports": []
+    },
+    {
+      "id": "xcut.auth",
+      "group": "xcut",
+      "definition": "Authentication and authorization: credentials, logins, tokens, permissions.",
+      "source": "ACM CCS 2012: Security and privacy / Authentication; Access control",
+      "status": "trained",
+      "aliases": [
+        "authentication",
+        "authorization",
+        "access control",
+        "permissions"
+      ],
+      "names": [
+        "auth",
+        "authentication",
+        "authorization",
+        "basic",
+        "credential",
+        "credentials",
+        "digest",
+        "keyring",
+        "login",
+        "logout",
+        "netrc",
+        "oauth",
+        "password",
+        "passwords",
+        "permission",
+        "permissions",
+        "session",
+        "sessions",
+        "token",
+        "tokens"
+      ],
+      "imports": [
+        "jwt",
+        "keyring",
+        "netrc",
+        "oauthlib"
+      ]
+    },
+    {
+      "id": "xcut.security",
+      "group": "xcut",
+      "definition": "Security mechanisms other than login: hashing, signing, TLS, sandboxing, CSRF.",
+      "source": "ACM CCS 2012: Security and privacy / Security services",
+      "status": "trained",
+      "aliases": [
+        "crypto",
+        "tls",
+        "sandboxing",
+        "csrf",
+        "hardening"
+      ],
+      "names": [
+        "cert",
+        "certificate",
+        "certificates",
+        "certs",
+        "crypto",
+        "cryptography",
+        "csrf",
+        "hash",
+        "hashes",
+        "hashing",
+        "sandbox",
+        "secure",
+        "security",
+        "sign",
+        "signature",
+        "signing",
+        "ssl",
+        "tls"
+      ],
+      "imports": [
+        "certifi",
+        "crypto",
+        "cryptography",
+        "hashlib",
+        "hmac",
+        "secrets",
+        "ssl"
+      ]
+    },
+    {
+      "id": "xcut.logging",
+      "group": "xcut",
+      "definition": "Logging and diagnostics: log records, handlers, tracing, debug output, telemetry.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Maintenance: maintainability support",
+      "status": "trained",
+      "aliases": [
+        "diagnostics",
+        "log records",
+        "debug output"
+      ],
+      "names": [
+        "analytics",
+        "debug",
+        "debugging",
+        "diagnostics",
+        "dump",
+        "log",
+        "logger",
+        "loggers",
+        "logging",
+        "logs",
+        "report",
+        "reporter",
+        "reporting",
+        "reports",
+        "telemetry",
+        "trace",
+        "traceback",
+        "tracebacks",
+        "tracing",
+        "warning",
+        "warnings"
+      ],
+      "imports": [
+        "log",
+        "logging",
+        "opentelemetry",
+        "slog",
+        "structlog",
+        "traceback",
+        "warnings"
+      ]
+    },
+    {
+      "id": "xcut.errors",
+      "group": "xcut",
+      "definition": "Error handling: exception types, error mapping, recovery.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Construction: error handling, exception handling and fault tolerance",
+      "status": "trained",
+      "aliases": [
+        "exception handling",
+        "error mapping",
+        "recovery"
+      ],
+      "names": [
+        "error",
+        "errors",
+        "exc",
+        "exception",
+        "exceptions",
+        "failure",
+        "failures",
+        "fault",
+        "faults",
+        "outcomes",
+        "raise",
+        "recover",
+        "recovery"
+      ],
+      "imports": []
+    },
+    {
+      "id": "xcut.concurrency",
+      "group": "xcut",
+      "definition": "Concurrency: threads, processes, async IO, event loops, locks, workers, schedulers.",
+      "source": "ACM CCS 2012: Computing methodologies / Concurrent computing methodologies",
+      "status": "trained",
+      "aliases": [
+        "threads",
+        "async",
+        "parallelism",
+        "locks"
+      ],
+      "names": [
+        "aio",
+        "anyio",
+        "async",
+        "asyncio",
+        "concurrency",
+        "concurrent",
+        "executor",
+        "futures",
+        "lock",
+        "locks",
+        "loop",
+        "multiprocessing",
+        "parallel",
+        "pool",
+        "reactor",
+        "schedule",
+        "scheduler",
+        "sync",
+        "task",
+        "tasks",
+        "thread",
+        "threading",
+        "threads",
+        "trio",
+        "twisted",
+        "worker",
+        "workers"
+      ],
+      "imports": [
+        "anyio",
+        "asyncio",
+        "concurrent",
+        "gevent",
+        "multiprocessing",
+        "sync",
+        "threading",
+        "trio",
+        "twisted"
+      ]
+    },
+    {
+      "id": "xcut.caching",
+      "group": "xcut",
+      "definition": "Caching: storing computed or fetched results for reuse, with keys and invalidation.",
+      "source": "PoEAA, Patterns of Enterprise Application Architecture (2002): Identity Map; SWEBOK v4 (IEEE CS 2024), Software Construction: performance",
+      "status": "trained",
+      "aliases": [
+        "cache",
+        "memoization",
+        "invalidation"
+      ],
+      "names": [
+        "cache",
+        "cachecontrol",
+        "cached",
+        "caches",
+        "caching",
+        "lru",
+        "memo",
+        "memoize"
+      ],
+      "imports": [
+        "cachetools",
+        "diskcache",
+        "functools"
+      ]
+    },
+    {
+      "id": "xcut.validation",
+      "group": "xcut",
+      "definition": "Validation and contracts at the boundary: checking input against schemas or rules.",
+      "source": "\"Applying Design by Contract\" (IEEE Computer, 1992)",
+      "status": "trained",
+      "aliases": [
+        "schema validation",
+        "input checking",
+        "contracts at the boundary"
+      ],
+      "names": [
+        "assert",
+        "assertion",
+        "assertions",
+        "check",
+        "checker",
+        "checks",
+        "constraint",
+        "constraints",
+        "lint",
+        "linter",
+        "linters",
+        "schema",
+        "schemas",
+        "validate",
+        "validation",
+        "validator",
+        "validators",
+        "verify"
+      ],
+      "imports": [
+        "cerberus",
+        "jsonschema",
+        "voluptuous"
+      ]
+    },
+    {
+      "id": "xcut.compat",
+      "group": "xcut",
+      "definition": "Compatibility and portability shims across Python versions, platforms or dependency versions.",
+      "source": "ISO/IEC 25010:2011: Portability",
+      "status": "trained",
+      "aliases": [
+        "compatibility shims",
+        "portability",
+        "polyfill"
+      ],
+      "names": [
+        "_compat",
+        "backport",
+        "backports",
+        "compat",
+        "compatibility",
+        "platform",
+        "platforms",
+        "polyfill",
+        "posix",
+        "py3",
+        "shim",
+        "shims",
+        "six",
+        "win",
+        "windows"
+      ],
+      "imports": [
+        "platform",
+        "six",
+        "sys"
+      ]
+    },
+    {
+      "id": "xcut.i18n",
+      "group": "xcut",
+      "definition": "Text encoding and internationalisation: charsets, unicode handling, locale.",
+      "source": "ACM CCS 2012: Software and its engineering / Software notations and tools (character encodings)",
+      "status": "trained",
+      "aliases": [
+        "internationalization",
+        "l10n",
+        "localization",
+        "unicode"
+      ],
+      "names": [
+        "cells",
+        "charset",
+        "charsets",
+        "encoding",
+        "encodings",
+        "i18n",
+        "idna",
+        "l10n",
+        "locale",
+        "locales",
+        "unicode",
+        "wcwidth"
+      ],
+      "imports": [
+        "chardet",
+        "charset_normalizer",
+        "codecs",
+        "gettext",
+        "idna",
+        "locale",
+        "unicodedata"
+      ]
+    },
+    {
+      "id": "parse.lexer",
+      "group": "parse",
+      "definition": "Lexical analysis: turning characters into tokens.",
+      "source": "ACM CCS 2012: Software and its engineering / Compilers / Parsers (lexical analysis)",
+      "status": "trained",
+      "aliases": [
+        "tokenizer",
+        "lexical analysis",
+        "scanner"
+      ],
+      "names": [
+        "lex",
+        "lexer",
+        "lexers",
+        "lexing",
+        "scan",
+        "scanner",
+        "token",
+        "tokenize",
+        "tokenizer",
+        "tokens"
+      ],
+      "imports": [
+        "pygments",
+        "tokenize"
+      ]
+    },
+    {
+      "id": "parse.parser",
+      "group": "parse",
+      "definition": "Parsing: turning tokens or text into structured trees by grammar rules.",
+      "source": "ACM CCS 2012: Software and its engineering / Compilers / Parsers",
+      "status": "trained",
+      "aliases": [
+        "grammar parser",
+        "syntax analysis"
+      ],
+      "names": [
+        "cyk",
+        "earley",
+        "grammar",
+        "grammars",
+        "lalr",
+        "parse",
+        "parser",
+        "parsers",
+        "parsing",
+        "peg",
+        "syntax"
+      ],
+      "imports": [
+        "lark",
+        "ply",
+        "pyparsing"
+      ]
+    },
+    {
+      "id": "parse.ast",
+      "group": "parse",
+      "definition": "Syntax trees and intermediate representations: node types and tree utilities.",
+      "source": "ACM CCS 2012: Software and its engineering / Compilers / Intermediate representations",
+      "status": "trained",
+      "aliases": [
+        "syntax tree",
+        "intermediate representation",
+        "ir"
+      ],
+      "names": [
+        "ast",
+        "cst",
+        "ir",
+        "node",
+        "nodes",
+        "parse_tree",
+        "tree",
+        "trees"
+      ],
+      "imports": [
+        "ast",
+        "libcst"
+      ]
+    },
+    {
+      "id": "parse.codegen",
+      "group": "parse",
+      "definition": "Code generation, compilation and interpretation: emitting or running code from a tree or template.",
+      "source": "ACM CCS 2012: Software and its engineering / Compilers / Code generation; Interpreters",
+      "status": "trained",
+      "aliases": [
+        "code generation",
+        "compiler backend",
+        "interpreter"
+      ],
+      "names": [
+        "bytecode",
+        "codegen",
+        "compile",
+        "compiler",
+        "emit",
+        "eval",
+        "generate",
+        "generator",
+        "generators",
+        "interpret",
+        "interpreter",
+        "runtime",
+        "sandbox"
+      ],
+      "imports": [
+        "compile",
+        "dis"
+      ]
+    },
+    {
+      "id": "net.http",
+      "group": "net",
+      "definition": "HTTP protocol handling: requests, responses, headers, cookies, status, multipart.",
+      "source": "ACM CCS 2012: Networks / Network protocols / Application layer protocols",
+      "status": "trained",
+      "aliases": [
+        "http protocol",
+        "requests and responses",
+        "headers and cookies"
+      ],
+      "names": [
+        "asgi",
+        "cookie",
+        "cookies",
+        "fetch",
+        "formdata",
+        "h11",
+        "h2",
+        "header",
+        "headers",
+        "http",
+        "http1",
+        "http2",
+        "https",
+        "multipart",
+        "request",
+        "requests",
+        "response",
+        "responses",
+        "status",
+        "statuses",
+        "url",
+        "urls",
+        "web",
+        "websocket",
+        "websockets",
+        "ws",
+        "wsgi",
+        "xhr"
+      ],
+      "imports": [
+        "aiohttp",
+        "h11",
+        "h2",
+        "http",
+        "http.client",
+        "httpx",
+        "multidict",
+        "net/http",
+        "requests",
+        "starlette",
+        "urllib",
+        "urllib3",
+        "werkzeug",
+        "yarl"
+      ]
+    },
+    {
+      "id": "net.transport",
+      "group": "net",
+      "definition": "Transport and connections: sockets, TLS streams, connection pools, proxies, DNS.",
+      "source": "ACM CCS 2012: Networks / Network protocols / Transport protocols",
+      "status": "trained",
+      "aliases": [
+        "sockets",
+        "connection pool",
+        "tls stream",
+        "dns"
+      ],
+      "names": [
+        "connection",
+        "connections",
+        "connector",
+        "dns",
+        "net",
+        "network",
+        "networking",
+        "pool",
+        "pools",
+        "proxies",
+        "proxy",
+        "resolver",
+        "retries",
+        "retry",
+        "socket",
+        "sockets",
+        "tcp",
+        "timeout",
+        "timeouts",
+        "transport",
+        "transports",
+        "udp"
+      ],
+      "imports": [
+        "dns",
+        "net",
+        "selectors",
+        "socket",
+        "ssl"
+      ]
+    },
+    {
+      "id": "net.client",
+      "group": "net",
+      "definition": "Client side of a protocol: code that issues requests to remote services.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Architecture: client-server style",
+      "status": "trained",
+      "aliases": [
+        "protocol client",
+        "http client"
+      ],
+      "names": [
+        "adapter",
+        "adapters",
+        "api_client",
+        "client",
+        "clients",
+        "download",
+        "downloader",
+        "fetch",
+        "llm",
+        "llms",
+        "sdk",
+        "session",
+        "sessions"
+      ],
+      "imports": [
+        "aiohttp",
+        "httpx",
+        "litellm",
+        "openai",
+        "redis",
+        "requests",
+        "urllib3"
+      ]
+    },
+    {
+      "id": "net.server",
+      "group": "net",
+      "definition": "Server side of a protocol: listening, accepting and serving requests.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Architecture: client-server style",
+      "status": "trained",
+      "aliases": [
+        "protocol server",
+        "http server",
+        "listener"
+      ],
+      "names": [
+        "app",
+        "asgi",
+        "daemon",
+        "devserver",
+        "listener",
+        "runner",
+        "serve",
+        "server",
+        "servers",
+        "serving",
+        "web",
+        "worker",
+        "workers",
+        "wsgi"
+      ],
+      "imports": [
+        "gunicorn",
+        "http.server",
+        "socketserver",
+        "uvicorn",
+        "wsgiref"
+      ]
+    },
+    {
+      "id": "ser.serialization",
+      "group": "ser",
+      "definition": "Serialization: encoding and decoding data to and from wire or file formats (JSON, YAML, TOML, pickle).",
+      "source": "ACM CCS 2012: Information systems / Data management systems / Data structures (data exchange formats)",
+      "status": "trained",
+      "aliases": [
+        "encoding",
+        "decoding",
+        "marshalling",
+        "codec"
+      ],
+      "names": [
+        "binding",
+        "bindings",
+        "codec",
+        "codecs",
+        "convert",
+        "converter",
+        "converters",
+        "csv",
+        "decode",
+        "decoder",
+        "decoders",
+        "deserialize",
+        "dump",
+        "dumps",
+        "encode",
+        "encoder",
+        "encoders",
+        "format",
+        "formats",
+        "formatter",
+        "formatters",
+        "json",
+        "load",
+        "loads",
+        "marshal",
+        "marshalling",
+        "msgpack",
+        "pickle",
+        "render",
+        "serialization",
+        "serialize",
+        "serializer",
+        "serializers",
+        "tag",
+        "toml",
+        "xml",
+        "yaml"
+      ],
+      "imports": [
+        "csv",
+        "encoding/json",
+        "encoding/xml",
+        "json",
+        "marshal",
+        "msgpack",
+        "orjson",
+        "pickle",
+        "simplejson",
+        "toml",
+        "tomli",
+        "tomlkit",
+        "tomllib",
+        "xml",
+        "yaml"
+      ]
+    },
+    {
+      "id": "cs.data_structures",
+      "group": "cs",
+      "definition": "Data structures: containers, mappings, trees, graphs and their algorithms.",
+      "source": "ACM CCS 2012: Theory of computation / Design and analysis of algorithms / Data structures design and analysis",
+      "status": "trained",
+      "aliases": [
+        "containers",
+        "collections",
+        "trees and graphs"
+      ],
+      "names": [
+        "collection",
+        "collections",
+        "containers",
+        "datastructure",
+        "datastructures",
+        "dict",
+        "dicts",
+        "graph",
+        "graphs",
+        "heap",
+        "list",
+        "lists",
+        "multidict",
+        "ordered",
+        "queue",
+        "set",
+        "sets",
+        "sorted",
+        "struct",
+        "structs",
+        "structures",
+        "tree",
+        "trees"
+      ],
+      "imports": [
+        "bisect",
+        "collections",
+        "heapq"
+      ]
+    },
+    {
+      "id": "cs.ml",
+      "group": "cs",
+      "definition": "Machine learning and numeric models: training, inference, model definitions, LLM calls.",
+      "source": "ACM CCS 2012: Computing methodologies / Machine learning",
+      "status": "trained",
+      "aliases": [
+        "machine learning",
+        "model training",
+        "inference",
+        "llm"
+      ],
+      "names": [
+        "bench",
+        "dataset",
+        "datasets",
+        "embedding",
+        "embeddings",
+        "gpt",
+        "inference",
+        "llm",
+        "llms",
+        "model",
+        "models",
+        "neural",
+        "nn",
+        "prepare",
+        "sample",
+        "sampling",
+        "tokenizer",
+        "train",
+        "training"
+      ],
+      "imports": [
+        "anthropic",
+        "jax",
+        "litellm",
+        "numpy",
+        "openai",
+        "sklearn",
+        "tensorflow",
+        "tiktoken",
+        "torch",
+        "transformers"
+      ]
+    },
+    {
+      "id": "scm.vcs",
+      "group": "scm",
+      "definition": "Version control integration: reading or driving git, hg or svn.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: software configuration control",
+      "status": "trained",
+      "aliases": [
+        "git",
+        "version control",
+        "source control"
+      ],
+      "names": [
+        "bazaar",
+        "blame",
+        "bzr",
+        "commit",
+        "commits",
+        "diff",
+        "diffs",
+        "git",
+        "hg",
+        "mercurial",
+        "patch",
+        "patches",
+        "repo",
+        "subversion",
+        "svn",
+        "vcs"
+      ],
+      "imports": [
+        "dulwich",
+        "git",
+        "pygit2"
+      ]
+    },
+    {
+      "id": "scm.packaging",
+      "group": "scm",
+      "definition": "Package and dependency management as the product: resolving, installing, publishing packages.",
+      "source": "SWEBOK v4 (IEEE CS 2024), Software Configuration Management: software building and release",
+      "status": "trained",
+      "aliases": [
+        "dependency management",
+        "package install",
+        "publish packages"
+      ],
+      "names": [
+        "dependencies",
+        "dependency",
+        "dist",
+        "distribution",
+        "distributions",
+        "env",
+        "environment",
+        "environments",
+        "index",
+        "install",
+        "installation",
+        "installed",
+        "installer",
+        "lock",
+        "locker",
+        "markers",
+        "metadata",
+        "package",
+        "packages",
+        "packaging",
+        "provision",
+        "publish",
+        "publishing",
+        "pypi",
+        "req",
+        "requirements",
+        "resolution",
+        "resolve",
+        "resolvelib",
+        "resolver",
+        "resolvers",
+        "sdist",
+        "specifiers",
+        "venv",
+        "version",
+        "versions",
+        "virtualenv",
+        "wheel",
+        "wheels"
+      ],
+      "imports": [
+        "importlib.metadata",
+        "installer",
+        "packaging",
+        "pip",
+        "pkg_resources",
+        "resolvelib",
+        "setuptools",
+        "virtualenv"
+      ]
+    },
+    {
+      "id": "pattern.builder",
+      "group": "pattern",
+      "definition": "builder: constructs a complex object step by step so the same process can yield different representations.",
+      "source": "gamma et al., design patterns (gof), 1994: builder",
+      "status": "untrained",
+      "aliases": [
+        "builder pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.prototype",
+      "group": "pattern",
+      "definition": "prototype: creates new objects by copying a typical instance rather than subclassing a constructor.",
+      "source": "gamma et al., design patterns (gof), 1994: prototype",
+      "status": "untrained",
+      "aliases": [
+        "prototype pattern",
+        "clone prototype"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.singleton",
+      "group": "pattern",
+      "definition": "singleton: a class with a single shared instance and a global access point.",
+      "source": "gamma et al., design patterns (gof), 1994: singleton",
+      "status": "untrained",
+      "aliases": [
+        "singleton pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.bridge",
+      "group": "pattern",
+      "definition": "bridge: splits an abstraction from its implementations so the two can vary independently.",
+      "source": "gamma et al., design patterns (gof), 1994: bridge",
+      "status": "untrained",
+      "aliases": [
+        "bridge pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.composite",
+      "group": "pattern",
+      "definition": "composite: treats individual objects and trees of objects through one uniform interface.",
+      "source": "gamma et al., design patterns (gof), 1994: composite",
+      "status": "untrained",
+      "aliases": [
+        "composite pattern",
+        "object tree"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.facade",
+      "group": "pattern",
+      "definition": "facade: a single, simpler interface over a set of interfaces in a subsystem.",
+      "source": "gamma et al., design patterns (gof), 1994: facade",
+      "status": "untrained",
+      "aliases": [
+        "facade pattern",
+        "subsystem facade"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.flyweight",
+      "group": "pattern",
+      "definition": "flyweight: shares fine-grained state that many objects can reuse to cut memory use.",
+      "source": "gamma et al., design patterns (gof), 1994: flyweight",
+      "status": "untrained",
+      "aliases": [
+        "flyweight pattern",
+        "shared intrinsic state"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.interpreter",
+      "group": "pattern",
+      "definition": "interpreter: represents a grammar and an interpreter that evaluates sentences in that grammar.",
+      "source": "gamma et al., design patterns (gof), 1994: interpreter",
+      "status": "untrained",
+      "aliases": [
+        "interpreter pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.mediator",
+      "group": "pattern",
+      "definition": "mediator: objects collaborate through a mediator object instead of referring to each other directly.",
+      "source": "gamma et al., design patterns (gof), 1994: mediator",
+      "status": "untrained",
+      "aliases": [
+        "mediator pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.memento",
+      "group": "pattern",
+      "definition": "memento: captures and restores an object's internal state without exposing its structure.",
+      "source": "gamma et al., design patterns (gof), 1994: memento",
+      "status": "untrained",
+      "aliases": [
+        "memento pattern",
+        "snapshot state",
+        "undo snapshot"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.state",
+      "group": "pattern",
+      "definition": "state: an object changes its behaviour when its internal state changes, as if its class had changed.",
+      "source": "gamma et al., design patterns (gof), 1994: state",
+      "status": "untrained",
+      "aliases": [
+        "state pattern",
+        "gof state"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "pattern.template_method",
+      "group": "pattern",
+      "definition": "template method: a skeleton algorithm in a base type, with some steps deferred to subclasses or hooks.",
+      "source": "gamma et al., design patterns (gof), 1994: template method",
+      "status": "untrained",
+      "aliases": [
+        "template method",
+        "hollywood hook"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.transaction_script",
+      "group": "poeaa",
+      "definition": "transaction script: organises business logic by procedure, one per request or transaction.",
+      "source": "fowler, patterns of enterprise application architecture (poeaa), 2003: transaction script",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.table_module",
+      "group": "poeaa",
+      "definition": "table module: one instance handles the business logic for all rows in a database table.",
+      "source": "fowler, poeaa, 2003: table module",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.service_layer",
+      "group": "poeaa",
+      "definition": "service layer: a layer of application services that sets the boundary and available operations.",
+      "source": "fowler, poeaa, 2003: service layer",
+      "status": "untrained",
+      "aliases": [
+        "application service layer"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.table_data_gateway",
+      "group": "poeaa",
+      "definition": "table data gateway: an object that acts as a gateway to a database table, one instance per table.",
+      "source": "fowler, poeaa, 2003: table data gateway",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.row_data_gateway",
+      "group": "poeaa",
+      "definition": "row data gateway: an object that acts as a gateway to a single record in a data source.",
+      "source": "fowler, poeaa, 2003: row data gateway",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.active_record",
+      "group": "poeaa",
+      "definition": "active record: a domain object that wraps a row and includes the database access for that row.",
+      "source": "fowler, poeaa, 2003: active record",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.data_mapper",
+      "group": "poeaa",
+      "definition": "data mapper: a layer that moves data between objects and a database while keeping them independent.",
+      "source": "fowler, poeaa, 2003: data mapper",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.unit_of_work",
+      "group": "poeaa",
+      "definition": "unit of work: keeps a list of objects affected by a business transaction and writes the changes together.",
+      "source": "fowler, poeaa, 2003: unit of work",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.identity_map",
+      "group": "poeaa",
+      "definition": "identity map: ensures each object is loaded only once per session by keeping a map of loaded records.",
+      "source": "fowler, poeaa, 2003: identity map",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.lazy_load",
+      "group": "poeaa",
+      "definition": "lazy load: defers loading an object's data until it is needed, often via a virtual proxy or ghost.",
+      "source": "fowler, poeaa, 2003: lazy load",
+      "status": "untrained",
+      "aliases": [
+        "lazy loading",
+        "ghost object"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.identity_field",
+      "group": "poeaa",
+      "definition": "identity field: saves a database identity field in an object to maintain identity between memory and storage.",
+      "source": "fowler, poeaa, 2003: identity field",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.foreign_key_mapping",
+      "group": "poeaa",
+      "definition": "foreign key mapping: maps an object association to a foreign key reference in the database.",
+      "source": "fowler, poeaa, 2003: foreign key mapping",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.association_table_mapping",
+      "group": "poeaa",
+      "definition": "association table mapping: saves a many-to-many association as a table of pairs of foreign keys.",
+      "source": "fowler, poeaa, 2003: association table mapping",
+      "status": "untrained",
+      "aliases": [
+        "join table mapping",
+        "link table"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.dependent_mapping",
+      "group": "poeaa",
+      "definition": "dependent mapping: has one class perform the database mapping for a child or dependent class.",
+      "source": "fowler, poeaa, 2003: dependent mapping",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.embedded_value",
+      "group": "poeaa",
+      "definition": "embedded value: maps an object into several fields of another object's table row.",
+      "source": "fowler, poeaa, 2003: embedded value",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.serialized_lob",
+      "group": "poeaa",
+      "definition": "serialized lob: saves a graph of objects by serialising it into a single large object in the database.",
+      "source": "fowler, poeaa, 2003: serialized lob",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.single_table_inheritance",
+      "group": "poeaa",
+      "definition": "single table inheritance: represents an inheritance hierarchy of classes as one table with a type column.",
+      "source": "fowler, poeaa, 2003: single table inheritance",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.class_table_inheritance",
+      "group": "poeaa",
+      "definition": "class table inheritance: represents an inheritance hierarchy with one table per class.",
+      "source": "fowler, poeaa, 2003: class table inheritance",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.concrete_table_inheritance",
+      "group": "poeaa",
+      "definition": "concrete table inheritance: represents an inheritance hierarchy with one table per concrete class.",
+      "source": "fowler, poeaa, 2003: concrete table inheritance",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.inheritance_mappers",
+      "group": "poeaa",
+      "definition": "inheritance mappers: a structure to organise database mappers that share mapping behaviour for a hierarchy.",
+      "source": "fowler, poeaa, 2003: inheritance mappers",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.metadata_mapping",
+      "group": "poeaa",
+      "definition": "metadata mapping: holds the object-relational mapping in metadata so general code can perform it.",
+      "source": "fowler, poeaa, 2003: metadata mapping",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.query_object",
+      "group": "poeaa",
+      "definition": "query object: an object that represents a database query and can be built and composed in memory.",
+      "source": "fowler, poeaa, 2003: query object",
+      "status": "untrained",
+      "aliases": [
+        "criteria query"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.page_controller",
+      "group": "poeaa",
+      "definition": "page controller: an object that handles a request for a specific page or action on a website.",
+      "source": "fowler, poeaa, 2003: page controller",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.front_controller",
+      "group": "poeaa",
+      "definition": "front controller: a single handler that receives every request and then dispatches to the right command.",
+      "source": "fowler, poeaa, 2003: front controller",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.template_view",
+      "group": "poeaa",
+      "definition": "template view: renders a page by filling markers in an html or text template with information from objects.",
+      "source": "fowler, poeaa, 2003: template view",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.transform_view",
+      "group": "poeaa",
+      "definition": "transform view: renders a domain view by transforming a domain-oriented representation, often with xslt-style rules.",
+      "source": "fowler, poeaa, 2003: transform view",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.two_step_view",
+      "group": "poeaa",
+      "definition": "two step view: turns domain data into a logical page, then renders that logical page into html.",
+      "source": "fowler, poeaa, 2003: two step view",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.application_controller",
+      "group": "poeaa",
+      "definition": "application controller: a centralised point for handling screen navigation and the flow of an application.",
+      "source": "fowler, poeaa, 2003: application controller",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.remote_facade",
+      "group": "poeaa",
+      "definition": "remote facade: a coarse-grained facade over fine-grained objects to cut the cost of remote calls.",
+      "source": "fowler, poeaa, 2003: remote facade",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.data_transfer_object",
+      "group": "poeaa",
+      "definition": "data transfer object: an object that carries data between processes to reduce the number of remote calls.",
+      "source": "fowler, poeaa, 2003: data transfer object",
+      "status": "untrained",
+      "aliases": [
+        "dto",
+        "transfer object"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.optimistic_offline_lock",
+      "group": "poeaa",
+      "definition": "optimistic offline lock: prevents conflicts between concurrent business transactions by detecting collisions on commit.",
+      "source": "fowler, poeaa, 2003: optimistic offline lock",
+      "status": "untrained",
+      "aliases": [
+        "optimistic locking",
+        "version column"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.pessimistic_offline_lock",
+      "group": "poeaa",
+      "definition": "pessimistic offline lock: prevents conflicts by allowing only one business transaction at a time to access data.",
+      "source": "fowler, poeaa, 2003: pessimistic offline lock",
+      "status": "untrained",
+      "aliases": [
+        "pessimistic locking"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.coarse_grained_lock",
+      "group": "poeaa",
+      "definition": "coarse-grained lock: locks a set of related objects with a single lock, often on a root object.",
+      "source": "fowler, poeaa, 2003: coarse-grained lock",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.implicit_lock",
+      "group": "poeaa",
+      "definition": "implicit lock: lets framework or layer code acquire offline locks so application writers do not forget them.",
+      "source": "fowler, poeaa, 2003: implicit lock",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.client_session_state",
+      "group": "poeaa",
+      "definition": "client session state: stores session state on the client, for example in a cookie or hidden fields.",
+      "source": "fowler, poeaa, 2003: client session state",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.server_session_state",
+      "group": "poeaa",
+      "definition": "server session state: stores session state on the server in a memory or serialized session store.",
+      "source": "fowler, poeaa, 2003: server session state",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.database_session_state",
+      "group": "poeaa",
+      "definition": "database session state: stores session state as committed data in the database.",
+      "source": "fowler, poeaa, 2003: database session state",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.gateway",
+      "group": "poeaa",
+      "definition": "gateway: an object that encapsulates access to an external system or resource.",
+      "source": "fowler, poeaa, 2003: gateway",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.mapper",
+      "group": "poeaa",
+      "definition": "mapper: an object that sets up communication between two independent objects, often domain and database.",
+      "source": "fowler, poeaa, 2003: mapper",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.layer_supertype",
+      "group": "poeaa",
+      "definition": "layer supertype: a type that acts as the common supertype for all types in its layer.",
+      "source": "fowler, poeaa, 2003: layer supertype",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.separated_interface",
+      "group": "poeaa",
+      "definition": "separated interface: defines an interface in a separate package from its implementation.",
+      "source": "fowler, poeaa, 2003: separated interface",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.registry",
+      "group": "poeaa",
+      "definition": "registry: a well-known object that other objects can use to find common objects and services.",
+      "source": "fowler, poeaa, 2003: registry",
+      "status": "untrained",
+      "aliases": [
+        "service locator"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.money",
+      "group": "poeaa",
+      "definition": "money: represents a monetary value with a currency, avoiding raw floating-point arithmetic.",
+      "source": "fowler, poeaa, 2003: money",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.special_case",
+      "group": "poeaa",
+      "definition": "special case: a subclass that provides special behaviour for particular cases, including a null object.",
+      "source": "fowler, poeaa, 2003: special case",
+      "status": "untrained",
+      "aliases": [
+        "null object"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.service_stub",
+      "group": "poeaa",
+      "definition": "service stub: removes dependence on a remote or awkward service during testing or development.",
+      "source": "fowler, poeaa, 2003: service stub",
+      "status": "untrained",
+      "aliases": [
+        "test stub"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "poeaa.record_set",
+      "group": "poeaa",
+      "definition": "record set: an in-memory representation of tabular data, typically the result of a database query.",
+      "source": "fowler, poeaa, 2003: record set",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.layered",
+      "group": "arch",
+      "definition": "layered architecture: responsibilities are grouped into stacked layers, each talking mainly to its neighbours.",
+      "source": "buschmann et al., pattern-oriented software architecture (posa), 1996: layers",
+      "status": "untrained",
+      "aliases": [
+        "layers pattern",
+        "n-tier"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.hexagonal",
+      "group": "arch",
+      "definition": "hexagonal architecture: the application core is reached only through ports, with adapters outside.",
+      "source": "cockburn, hexagonal architecture, 2005",
+      "status": "untrained",
+      "aliases": [
+        "ports and adapters",
+        "ports & adapters"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.onion",
+      "group": "arch",
+      "definition": "onion architecture: domain at the centre, with infrastructure and ui depending inward on interfaces.",
+      "source": "palermo, onion architecture, 2008",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.clean",
+      "group": "arch",
+      "definition": "clean architecture: use cases and entities at the centre, with interface adapters and frameworks outside.",
+      "source": "martin, clean architecture, 2017",
+      "status": "untrained",
+      "aliases": [
+        "clean architecture"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.event_sourcing",
+      "group": "arch",
+      "definition": "event sourcing: state is the fold of a stored sequence of domain events, not a mutable record only.",
+      "source": "fowler, event sourcing, 2005",
+      "status": "untrained",
+      "aliases": [
+        "event sourced"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.cqrs",
+      "group": "arch",
+      "definition": "cqrs: separate models for commands that change state and queries that read it.",
+      "source": "young and fowler, cqrs, 2010",
+      "status": "untrained",
+      "aliases": [
+        "command query responsibility segregation"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.broker",
+      "group": "arch",
+      "definition": "broker: distributed components interact through a broker that locates, forwards and marshals requests.",
+      "source": "buschmann et al., posa, 1996: broker",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.blackboard",
+      "group": "arch",
+      "definition": "blackboard: specialised knowledge sources cooperate by reading and writing a shared blackboard of partial results.",
+      "source": "buschmann et al., posa, 1996: blackboard",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.event_driven",
+      "group": "arch",
+      "definition": "event-driven architecture: components react to events rather than to direct synchronous calls.",
+      "source": "hohpe and woolf, enterprise integration patterns, 2003; common architectural style",
+      "status": "untrained",
+      "aliases": [
+        "eda",
+        "event driven"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.microservices",
+      "group": "arch",
+      "definition": "microservices: independently deployable services organised around business capabilities, communicating over a network.",
+      "source": "lewis and fowler, microservices, 2014; newman, building microservices",
+      "status": "untrained",
+      "aliases": [
+        "microservice architecture"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.modular_monolith",
+      "group": "arch",
+      "definition": "modular monolith: a single deployable unit with strict module boundaries and few, explicit dependencies.",
+      "source": "common architecture style (modular monolith)",
+      "status": "untrained",
+      "aliases": [
+        "modulith"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.monolith",
+      "group": "arch",
+      "definition": "monolith: a single deployable unit that owns many capabilities, without a required module split.",
+      "source": "common architecture style",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.soa",
+      "group": "arch",
+      "definition": "service-oriented architecture: capabilities are exposed as services with explicit contracts and composition.",
+      "source": "open group soa source book / common soa literature",
+      "status": "untrained",
+      "aliases": [
+        "service oriented architecture"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.rest",
+      "group": "arch",
+      "definition": "rest: a style for networked systems based on resources, uniform interfaces and stateless interactions.",
+      "source": "fielding, architectural styles and the design of network-based software architectures, 2000",
+      "status": "untrained",
+      "aliases": [
+        "representational state transfer",
+        "restful"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.peer_to_peer",
+      "group": "arch",
+      "definition": "peer-to-peer: nodes act as both clients and servers and share work or data without a single central server.",
+      "source": "common architectural style (peer-to-peer)",
+      "status": "untrained",
+      "aliases": [
+        "p2p"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.space_based",
+      "group": "arch",
+      "definition": "space-based architecture: processing units share state through a distributed tuple or data space.",
+      "source": "posa and related space-based / tuple-space styles",
+      "status": "untrained",
+      "aliases": [
+        "tuple space"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.serverless",
+      "group": "arch",
+      "definition": "serverless: application units are event-invoked functions or managed services, without a long-lived server process you operate.",
+      "source": "common cloud architectural style",
+      "status": "untrained",
+      "aliases": [
+        "faas",
+        "function as a service"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.lambda",
+      "group": "arch",
+      "definition": "lambda architecture: a batch layer and a speed layer together serve views over an append-only master dataset.",
+      "source": "marz, lambda architecture",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.kappa",
+      "group": "arch",
+      "definition": "kappa architecture: a single stream-processing path over an append-only log, without a separate batch layer.",
+      "source": "kreps, questioning the lambda architecture, 2014",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.saga",
+      "group": "arch",
+      "definition": "saga: a long-lived business transaction is a sequence of local transactions with compensating actions on failure.",
+      "source": "garcia-molina and salem, sagas, 1987; richardson, microservices patterns",
+      "status": "untrained",
+      "aliases": [
+        "compensating transaction"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.strangler",
+      "group": "arch",
+      "definition": "strangler fig: a new system gradually wraps and replaces an old one, route by route, until the old one can go.",
+      "source": "fowler, strangler fig application, 2004",
+      "status": "untrained",
+      "aliases": [
+        "strangler fig",
+        "strangler pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.api_gateway",
+      "group": "arch",
+      "definition": "api gateway: a single entry in front of services for routing, auth, rate limits and protocol translation.",
+      "source": "richardson, microservices patterns: api gateway",
+      "status": "untrained",
+      "aliases": [
+        "edge gateway"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.bff",
+      "group": "arch",
+      "definition": "backend for frontend: a backend tailored to one client or user experience, rather than a one-size api.",
+      "source": "soundcloud / fowler, bff",
+      "status": "untrained",
+      "aliases": [
+        "backend for frontend"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.sidecar",
+      "group": "arch",
+      "definition": "sidecar: a companion process beside an application that adds platform features such as proxying or telemetry.",
+      "source": "kubernetes and service-mesh pattern literature",
+      "status": "untrained",
+      "aliases": [
+        "sidecar proxy"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.ambassador",
+      "group": "arch",
+      "definition": "ambassador: a helper proxy for outbound calls, often for discovery, retries, or tls, without changing the app.",
+      "source": "azure architecture center / cloud design patterns: ambassador",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.service_mesh",
+      "group": "arch",
+      "definition": "service mesh: a dedicated infrastructure layer for service-to-service traffic, policy and observability.",
+      "source": "common microservices infrastructure style",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.mvp",
+      "group": "arch",
+      "definition": "model-view-presenter: the presenter updates the view through an interface and handles user actions.",
+      "source": "potel, mvp; common ui architecture",
+      "status": "untrained",
+      "aliases": [
+        "model view presenter"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.mvvm",
+      "group": "arch",
+      "definition": "model-view-viewmodel: a view-model exposes state and commands that a view binds to, often automatically.",
+      "source": "microsoft, mvvm",
+      "status": "untrained",
+      "aliases": [
+        "model view viewmodel"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.pac",
+      "group": "arch",
+      "definition": "presentation-abstraction-control: a tree of cooperating agents, each with presentation, abstraction and control.",
+      "source": "buschmann et al., posa, 1996: pac",
+      "status": "untrained",
+      "aliases": [
+        "presentation abstraction control"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "arch.cqrs_read_model",
+      "group": "arch",
+      "definition": "read model: a query-side projection maintained for reads, separate from the write model.",
+      "source": "cqrs literature (young, fowler)",
+      "status": "untrained",
+      "aliases": [
+        "query model",
+        "projection"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_channel",
+      "group": "eip",
+      "definition": "message channel: a virtual pipe between a sender and a receiver of messages.",
+      "source": "hohpe and woolf, enterprise integration patterns (eip), 2003: message channel",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message",
+      "group": "eip",
+      "definition": "message: a discrete unit of data sent on a channel, with a header and a body.",
+      "source": "hohpe and woolf, eip, 2003: message",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_router",
+      "group": "eip",
+      "definition": "message router: consumes a message from one channel and republishes it to a chosen channel, without changing it.",
+      "source": "hohpe and woolf, eip, 2003: message router",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_translator",
+      "group": "eip",
+      "definition": "message translator: changes the content or format of a message so the receiver can understand it.",
+      "source": "hohpe and woolf, eip, 2003: message translator",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_endpoint",
+      "group": "eip",
+      "definition": "message endpoint: connects an application to a messaging channel so it can send and receive.",
+      "source": "hohpe and woolf, eip, 2003: message endpoint",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.point_to_point",
+      "group": "eip",
+      "definition": "point-to-point channel: a channel that delivers each message to exactly one consumer.",
+      "source": "hohpe and woolf, eip, 2003: point-to-point channel",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.publish_subscribe_channel",
+      "group": "eip",
+      "definition": "publish-subscribe channel: a channel that delivers a copy of each message to every subscriber.",
+      "source": "hohpe and woolf, eip, 2003: publish-subscribe channel",
+      "status": "untrained",
+      "aliases": [
+        "pub-sub channel"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.datatype_channel",
+      "group": "eip",
+      "definition": "datatype channel: a dedicated channel for one type of data, so the receiver knows what to expect.",
+      "source": "hohpe and woolf, eip, 2003: datatype channel",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.invalid_message_channel",
+      "group": "eip",
+      "definition": "invalid message channel: a channel for messages that a receiver cannot process.",
+      "source": "hohpe and woolf, eip, 2003: invalid message channel",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.dead_letter",
+      "group": "eip",
+      "definition": "dead letter channel: a channel for messages that the messaging system cannot deliver.",
+      "source": "hohpe and woolf, eip, 2003: dead letter channel",
+      "status": "untrained",
+      "aliases": [
+        "dead letter queue",
+        "dlq"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.guaranteed_delivery",
+      "group": "eip",
+      "definition": "guaranteed delivery: persists a message so it is not lost if the process or connection fails.",
+      "source": "hohpe and woolf, eip, 2003: guaranteed delivery",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.channel_adapter",
+      "group": "eip",
+      "definition": "channel adapter: connects an application's api or file or database to a messaging channel.",
+      "source": "hohpe and woolf, eip, 2003: channel adapter",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.messaging_bridge",
+      "group": "eip",
+      "definition": "messaging bridge: connects messaging systems so messages from one can reach the other.",
+      "source": "hohpe and woolf, eip, 2003: messaging bridge",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_bus",
+      "group": "eip",
+      "definition": "message bus: a common communication spine and canonical format that participating applications share.",
+      "source": "hohpe and woolf, eip, 2003: message bus",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.command_message",
+      "group": "eip",
+      "definition": "command message: a message that asks the receiver to run a given action.",
+      "source": "hohpe and woolf, eip, 2003: command message",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.document_message",
+      "group": "eip",
+      "definition": "document message: a message that transfers a data structure between applications.",
+      "source": "hohpe and woolf, eip, 2003: document message",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.event_message",
+      "group": "eip",
+      "definition": "event message: a message that announces something that has happened.",
+      "source": "hohpe and woolf, eip, 2003: event message",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.request_reply",
+      "group": "eip",
+      "definition": "request-reply: a two-way conversation: a request message and a correlated reply.",
+      "source": "hohpe and woolf, eip, 2003: request-reply",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.return_address",
+      "group": "eip",
+      "definition": "return address: a request tells the replier which channel to send the reply on.",
+      "source": "hohpe and woolf, eip, 2003: return address",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.correlation_id",
+      "group": "eip",
+      "definition": "correlation identifier: a unique id that ties a reply to the request that caused it.",
+      "source": "hohpe and woolf, eip, 2003: correlation identifier",
+      "status": "untrained",
+      "aliases": [
+        "correlation identifier"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_expiration",
+      "group": "eip",
+      "definition": "message expiration: a time after which a message should be ignored if not yet consumed.",
+      "source": "hohpe and woolf, eip, 2003: message expiration",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.content_enricher",
+      "group": "eip",
+      "definition": "content enricher: adds missing data to a message by looking it up from an outside source.",
+      "source": "hohpe and woolf, eip, 2003: content enricher",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.content_filter",
+      "group": "eip",
+      "definition": "content filter: removes unneeded data from a message, leaving only what the receiver should see.",
+      "source": "hohpe and woolf, eip, 2003: content filter",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.claim_check",
+      "group": "eip",
+      "definition": "claim check: stores a large payload and puts a claim check in the message so later steps can retrieve it.",
+      "source": "hohpe and woolf, eip, 2003: claim check",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.normalizer",
+      "group": "eip",
+      "definition": "normalizer: routes messages of different formats through the right translator into a common format.",
+      "source": "hohpe and woolf, eip, 2003: normalizer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.canonical_data_model",
+      "group": "eip",
+      "definition": "canonical data model: a shared message format independent of any one application's data model.",
+      "source": "hohpe and woolf, eip, 2003: canonical data model",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.splitter",
+      "group": "eip",
+      "definition": "splitter: breaks a compound message into a series of individual messages.",
+      "source": "hohpe and woolf, eip, 2003: splitter",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.aggregator",
+      "group": "eip",
+      "definition": "aggregator: combines related messages into a single message.",
+      "source": "hohpe and woolf, eip, 2003: aggregator",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.resequencer",
+      "group": "eip",
+      "definition": "resequencer: puts a stream of related but out-of-order messages back into the original sequence.",
+      "source": "hohpe and woolf, eip, 2003: resequencer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.scatter_gather",
+      "group": "eip",
+      "definition": "scatter-gather: broadcasts a request to multiple recipients and aggregates their replies.",
+      "source": "hohpe and woolf, eip, 2003: scatter-gather",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.routing_slip",
+      "group": "eip",
+      "definition": "routing slip: a message carries a list of steps it should visit, and each step routes it to the next.",
+      "source": "hohpe and woolf, eip, 2003: routing slip",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.process_manager",
+      "group": "eip",
+      "definition": "process manager: a central unit that maintains state and decides the next step of a message-based process.",
+      "source": "hohpe and woolf, eip, 2003: process manager",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.durable_subscriber",
+      "group": "eip",
+      "definition": "durable subscriber: a subscriber that receives messages published while it was disconnected.",
+      "source": "hohpe and woolf, eip, 2003: durable subscriber",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.idempotent_receiver",
+      "group": "eip",
+      "definition": "idempotent receiver: a receiver that safely handles a message more than once with the same effect.",
+      "source": "hohpe and woolf, eip, 2003: idempotent receiver",
+      "status": "untrained",
+      "aliases": [
+        "idempotent consumer"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.transactional_client",
+      "group": "eip",
+      "definition": "transactional client: an application that participates in a transaction with the messaging system on send or receive.",
+      "source": "hohpe and woolf, eip, 2003: transactional client",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.polling_consumer",
+      "group": "eip",
+      "definition": "polling consumer: an application asks the messaging system for a message when it is ready.",
+      "source": "hohpe and woolf, eip, 2003: polling consumer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.event_driven_consumer",
+      "group": "eip",
+      "definition": "event-driven consumer: the messaging system calls the application when a message arrives.",
+      "source": "hohpe and woolf, eip, 2003: event-driven consumer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.competing_consumers",
+      "group": "eip",
+      "definition": "competing consumers: several consumers share a point-to-point channel so they can process messages in parallel.",
+      "source": "hohpe and woolf, eip, 2003: competing consumers",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.message_dispatcher",
+      "group": "eip",
+      "definition": "message dispatcher: one consumer receives messages and hands each to the right performer.",
+      "source": "hohpe and woolf, eip, 2003: message dispatcher",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.selective_consumer",
+      "group": "eip",
+      "definition": "selective consumer: a consumer that receives only the messages that match its criteria.",
+      "source": "hohpe and woolf, eip, 2003: selective consumer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.service_activator",
+      "group": "eip",
+      "definition": "service activator: a consumer that invokes an application service when a message arrives, so the service stays messaging-agnostic.",
+      "source": "hohpe and woolf, eip, 2003: service activator",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.messaging_gateway",
+      "group": "eip",
+      "definition": "messaging gateway: wraps messaging access so the rest of the application can stay unaware of the messaging system.",
+      "source": "hohpe and woolf, eip, 2003: messaging gateway",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "eip.transactional_outbox",
+      "group": "eip",
+      "definition": "transactional outbox: writes a domain change and an outbound message in the same database transaction, then publishes the message.",
+      "source": "richardson, microservices patterns: transactional outbox",
+      "status": "untrained",
+      "aliases": [
+        "outbox pattern"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.mutex",
+      "group": "concur",
+      "definition": "mutex: a mutual-exclusion lock so only one thread at a time enters a critical section.",
+      "source": "common concurrency literature (posix threads, java concurrency in practice)",
+      "status": "untrained",
+      "aliases": [
+        "mutual exclusion",
+        "lock"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.monitor",
+      "group": "concur",
+      "definition": "monitor: an object that combines a mutex with condition variables so threads can wait for state changes.",
+      "source": "hoare, monitors, 1974; posa2",
+      "status": "untrained",
+      "aliases": [
+        "monitor object"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.semaphore",
+      "group": "concur",
+      "definition": "semaphore: a counter that threads wait on and signal, used to limit or coordinate concurrent access.",
+      "source": "dijkstra; common concurrency literature",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.rwlock",
+      "group": "concur",
+      "definition": "read-write lock: many readers may share access, but a writer needs exclusive access.",
+      "source": "common concurrency literature",
+      "status": "untrained",
+      "aliases": [
+        "read-write lock",
+        "shared-exclusive lock"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.thread_pool",
+      "group": "concur",
+      "definition": "thread pool: a set of worker threads that take tasks from a queue, avoiding a new thread per task.",
+      "source": "goetz et al., java concurrency in practice; posa2",
+      "status": "untrained",
+      "aliases": [
+        "worker pool",
+        "executor"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.producer_consumer",
+      "group": "concur",
+      "definition": "producer-consumer: producers put work on a queue and consumers take it, decoupling the two rates.",
+      "source": "common concurrency literature",
+      "status": "untrained",
+      "aliases": [
+        "bounded buffer"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.future",
+      "group": "concur",
+      "definition": "future or promise: a placeholder for a result that will be filled in when an asynchronous computation finishes.",
+      "source": "common concurrency literature",
+      "status": "untrained",
+      "aliases": [
+        "promise",
+        "completable future"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.fork_join",
+      "group": "concur",
+      "definition": "fork-join: a task splits into subtasks that run in parallel and then joins their results.",
+      "source": "lea, fork/join; common concurrency literature",
+      "status": "untrained",
+      "aliases": [
+        "fork/join"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.actor",
+      "group": "concur",
+      "definition": "actor: an isolated unit that processes messages one at a time and communicates only by sending messages.",
+      "source": "hewitt, actor model; agha; common actor systems",
+      "status": "untrained",
+      "aliases": [
+        "actor model"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.csp",
+      "group": "concur",
+      "definition": "communicating sequential processes: concurrent processes communicate over channels, often with synchronous hand-off.",
+      "source": "hoare, communicating sequential processes",
+      "status": "untrained",
+      "aliases": [
+        "communicating sequential processes",
+        "channel passing"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.active_object",
+      "group": "concur",
+      "definition": "active object: decouples method execution from method invocation, usually with a per-object request queue and a worker thread.",
+      "source": "schmidt et al., posa2: active object",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.reactor",
+      "group": "concur",
+      "definition": "reactor: a single-threaded event demultiplexer that dispatches incoming events to registered handlers.",
+      "source": "schmidt et al., posa2: reactor",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.proactor",
+      "group": "concur",
+      "definition": "proactor: an asynchronous completion dispatcher that starts operations and handles their completion events.",
+      "source": "schmidt et al., posa2: proactor",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.leader_followers",
+      "group": "concur",
+      "definition": "leader/followers: a thread pool where one leader waits for an event, then promotes a follower and processes it.",
+      "source": "schmidt et al., posa2: leader/followers",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.half_sync_half_async",
+      "group": "concur",
+      "definition": "half-sync/half-async: a synchronous processing layer and an asynchronous i/o layer meet at a queueing layer.",
+      "source": "schmidt et al., posa2: half-sync/half-async",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.double_checked_locking",
+      "group": "concur",
+      "definition": "double-checked locking: reduces locking overhead when creating a shared resource by checking once without a lock and again with one.",
+      "source": "schmidt et al., posa2: double-checked locking optimization",
+      "status": "untrained",
+      "aliases": [
+        "dcl"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.thread_local",
+      "group": "concur",
+      "definition": "thread-local storage: each thread has its own copy of a variable, avoiding sharing.",
+      "source": "posa2: thread-specific storage; common concurrency literature",
+      "status": "untrained",
+      "aliases": [
+        "thread-specific storage",
+        "tls storage"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.barrier",
+      "group": "concur",
+      "definition": "barrier: threads wait until all of a group have arrived, then they all continue.",
+      "source": "common concurrency literature",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.immutable_share",
+      "group": "concur",
+      "definition": "immutable sharing: threads share data that is never mutated after publication, so no lock is needed to read it.",
+      "source": "goetz et al., java concurrency in practice",
+      "status": "untrained",
+      "aliases": [
+        "immutable publication"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.work_stealing",
+      "group": "concur",
+      "definition": "work stealing: idle workers take tasks from the queues of busy workers to keep cores busy.",
+      "source": "blumofe and leiserson, work stealing; common runtime literature",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.copy_on_write",
+      "group": "concur",
+      "definition": "copy-on-write: writers copy the structure before changing it so readers can keep using a stable snapshot.",
+      "source": "common concurrency and os literature",
+      "status": "untrained",
+      "aliases": [
+        "cow"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "concur.stm",
+      "group": "concur",
+      "definition": "software transactional memory: concurrent memory updates are grouped into transactions that commit or roll back.",
+      "source": "shavit and touitou, software transactional memory; common stm literature",
+      "status": "untrained",
+      "aliases": [
+        "software transactional memory"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.srp",
+      "group": "principle",
+      "definition": "single responsibility principle: a module should have one reason to change, and one audience.",
+      "source": "martin, solid; agile software development, 2003",
+      "status": "untrained",
+      "aliases": [
+        "single responsibility",
+        "solid srp"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.ocp",
+      "group": "principle",
+      "definition": "open-closed principle: software entities should be open for extension and closed for modification.",
+      "source": "meyer, object-oriented software construction; martin, solid",
+      "status": "untrained",
+      "aliases": [
+        "open-closed",
+        "open closed principle"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.lsp",
+      "group": "principle",
+      "definition": "liskov substitution principle: objects of a subtype must be usable wherever the base type is expected, without surprise.",
+      "source": "liskov, data abstraction and hierarchy, 1988; martin, solid",
+      "status": "untrained",
+      "aliases": [
+        "liskov substitution",
+        "liskov"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.isp",
+      "group": "principle",
+      "definition": "interface segregation principle: clients should not be forced to depend on methods they do not use.",
+      "source": "martin, solid",
+      "status": "untrained",
+      "aliases": [
+        "interface segregation"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.dip",
+      "group": "principle",
+      "definition": "dependency inversion principle: high-level modules should depend on abstractions, not on low-level details.",
+      "source": "martin, solid",
+      "status": "untrained",
+      "aliases": [
+        "dependency inversion",
+        "solid dip"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.information_expert",
+      "group": "principle",
+      "definition": "grasp information expert: assign a responsibility to the class that has the information needed to fulfil it.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "aliases": [
+        "grasp expert"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.creator",
+      "group": "principle",
+      "definition": "grasp creator: assign the responsibility of creating an object to a class that contains, closely uses, or has the data for it.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.controller",
+      "group": "principle",
+      "definition": "grasp controller: assign the handling of a system event to a class that represents the system, a root object, or a use case.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "aliases": [
+        "grasp controller"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.low_coupling",
+      "group": "principle",
+      "definition": "grasp low coupling: assign responsibilities so that dependence between elements stays low.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.high_cohesion",
+      "group": "principle",
+      "definition": "grasp high cohesion: assign responsibilities so that the relatedness of a type's duties stays high.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.polymorphism_principle",
+      "group": "principle",
+      "definition": "grasp polymorphism: when behaviour varies by type, assign the responsibility to the types via polymorphism, not a type switch.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.pure_fabrication",
+      "group": "principle",
+      "definition": "grasp pure fabrication: assign a cohesive responsibility to an artificial class, not a domain concept, to keep coupling low.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.indirection",
+      "group": "principle",
+      "definition": "grasp indirection: assign a responsibility to an intermediate object to mediate between others and keep them decoupled.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.protected_variations",
+      "group": "principle",
+      "definition": "grasp protected variations: protect elements from variations in other elements by wrapping the variation behind a stable interface.",
+      "source": "larman, applying uml and patterns: grasp",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.law_of_demeter",
+      "group": "principle",
+      "definition": "law of demeter: a module should talk only to its immediate friends, not to the insides of objects it reaches through them.",
+      "source": "lieberherr et al., law of demeter",
+      "status": "untrained",
+      "aliases": [
+        "principle of least knowledge",
+        "lod"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.composition_over_inheritance",
+      "group": "principle",
+      "definition": "composition over inheritance: prefer assembling behaviour from parts over deepening a class hierarchy.",
+      "source": "gamma et al., design patterns, 1994 (design principle); common oo advice",
+      "status": "untrained",
+      "aliases": [
+        "favor composition",
+        "composite reuse"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.dry",
+      "group": "principle",
+      "definition": "don't repeat yourself: every piece of knowledge should have a single, authoritative representation.",
+      "source": "hunt and thomas, the pragmatic programmer",
+      "status": "untrained",
+      "aliases": [
+        "don't repeat yourself"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.yagni",
+      "group": "principle",
+      "definition": "you aren't gonna need it: do not add a capability until it is actually needed.",
+      "source": "extreme programming literature",
+      "status": "untrained",
+      "aliases": [
+        "you aren't gonna need it"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.kiss",
+      "group": "principle",
+      "definition": "keep it simple: prefer a simple design that works over an elaborate one that might.",
+      "source": "common software engineering advice",
+      "status": "untrained",
+      "aliases": [
+        "keep it simple"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.tell_dont_ask",
+      "group": "principle",
+      "definition": "tell, don't ask: tell an object to do work rather than asking for its data and acting on it outside.",
+      "source": "hunt and thomas / fowler, tell don't ask",
+      "status": "untrained",
+      "aliases": [
+        "tell don't ask"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.cqs",
+      "group": "principle",
+      "definition": "command-query separation: a method should be a command that changes state, or a query that returns data, not both.",
+      "source": "meyer, object-oriented software construction",
+      "status": "untrained",
+      "aliases": [
+        "command query separation"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.design_by_contract",
+      "group": "principle",
+      "definition": "design by contract: specify and check preconditions, postconditions and invariants at module boundaries.",
+      "source": "meyer, object-oriented software construction; design by contract literature",
+      "status": "untrained",
+      "aliases": [
+        "dbc",
+        "contracts"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.separation_of_concerns",
+      "group": "principle",
+      "definition": "separation of concerns: keep distinct responsibilities in distinct modules so each can change for its own reasons.",
+      "source": "dijkstra, on the role of scientific thought; swebok",
+      "status": "untrained",
+      "aliases": [
+        "soc"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.program_to_interface",
+      "group": "principle",
+      "definition": "program to an interface, not an implementation: depend on abstractions so implementations can change.",
+      "source": "gamma et al., design patterns, 1994 (design principle)",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "principle.encapsulate_variation",
+      "group": "principle",
+      "definition": "encapsulate the concept that varies: identify what changes and hide it behind a stable boundary.",
+      "source": "gamma et al., design patterns, 1994 (design principle)",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.class",
+      "group": "uml",
+      "definition": "class diagram: classifiers, their features, and the static relations among them.",
+      "source": "omg, uml 2.5.1: class diagram",
+      "status": "untrained",
+      "aliases": [
+        "class view",
+        "static structure"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.object",
+      "group": "uml",
+      "definition": "object diagram: a snapshot of instances and their links at a moment in time.",
+      "source": "omg, uml 2.5.1: object diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.sequence",
+      "group": "uml",
+      "definition": "sequence diagram: messages exchanged among lifelines, shown in time order.",
+      "source": "omg, uml 2.5.1: sequence diagram",
+      "status": "untrained",
+      "aliases": [
+        "sequence view",
+        "interaction sequence"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.communication",
+      "group": "uml",
+      "definition": "communication diagram: an interaction shown as a graph of lifelines and messages, emphasising links.",
+      "source": "omg, uml 2.5.1: communication diagram",
+      "status": "untrained",
+      "aliases": [
+        "collaboration diagram"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.state",
+      "group": "uml",
+      "definition": "state machine diagram: states, transitions, events and activities of a behaviour.",
+      "source": "omg, uml 2.5.1: state machine diagram",
+      "status": "untrained",
+      "aliases": [
+        "statechart",
+        "state view"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.activity",
+      "group": "uml",
+      "definition": "activity diagram: a flow of actions, decisions, forks and joins, often for a process or algorithm.",
+      "source": "omg, uml 2.5.1: activity diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.use_case",
+      "group": "uml",
+      "definition": "use case diagram: actors, use cases and the associations that show a system's offered behaviour.",
+      "source": "omg, uml 2.5.1: use case diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.component",
+      "group": "uml",
+      "definition": "component diagram: modular parts with provided and required interfaces and their wiring.",
+      "source": "omg, uml 2.5.1: component diagram",
+      "status": "untrained",
+      "aliases": [
+        "component view"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.deployment",
+      "group": "uml",
+      "definition": "deployment diagram: the assignment of artefacts to nodes and the communication paths among nodes.",
+      "source": "omg, uml 2.5.1: deployment diagram",
+      "status": "untrained",
+      "aliases": [
+        "deployment view"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.package",
+      "group": "uml",
+      "definition": "package diagram: a grouping of model elements and the dependencies among packages.",
+      "source": "omg, uml 2.5.1: package diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.composite_structure",
+      "group": "uml",
+      "definition": "composite structure diagram: the internal parts, ports and connectors of a structured classifier.",
+      "source": "omg, uml 2.5.1: composite structure diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.timing",
+      "group": "uml",
+      "definition": "timing diagram: conditions or states of lifelines over a time axis.",
+      "source": "omg, uml 2.5.1: timing diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.interaction_overview",
+      "group": "uml",
+      "definition": "interaction overview diagram: a high-level activity-like view whose nodes are interactions.",
+      "source": "omg, uml 2.5.1: interaction overview diagram",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.association",
+      "group": "uml",
+      "definition": "association: a structural relationship among classifiers, possibly with ends, names and multiplicity.",
+      "source": "omg, uml 2.5.1: association",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.aggregation",
+      "group": "uml",
+      "definition": "aggregation: a whole-part association in which the part can outlive the whole.",
+      "source": "omg, uml 2.5.1: aggregation",
+      "status": "untrained",
+      "aliases": [
+        "shared aggregation"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.composition",
+      "group": "uml",
+      "definition": "composition: a strong whole-part association in which the part's lifetime is bound to the whole.",
+      "source": "omg, uml 2.5.1: composition",
+      "status": "untrained",
+      "aliases": [
+        "composite aggregation"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.generalization",
+      "group": "uml",
+      "definition": "generalization: a taxonomic relationship between a more general classifier and a more specific one.",
+      "source": "omg, uml 2.5.1: generalization",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.realization",
+      "group": "uml",
+      "definition": "realization: a relationship in which one classifier implements a contract specified by another, often an interface.",
+      "source": "omg, uml 2.5.1: realization",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.dependency",
+      "group": "uml",
+      "definition": "dependency: a usage relationship in which a change to the supplier may affect the client.",
+      "source": "omg, uml 2.5.1: dependency",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.multiplicity",
+      "group": "uml",
+      "definition": "multiplicity: the allowed number of instances that may participate at an association end or feature.",
+      "source": "omg, uml 2.5.1: multiplicity",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.stereotype",
+      "group": "uml",
+      "definition": "stereotype: a profile extension that adds domain-specific meaning to a uml element.",
+      "source": "omg, uml 2.5.1: stereotype",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.lifeline",
+      "group": "uml",
+      "definition": "lifeline: a participant in an interaction, representing one entity over time.",
+      "source": "omg, uml 2.5.1: lifeline",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.node",
+      "group": "uml",
+      "definition": "node: a computational or physical resource on which artefacts can be deployed.",
+      "source": "omg, uml 2.5.1: node",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.artifact",
+      "group": "uml",
+      "definition": "artefact: a physical piece of information, such as a file or package, that can be deployed.",
+      "source": "omg, uml 2.5.1: artifact",
+      "status": "untrained",
+      "aliases": [
+        "uml artifact"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "uml.port",
+      "group": "uml",
+      "definition": "port: an interaction point on a classifier that specifies a distinct provided or required interface.",
+      "source": "omg, uml 2.5.1: port",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.encapsulation",
+      "group": "ood",
+      "definition": "encapsulation: hide an object's internal representation and expose a controlled interface.",
+      "source": "swebok v4; common object-oriented design",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.polymorphism",
+      "group": "ood",
+      "definition": "polymorphism: the same operation can have different behaviour depending on the runtime type.",
+      "source": "swebok v4; common object-oriented design",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.abstraction",
+      "group": "ood",
+      "definition": "abstraction: expose essential features and suppress irrelevant detail behind a named concept.",
+      "source": "swebok v4; common object-oriented design",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.composition",
+      "group": "ood",
+      "definition": "object composition: build a type by combining instances of other types that it owns or uses.",
+      "source": "gamma et al., design patterns; common object-oriented design",
+      "status": "untrained",
+      "aliases": [
+        "has-a",
+        "object composition"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.delegation",
+      "group": "ood",
+      "definition": "delegation: an object forwards a request to a helper that performs the work.",
+      "source": "gamma et al., design patterns; common object-oriented design",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.generic",
+      "group": "ood",
+      "definition": "generics or parametric types: a definition is parameterised by one or more types, checked at compile time.",
+      "source": "common programming-language and oo design literature",
+      "status": "untrained",
+      "aliases": [
+        "parametric polymorphism",
+        "templates"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.mixin",
+      "group": "ood",
+      "definition": "mixin: a type that provides methods for reuse by being composed into other types, not used alone.",
+      "source": "common object-oriented design literature",
+      "status": "untrained",
+      "aliases": [
+        "trait mixin"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.trait",
+      "group": "ood",
+      "definition": "trait: a composable unit of behaviour that can be mixed into types, often with conflict rules.",
+      "source": "schaerli et al., traits; common language design",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ood.abstract_class",
+      "group": "ood",
+      "definition": "abstract class: a class that cannot be instantiated and that may leave some operations for subclasses to define.",
+      "source": "common object-oriented design; uml 2.5.1",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.complexity",
+      "group": "cs",
+      "definition": "computational complexity: time and space cost as a function of input size, often in big-o notation.",
+      "source": "cormen et al., introduction to algorithms (clrs); swebok v4",
+      "status": "untrained",
+      "aliases": [
+        "big-o",
+        "time complexity",
+        "space complexity",
+        "asymptotic analysis"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.recursion",
+      "group": "cs",
+      "definition": "recursion: a definition or procedure that is defined in terms of a smaller instance of itself, with a base case.",
+      "source": "clrs; common cs fundamentals",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.graphs",
+      "group": "cs",
+      "definition": "graphs: vertices and edges, and algorithms on them such as traversal, shortest paths and spanning trees.",
+      "source": "clrs; common cs fundamentals",
+      "status": "untrained",
+      "aliases": [
+        "graph algorithms",
+        "bfs",
+        "dfs"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.automata",
+      "group": "cs",
+      "definition": "automata: abstract machines (finite automata, pushdown automata, turing machines) that recognise languages or compute.",
+      "source": "sipser, introduction to the theory of computation",
+      "status": "untrained",
+      "aliases": [
+        "finite automaton",
+        "dfa",
+        "nfa",
+        "turing machine"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.formal_languages",
+      "group": "cs",
+      "definition": "formal languages and grammars: regular, context-free and related language classes, and the grammars that generate them.",
+      "source": "sipser, introduction to the theory of computation; hopcroft and ullman",
+      "status": "untrained",
+      "aliases": [
+        "chomsky hierarchy",
+        "regular language",
+        "cfg"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.sorting",
+      "group": "cs",
+      "definition": "sorting algorithms: arranging elements in order, including comparison sorts and their complexity bounds.",
+      "source": "clrs: sorting",
+      "status": "untrained",
+      "aliases": [
+        "sort algorithms"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.searching",
+      "group": "cs",
+      "definition": "search algorithms: finding an element or structure, including binary search, hashing-based lookup and graph search.",
+      "source": "clrs: searching",
+      "status": "untrained",
+      "aliases": [
+        "binary search"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.hashing",
+      "group": "cs",
+      "definition": "hashing: mapping keys to buckets for expected-constant-time lookup, with collision handling.",
+      "source": "clrs: hash tables",
+      "status": "untrained",
+      "aliases": [
+        "hash table"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.trees",
+      "group": "cs",
+      "definition": "trees: hierarchical structures (binary, balanced, b-trees, heaps, tries) and the algorithms on them.",
+      "source": "clrs: trees and balanced trees",
+      "status": "untrained",
+      "aliases": [
+        "bst",
+        "heap",
+        "trie",
+        "b-tree"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.dynamic_programming",
+      "group": "cs",
+      "definition": "dynamic programming: solve overlapping subproblems once, by memoisation or a bottom-up table.",
+      "source": "clrs: dynamic programming",
+      "status": "untrained",
+      "aliases": [
+        "dp",
+        "bottom-up table"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.greedy",
+      "group": "cs",
+      "definition": "greedy algorithms: build a solution by making the locally best choice at each step.",
+      "source": "clrs: greedy algorithms",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.divide_and_conquer",
+      "group": "cs",
+      "definition": "divide and conquer: split a problem, solve the parts, and combine the results.",
+      "source": "clrs: divide-and-conquer",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.backtracking",
+      "group": "cs",
+      "definition": "backtracking: search a space of candidates, abandoning a path as soon as it cannot lead to a solution.",
+      "source": "common algorithms literature",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.string_algorithms",
+      "group": "cs",
+      "definition": "string algorithms: matching, parsing of strings, compression of text, and related sequence methods.",
+      "source": "clrs and string-algorithm literature",
+      "status": "untrained",
+      "aliases": [
+        "pattern matching",
+        "edit distance"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.computability",
+      "group": "cs",
+      "definition": "computability: what can be computed at all, including decidability and reductions.",
+      "source": "sipser, introduction to the theory of computation",
+      "status": "untrained",
+      "aliases": [
+        "decidability",
+        "undecidable"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.types",
+      "group": "cs",
+      "definition": "type systems: static or dynamic types, inference, soundness, and the rules that classify expressions.",
+      "source": "pierce, types and programming languages; common pl literature",
+      "status": "untrained",
+      "aliases": [
+        "type system",
+        "type inference"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.memory_management",
+      "group": "cs",
+      "definition": "memory management: allocation, deallocation, garbage collection, and ownership or lifetime rules.",
+      "source": "common cs and systems literature",
+      "status": "untrained",
+      "aliases": [
+        "garbage collection",
+        "allocator",
+        "ownership"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.numeric",
+      "group": "cs",
+      "definition": "numeric computation: floating point, rounding, stability, and basic numerical methods.",
+      "source": "ieee 754; higham, accuracy and stability of numerical algorithms",
+      "status": "untrained",
+      "aliases": [
+        "floating point",
+        "numerical methods"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.probability",
+      "group": "cs",
+      "definition": "probability and statistics used in software: distributions, estimation, and randomised algorithms.",
+      "source": "common cs fundamentals",
+      "status": "untrained",
+      "aliases": [
+        "randomized algorithms",
+        "statistics"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.information_theory",
+      "group": "cs",
+      "definition": "information theory: entropy, coding, and the limits of compression and communication.",
+      "source": "shannon, a mathematical theory of communication; common cs fundamentals",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.distributed_algorithms",
+      "group": "cs",
+      "definition": "distributed algorithms: consensus, replication, clocks, and failure models across a network of processes.",
+      "source": "lynch, distributed algorithms; common distributed-systems literature",
+      "status": "untrained",
+      "aliases": [
+        "consensus",
+        "paxos",
+        "raft"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "cs.logic",
+      "group": "cs",
+      "definition": "logic for programs: propositional and predicate logic, invariants, and basic formal reasoning about code.",
+      "source": "common cs fundamentals; design-by-contract literature",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.unit_test",
+      "group": "se",
+      "definition": "unit testing: tests a single unit in isolation, often with test doubles for its neighbours.",
+      "source": "swebok v4, software testing; istqb glossary",
+      "status": "untrained",
+      "aliases": [
+        "unit tests"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.integration_test",
+      "group": "se",
+      "definition": "integration testing: tests that several units or services work together across their boundaries.",
+      "source": "swebok v4, software testing",
+      "status": "untrained",
+      "aliases": [
+        "integration tests"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.system_test",
+      "group": "se",
+      "definition": "system testing: tests a complete, integrated system against its requirements.",
+      "source": "swebok v4, software testing",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.acceptance_test",
+      "group": "se",
+      "definition": "acceptance testing: checks, often with the customer, that the system is fit for its intended use.",
+      "source": "swebok v4, software testing",
+      "status": "untrained",
+      "aliases": [
+        "uat",
+        "acceptance tests"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.property_test",
+      "group": "se",
+      "definition": "property-based testing: generates many inputs and checks that stated properties hold for all of them.",
+      "source": "claessen and hughes, quickcheck; common property-testing literature",
+      "status": "untrained",
+      "aliases": [
+        "quickcheck",
+        "property-based testing"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.fuzz_test",
+      "group": "se",
+      "definition": "fuzz testing: feeds invalid, random or unexpected input to a program to find crashes and defects.",
+      "source": "swebok v4; common security-testing literature",
+      "status": "untrained",
+      "aliases": [
+        "fuzzing"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.mutation_test",
+      "group": "se",
+      "definition": "mutation testing: deliberately changes the program and checks that the tests fail, to measure oracle strength.",
+      "source": "swebok v4; mutation-testing literature",
+      "status": "untrained",
+      "aliases": [
+        "mutation testing"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.contract_test",
+      "group": "se",
+      "definition": "contract testing: checks that a provider and a consumer still agree on a shared interface or message schema.",
+      "source": "pact and consumer-driven contract literature",
+      "status": "untrained",
+      "aliases": [
+        "consumer driven contract"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.regression_test",
+      "group": "se",
+      "definition": "regression testing: re-runs tests to check that a change has not broken existing behaviour.",
+      "source": "swebok v4, software testing",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.performance_test",
+      "group": "se",
+      "definition": "performance testing: measures latency, throughput or resource use against stated goals.",
+      "source": "swebok v4, software testing",
+      "status": "untrained",
+      "aliases": [
+        "load test",
+        "stress test"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.tdd",
+      "group": "se",
+      "definition": "test-driven development: write a failing test, make it pass, then refactor, in short cycles.",
+      "source": "beck, test-driven development",
+      "status": "untrained",
+      "aliases": [
+        "test driven development",
+        "red green refactor"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.bdd",
+      "group": "se",
+      "definition": "behaviour-driven development: specify behaviour in examples, often in a shared language, and automate them as tests.",
+      "source": "north, bdd; common bdd literature",
+      "status": "untrained",
+      "aliases": [
+        "behavior driven development",
+        "behaviour-driven development"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.ci",
+      "group": "se",
+      "definition": "continuous integration: merge frequently and run an automated build and test on each change.",
+      "source": "fowler, continuous integration; swebok v4",
+      "status": "untrained",
+      "aliases": [
+        "continuous integration"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.cd",
+      "group": "se",
+      "definition": "continuous delivery or deployment: keep the software in a releasable state and, when chosen, release it automatically.",
+      "source": "humble and farley, continuous delivery",
+      "status": "untrained",
+      "aliases": [
+        "continuous delivery",
+        "continuous deployment"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.refactoring",
+      "group": "se",
+      "definition": "refactoring: change the structure of the code without changing its observable behaviour, in small safe steps.",
+      "source": "fowler, refactoring",
+      "status": "untrained",
+      "aliases": [
+        "refactor"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.versioning",
+      "group": "se",
+      "definition": "versioning: assign and communicate versions of apis, packages or data so clients can evolve safely.",
+      "source": "semver; swebok v4",
+      "status": "untrained",
+      "aliases": [
+        "semver",
+        "api versioning"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.observability",
+      "group": "se",
+      "definition": "observability: infer internal state from logs, metrics and traces so operators can ask new questions in production.",
+      "source": "sre and observability literature (logs, metrics, traces)",
+      "status": "untrained",
+      "aliases": [
+        "telemetry",
+        "o11y"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.metrics",
+      "group": "se",
+      "definition": "metrics: numeric measurements exported over time, used for health, slos and alerts.",
+      "source": "google sre book; openmetrics / prometheus literature",
+      "status": "untrained",
+      "aliases": [
+        "sli",
+        "slo"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.tracing",
+      "group": "se",
+      "definition": "distributed tracing: follows a request across services, recording spans and their causal links.",
+      "source": "opentelemetry; google dapper / sre literature",
+      "status": "untrained",
+      "aliases": [
+        "distributed tracing"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.alerting",
+      "group": "se",
+      "definition": "alerting: notifies a human when a signal crosses a threshold or a symptom appears.",
+      "source": "google sre book",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.documentation",
+      "group": "se",
+      "definition": "documentation: comments, readmes, adrs, api docs and guides that explain how to use or change the system.",
+      "source": "swebok v4, software engineering process / documentation practice",
+      "status": "untrained",
+      "aliases": [
+        "docs",
+        "adr",
+        "api docs"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.code_review",
+      "group": "se",
+      "definition": "code review: a second person inspects a change for correctness, design and style before it is merged.",
+      "source": "swebok v4; common se practice",
+      "status": "untrained",
+      "aliases": [
+        "review",
+        "pull request review"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.static_analysis",
+      "group": "se",
+      "definition": "static analysis: examines a program without running it, to find defects, type errors or policy violations.",
+      "source": "swebok v4, software quality",
+      "status": "untrained",
+      "aliases": [
+        "lint",
+        "type check",
+        "sast"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.feature_flags",
+      "group": "se",
+      "definition": "feature flags: runtime switches that turn behaviour on or off without a new deploy.",
+      "source": "common continuous-delivery practice",
+      "status": "untrained",
+      "aliases": [
+        "feature toggles",
+        "feature flippers"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.trunk_based",
+      "group": "se",
+      "definition": "trunk-based development: developers commit to a shared trunk frequently, with short-lived branches if any.",
+      "source": "humble and farley; trunkbaseddevelopment.com",
+      "status": "untrained",
+      "aliases": [
+        "trunk based development"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.debugging",
+      "group": "se",
+      "definition": "debugging: locate and fix the cause of a failure, using reproduction, inspection and isolation.",
+      "source": "swebok v4",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.profiling",
+      "group": "se",
+      "definition": "profiling: measure where a program spends time or memory so that optimisation is aimed at real costs.",
+      "source": "swebok v4; common performance practice",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.sre",
+      "group": "se",
+      "definition": "site reliability engineering: operate production systems with engineering, error budgets and defined reliability goals.",
+      "source": "google sre book",
+      "status": "untrained",
+      "aliases": [
+        "site reliability"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.incident",
+      "group": "se",
+      "definition": "incident response: detect, mitigate and communicate a production failure, then follow up.",
+      "source": "google sre book; common incident-management practice",
+      "status": "untrained",
+      "aliases": [
+        "incident management"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.postmortem",
+      "group": "se",
+      "definition": "postmortem: a blameless write-up of an incident, its causes, impact and follow-up actions.",
+      "source": "google sre book",
+      "status": "untrained",
+      "aliases": [
+        "incident review",
+        "retro"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.release",
+      "group": "se",
+      "definition": "release engineering: package, ship and announce a version, including notes and artefacts.",
+      "source": "swebok v4, software configuration management",
+      "status": "untrained",
+      "aliases": [
+        "shipping",
+        "release engineering"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.rollback",
+      "group": "se",
+      "definition": "rollback: return a system to a previous known-good version after a bad release.",
+      "source": "common release and sre practice",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.canary",
+      "group": "se",
+      "definition": "canary release: ship a change to a small slice of traffic or users first, then widen it if it holds.",
+      "source": "humble and farley; google sre book",
+      "status": "untrained",
+      "aliases": [
+        "canary deployment"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.blue_green",
+      "group": "se",
+      "definition": "blue-green deployment: two production environments, with traffic switched from the old (blue) to the new (green).",
+      "source": "humble and farley, continuous delivery",
+      "status": "untrained",
+      "aliases": [
+        "blue-green"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.sbom",
+      "group": "se",
+      "definition": "software bill of materials: a list of components and licences in an artefact, used for supply-chain review.",
+      "source": "ntia / cisa sbom; spdx and cyclonedx",
+      "status": "untrained",
+      "aliases": [
+        "software bill of materials",
+        "spdx"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.changelog",
+      "group": "se",
+      "definition": "changelog: a human-readable record of what changed in each version.",
+      "source": "keep a changelog; common se practice",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "se.accessibility",
+      "group": "se",
+      "definition": "accessibility: design and test so people with disabilities can use the software.",
+      "source": "wcag; swebok v4",
+      "status": "untrained",
+      "aliases": [
+        "a11y",
+        "wcag"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.entity",
+      "group": "ddd",
+      "definition": "entity: an object defined by a thread of identity that runs through time, not only by its attributes.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "aliases": [
+        "ddd entity"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.aggregate",
+      "group": "ddd",
+      "definition": "aggregate: a cluster of entities and values with a root, treated as one consistency boundary for writes.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "aliases": [
+        "aggregate root"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.bounded_context",
+      "group": "ddd",
+      "definition": "bounded context: an explicit boundary within which a particular model and ubiquitous language apply.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.domain_event",
+      "group": "ddd",
+      "definition": "domain event: a record of something that happened in the domain that other parts may react to.",
+      "source": "evans, domain-driven design, 2003; vernon, implementing domain-driven design",
+      "status": "untrained",
+      "aliases": [
+        "ddd event"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.domain_service",
+      "group": "ddd",
+      "definition": "domain service: a domain operation that does not naturally belong to a single entity or value object.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.application_service",
+      "group": "ddd",
+      "definition": "application service: a use-case coordinator that drives the domain and infrastructure, without holding domain rules.",
+      "source": "vernon, implementing domain-driven design",
+      "status": "untrained",
+      "aliases": [
+        "use case service"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.ubiquitous_language",
+      "group": "ddd",
+      "definition": "ubiquitous language: a shared language used by the team and in the code, inside one bounded context.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.context_map",
+      "group": "ddd",
+      "definition": "context map: a view of bounded contexts and the relationships between their models.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.anticorruption_layer",
+      "group": "ddd",
+      "definition": "anticorruption layer: an adapter that translates another context's model so it does not leak into this one.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "aliases": [
+        "acl"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.shared_kernel",
+      "group": "ddd",
+      "definition": "shared kernel: a small, explicitly shared subset of the model used by two contexts in close agreement.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.customer_supplier",
+      "group": "ddd",
+      "definition": "customer-supplier: an upstream context supplies a model that a downstream context depends on, with negotiation.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.conformist",
+      "group": "ddd",
+      "definition": "conformist: a downstream context accepts the upstream model as-is, without an anticorruption layer.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.published_language",
+      "group": "ddd",
+      "definition": "published language: a documented, stable language (often a schema) that contexts use to communicate.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.open_host_service",
+      "group": "ddd",
+      "definition": "open-host service: a context offers a protocol or api so that several others can integrate with it.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.separate_ways",
+      "group": "ddd",
+      "definition": "separate ways: two contexts have no real connection, so they do not share a model or integration.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.specification",
+      "group": "ddd",
+      "definition": "specification: an object that states a business rule as a predicate that can be evaluated, combined or stored.",
+      "source": "evans, domain-driven design, 2003; fowler, specification",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ddd.factory_ddd",
+      "group": "ddd",
+      "definition": "ddd factory: a domain object responsible for creating complex aggregates or entities, hiding invariants of construction.",
+      "source": "evans, domain-driven design, 2003",
+      "status": "untrained",
+      "aliases": [
+        "ddd factory"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.circuit_breaker",
+      "group": "resilience",
+      "definition": "circuit breaker: after failures pass a threshold, calls fail fast for a time, then a trial call may close the circuit.",
+      "source": "nygard, release it!; azure architecture center: circuit breaker",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.bulkhead",
+      "group": "resilience",
+      "definition": "bulkhead: isolate resources (pools, queues, instances) so a failure in one part does not take the whole system down.",
+      "source": "nygard, release it!; azure architecture center: bulkhead",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.retry",
+      "group": "resilience",
+      "definition": "retry: repeat a failed operation, often with backoff and a limit, when the failure may be transient.",
+      "source": "azure architecture center: retry; common resilience practice",
+      "status": "untrained",
+      "aliases": [
+        "backoff"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.timeout",
+      "group": "resilience",
+      "definition": "timeout: bound how long a call may wait, so a slow dependency cannot hold resources forever.",
+      "source": "nygard, release it!; common resilience practice",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.rate_limit",
+      "group": "resilience",
+      "definition": "rate limiting: cap how often an operation may run, to protect a service or a dependency.",
+      "source": "common resilience and api-gateway practice",
+      "status": "untrained",
+      "aliases": [
+        "throttling"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.cache_aside",
+      "group": "resilience",
+      "definition": "cache-aside: the application loads data into a cache on a miss and keeps the cache in line with the store.",
+      "source": "azure architecture center: cache-aside",
+      "status": "untrained",
+      "aliases": [
+        "lazy cache",
+        "cache aside"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "resilience.idempotency_key",
+      "group": "resilience",
+      "definition": "idempotency key: a client-supplied id that lets a service recognise a retried request and not apply it twice.",
+      "source": "common api and messaging practice",
+      "status": "untrained",
+      "aliases": [
+        "idempotency"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "xcut.audit",
+      "group": "xcut",
+      "definition": "audit trail: a durable record of who did what, and when, for later review.",
+      "source": "iso/iec 25010; common security and compliance practice",
+      "status": "untrained",
+      "aliases": [
+        "audit log",
+        "audit trail"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "xcut.privacy",
+      "group": "xcut",
+      "definition": "privacy controls: handling of personal data, consent, redaction and retention limits.",
+      "source": "iso/iec 25010; common privacy practice",
+      "status": "untrained",
+      "aliases": [
+        "data protection",
+        "pii"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "xcut.rate_limit_concern",
+      "group": "xcut",
+      "definition": "rate-limit concern: application-level throttles and quotas as a cross-cutting policy, not only a gateway feature.",
+      "source": "common cross-cutting concern",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "xcut.feature_toggle_concern",
+      "group": "xcut",
+      "definition": "feature-toggle concern: the plumbing that evaluates flags across the application.",
+      "source": "common cross-cutting concern",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "parse.typecheck",
+      "group": "parse",
+      "definition": "type checking: decide whether a program obeys the type rules, after or during parsing.",
+      "source": "aho et al., compilers (dragon book); pierce, types and programming languages",
+      "status": "untrained",
+      "aliases": [
+        "type checker",
+        "semantic analysis"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "parse.optimizer",
+      "group": "parse",
+      "definition": "optimizer: rewrite an intermediate form to run faster or use less memory, without changing meaning.",
+      "source": "aho et al., compilers (dragon book)",
+      "status": "untrained",
+      "aliases": [
+        "optimisation pass",
+        "optimization pass"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "net.rpc",
+      "group": "net",
+      "definition": "remote procedure call: a call that looks local but runs on another process or host, with stubs and a protocol.",
+      "source": "birrell and nelson, rpc; common distributed-systems literature",
+      "status": "untrained",
+      "aliases": [
+        "remote procedure call",
+        "grpc"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "net.websocket",
+      "group": "net",
+      "definition": "websocket: a persistent, full-duplex message channel over http for bidirectional communication.",
+      "source": "rfc 6455",
+      "status": "untrained",
+      "aliases": [
+        "web socket"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "net.graphql",
+      "group": "net",
+      "definition": "graphql: a query language and runtime in which the client asks for a shaped graph of fields from a schema.",
+      "source": "facebook / graphql foundation, graphql specification",
+      "status": "untrained",
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ser.schema",
+      "group": "ser",
+      "definition": "schema: a formal description of a data shape used to validate, generate or evolve encoded messages.",
+      "source": "json schema, avro, protocol buffers and related schema systems",
+      "status": "untrained",
+      "aliases": [
+        "data schema",
+        "idl"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "ser.migration",
+      "group": "ser",
+      "definition": "data migration: a versioned change to a stored schema or to existing records so old and new code can coexist.",
+      "source": "common persistence and operations practice",
+      "status": "untrained",
+      "aliases": [
+        "schema migration"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "scm.branching",
+      "group": "scm",
+      "definition": "branching and merging: parallel lines of development and the integration of their changes.",
+      "source": "swebok v4, software configuration management",
+      "status": "untrained",
+      "aliases": [
+        "merge",
+        "branch"
+      ],
+      "names": [],
+      "imports": []
+    },
+    {
+      "id": "scm.codeowners",
+      "group": "scm",
+      "definition": "code ownership records: files that name who must review a path, used by the hosting system.",
+      "source": "common git-hosting practice",
+      "status": "untrained",
+      "aliases": [
+        "code owners"
+      ],
+      "names": [],
+      "imports": []
+    }
+  ]
 }
