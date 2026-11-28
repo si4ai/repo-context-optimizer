@@ -2,8 +2,7 @@
 
 The pack is the map: the repo Forest and, with --for, the signatures of the
 files the --for files import (one hop in the file import graph, across
-module boundaries; card 1340), plus one import hop out of the owning
-modules as name and one line. The --for files' own outlines are left out:
+module boundaries; card 1340). The --for files' own outlines are left out:
 the agent opens those files anyway to edit them. Imported files are ranked
 by distance from the --for files: files more --for files import come
 first, then files whose directory is nearer, then by path. Raw files are
@@ -16,10 +15,10 @@ budget is min(--budget, half the estimated tokens of the imported files);
 when that is below MIN_BUDGET, or the --for files import nothing in the
 repo, they get a one-line no-op pack instead (card 1341). With --for, the Forest holds only the
 owning modules and their one-hop modules; those neighbor lines are cut
-right after the hop lines, before any Tree node, and the owners' lines go
-last (card 1342). After the pack
-fits, hop lines that now fit are put back, last cut first, so leftover
-budget still shows a One hop section. Hop lists put test modules after
+before any Tree node, and the owners' lines go last (card 1342). A one-hop
+module is a Forest line or a hop line, not both: a hop line is put back
+only after its Forest line was cut, last cut first, if it still fits
+(card 1347). Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
 are cut. Every cut is named in `trimmed`. After every content cut, a pack that is still over budget shortens the trimmed footer to counts and, if only the header and footer remain, records that residue in a note; the command exits 0 (exit 1 still means stale prose).
 """
@@ -420,7 +419,9 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         if trees:
             idx = call_index(m.trees, code, focus=trees)
             trees = [with_derived_docs(t, idx) for t in trees]
-    hop = [HopLine(h, _one_line(by_id[h])) for h in hop_ids]
+    # card 1347: with --for, each one-hop module already has a Forest line,
+    # so hop lines start empty and are put back only after that Forest line is cut.
+    hop: list[HopLine] = []
     neighbors: list[str] = []
     if owners:
         # card 1342: with --for, the Forest is the owners and their one-hop
@@ -480,25 +481,52 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     # leftover budget: put hop lines back, last cut first, while they still fit.
     # The trial measure uses the trimmed list that would actually be emitted, so
     # putting a hop back cannot hide a longer # trimmed line.
+    # card 1347: with --for, only a one-hop module whose Forest line was cut
+    # gets a hop line, so the pack never names the same module twice.
     hop_cuts = [t for t in trimmed if t.startswith("hop:")]
     other_cuts = [t for t in trimmed if not t.startswith("hop:")]
     pending = list(hop_cuts)
-    for item in reversed(hop_cuts):
-        mid = item[4:]
-        hop.append(HopLine(mid, _one_line(by_id[mid])))
-        pending.remove(item)
-        trimmed = pending + other_cuts
-        if _measure(current(), label) <= budget:
-            continue
-        hop.pop()
-        pending.append(item)
-        trimmed = pending + other_cuts
+    if owners:
+        seen: set[str] = set()
+        candidates: list[str] = []
+        for item in trimmed:
+            mid = item[7:] if item.startswith("forest:") else item[4:] if item.startswith("hop:") else ""
+            if mid and mid in hop_ids and mid not in seen:
+                seen.add(mid)
+                candidates.append(mid)
+        for mid in reversed(candidates):
+            if mid in {e.id for e in entries} or mid in {h.id for h in hop}:
+                continue
+            hop.append(HopLine(mid, _one_line(by_id[mid])))
+            item = f"hop:{mid}"
+            if item in pending:
+                pending.remove(item)
+            trimmed = pending + other_cuts
+            if _measure(current(), label) <= budget:
+                continue
+            hop.pop()
+            if item in hop_cuts and item not in pending:
+                pending.append(item)
+            trimmed = pending + other_cuts
+    else:
+        for item in reversed(hop_cuts):
+            mid = item[4:]
+            hop.append(HopLine(mid, _one_line(by_id[mid])))
+            pending.remove(item)
+            trimmed = pending + other_cuts
+            if _measure(current(), label) <= budget:
+                continue
+            hop.pop()
+            pending.append(item)
+            trimmed = pending + other_cuts
     pending = [t for t in hop_cuts if t in pending]  # original cut order
     trimmed = pending + other_cuts
     hop.sort(key=lambda h: _hop_key(h.id))
     while _measure(current(), label) > budget:
         if not cut_one():
             break
+    forest_ids = {e.id for e in entries}
+    hop = [h for h in hop if h.id not in forest_ids]
     p = current()
     shown = {e.id for e in p.forest}
     p = replace(p, stale=tuple(s for s in stale if s in shown))

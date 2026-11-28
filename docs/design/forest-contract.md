@@ -120,9 +120,11 @@ outlines (card 1340). Imported files are ranked nearest first: imported by
 more `--for` files, then a smaller directory distance to the nearest
 importing `--for` file, then path. With `--for` the Forest holds only
 the owning modules and their one-hop modules (depends on and used by), and
-the cut order is: one hop lines, then those neighbor Forest lines, then Tree
+the cut order is: those neighbor Forest lines, then Tree
 nodes of the farthest imported file first, then the owners' Forest lines
-(card 1342). Without `--for`, cut order when over budget: one
+(card 1342). A one-hop module is named once: as a Forest line, or as a hop
+line if that Forest line was cut and the hop line still fits (card 1347).
+Without `--for`, cut order when over budget: one
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
 no prose) from the deepest level up, then the remaining Forest entries.
 A parent Forest line is kept
