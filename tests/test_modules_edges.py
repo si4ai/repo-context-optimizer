@@ -72,6 +72,17 @@ def test_js_ts_edges():
                                          "web/c.ts", "web/d/index.js")
 
 
+def test_go_same_module_path_prefers_shallower_manifest():
+    # card 1350: two go.mod files with the same module path (cli/cli has a
+    # copy under .github); imports should resolve to the shallower tree
+    files = {"go.mod": "module example.com/app\n",
+             "cmd/app/main.go": "package main\nimport \"example.com/app/util\"\n",
+             "util/u.go": "package util\n",
+             ".testdata/go.mod": "module example.com/app\n",
+             ".testdata/util/u.go": "package util\n"}
+    assert _edges(files, "cmd/app/main.go") == ("util/u.go",)
+
+
 def test_go_edges():
     files = {"go.mod": "module example.com/app\n\ngo 1.22\n",
              "cmd/app/main.go": ('package main\nimport (\n\t"fmt"\n\tsvc "example.com/app/svc"\n'
