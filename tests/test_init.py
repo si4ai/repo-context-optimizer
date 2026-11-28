@@ -196,6 +196,36 @@ def _strip_block(data: bytes, nl: bytes) -> bytes:
     return data[:begin] + data[end:]
 
 
+def test_agents_report_includes_block_tokens(tmp_path, capsys):
+    from rco.forest_model import estimate_tokens, token_method
+    repo, _ = _repo(tmp_path)
+    want = estimate_tokens(agent_block(AGENT_BLOCK))
+    method = token_method()
+    rep = init(repo, config=False, ci=False, agents=True)
+    assert rep.agents_tokens == want and rep.agents_tokenizer == method
+    obj = rep.to_obj()
+    assert obj["agents_tokens"] == want and obj["agents_tokenizer"] == method
+    assert f"agents block: {want} tokens ({method})" in rep.to_markdown()
+    again = init(repo, config=False, ci=False, agents=True)
+    assert any(s.path == "AGENTS.md" and s.action == "kept" and s.detail == "current"
+               for s in again.steps)
+    assert again.agents_tokens == want and again.agents_tokenizer == method
+    capsys.readouterr()
+    assert cli.main(["init", "--repo", str(repo), "--no-config", "--no-ci", "--agents",
+                     "--format", "json"]) == Exit.OK
+    out = json.loads(capsys.readouterr().out)
+    assert out["agents_tokens"] == want and out["agents_tokenizer"] == method
+
+
+def test_init_without_agents_omits_token_fields(tmp_path):
+    repo, _ = _repo(tmp_path)
+    rep = init(repo, config=True, ci=False, agents=False)
+    assert rep.agents_tokens is None and rep.agents_tokenizer is None
+    obj = rep.to_obj()
+    assert "agents_tokens" not in obj and "agents_tokenizer" not in obj
+    assert "agents block:" not in rep.to_markdown()
+
+
 def test_agents_creates_agents_md_only(tmp_path):
     repo, _ = _repo(tmp_path)
     got = _agents(repo)
