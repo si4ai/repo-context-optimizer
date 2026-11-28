@@ -48,9 +48,12 @@ def test_update_drain_pack(tmp_path, capsys):
     assert code == Exit.OK and p["stale"] == []  # a real pack: no "nothing to add" note
     assert [n for n in p["notes"] if not n.startswith("budget scaled to ")] == []
     assert {e["id"]: e for e in p["forest"]}["pkg"]["prose"]["text"] == "Pkg does the work."
-    # the 1341 budget (half of util/helpers.py) may cut the hop line; it is still named
-    assert ([h["id"] for h in p["hop"]] + [t[4:] for t in p["trimmed"] if t.startswith("hop:")]
-            == ["util"])
+    # card 1347: util is named once, as a Forest line or a hop line (or a cut)
+    named = ({e["id"] for e in p["forest"]}
+             | {h["id"] for h in p["hop"]}
+             | {t.split(":", 1)[1] for t in p["trimmed"] if t.startswith(("hop:", "forest:"))})
+    assert "util" in named
+    assert not ({e["id"] for e in p["forest"]} & {h["id"] for h in p["hop"]})
 
     b = fixture.commit(repo, {"util/helpers.py": "def clamp(x: int, lo: int = 0) -> int:\n    return max(lo, x)\n"})
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
