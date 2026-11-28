@@ -14,6 +14,8 @@ from dataclasses import dataclass
 SIG_MAX = 240
 
 # Kotlin (card 1364): own string rules, see _kt_string_end; nested block comments like Rust.
+# PHP (card 1365): only the code between <?php and ?> is scanned; # comments (not #[ attributes),
+# heredocs and nowdocs, and "..." strings with {$...} templates.
 # brace languages with """ text blocks, single-line "string" and 'c' literals (card 1362);
 # later brace languages join this set as their cards land.
 _TRIPLE_LANGS = ("java", "csharp")
@@ -42,8 +44,19 @@ def _blank(chars: list[str], a: int, b: int) -> None:
             chars[k] = " "
 
 
+
+def _line_comment_end(text: str, i: int, n: int, lang: str) -> int:
+    """Index of the first newline after i, or of `?>` when that comes first in PHP."""
+    j = text.find("\n", i)
+    j = n if j < 0 else j
+    if lang == "php":
+        k = text.find("?>", i)
+        if 0 <= k < j:
+            return k
+    return j
+
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust", "java", "kotlin", "csharp" or "sh". A replay run caches it by text (rco.memo)."""
+    """lang: "js", "go", "rust", "java", "kotlin", "csharp", "php" or "sh". A replay run caches it by text (rco.memo)."""
     from rco import memo
     return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
 
@@ -55,6 +68,7 @@ def _scan(text: str, lang: str) -> Scan:
     comments: list[tuple[int, int]] = []
     i = 0
     last = ""  # last significant code char or word, for JS regex detection
+    in_php = lang != "php"  # a PHP file starts as text until its first <?php
 
     def prev_word(j: int) -> str:
         k = j
@@ -68,6 +82,40 @@ def _scan(text: str, lang: str) -> Scan:
     while i < n:
         c = text[i]
         nxt = text[i + 1] if i + 1 < n else ""
+        if lang == "php":
+            if not in_php:
+                m = re.compile(r"<\?(?:php\b|=)").search(text, i)
+                e = m.end() if m else n
+                _blank(nc, i, e)
+                _blank(code, i, e)
+                i, in_php = e, True
+                continue
+            if c == "?" and nxt == ">":
+                _blank(nc, i, i + 2)
+                _blank(code, i, i + 2)
+                i, in_php = i + 2, False
+                continue
+            if c == "#" and nxt != "[":
+                j = _line_comment_end(text, i, n, "php")
+                comments.append((i, j))
+                _blank(nc, i, j)
+                _blank(code, i, j)
+                i = j
+                continue
+            hm = re.compile(r"<<<[ \t]*(['\"]?)([A-Za-z_]\w*)\1[ \t]*\r?\n").match(text, i) if c == "<" else None
+            if hm:  # heredoc / nowdoc: the body is not code
+                close = re.compile(r"^[ \t]*" + hm.group(2) + r"\b", re.M).search(text, hm.end())
+                e = close.start() if close else n
+                _blank(code, hm.end(), e)
+                i = close.end() if close else n
+                last = '"'
+                continue
+            if c in '"`':
+                end = _php_string_end(text, i)
+                _blank(code, i + 1, max(i + 1, end - 1))
+                i = end
+                last = '"'
+                continue
         # comments
         if lang == "sh" and c == "#" and (i == 0 or text[i - 1] in " \t\n;|&(") \
                 and not (i > 0 and text[i - 1] == "$"):
@@ -86,8 +134,7 @@ def _scan(text: str, lang: str) -> Scan:
             i = j
             continue
         if lang != "sh" and c == "/" and nxt == "/":
-            j = text.find("\n", i)
-            j = n if j < 0 else j
+            j = _line_comment_end(text, i, n, lang)
             comments.append((i, j))
             _blank(nc, i, j)
             _blank(code, i, j)
@@ -296,6 +343,34 @@ def _kt_skip_template(text: str, j: int) -> int:
         elif ch == "'":
             k = text.find("'", j + 2)
             j = k + 1 if 0 <= k <= j + 5 else j + 1
+            continue
+        j += 1
+    return n
+
+
+def _php_string_end(text: str, i: int) -> int:
+    """Index after the PHP "..." or `...` string that opens at i; `{$...}` may hold quotes."""
+    q, j, n = text[i], i + 1, len(text)
+    while j < n:
+        ch = text[j]
+        if ch == "\\":
+            j += 2
+            continue
+        if ch == q:
+            return j + 1
+        if ch == "{" and text.startswith("{$", j):
+            d, j = 1, j + 1
+            while j < n and d:
+                if text[j] == "{":
+                    d += 1
+                elif text[j] == "}":
+                    d -= 1
+                elif text[j] in "\"'":
+                    k = j + 1
+                    while k < n and text[k] != text[j]:
+                        k += 2 if text[k] == "\\" else 1
+                    j = k
+                j += 1
             continue
         j += 1
     return n

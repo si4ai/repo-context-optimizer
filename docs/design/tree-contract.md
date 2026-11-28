@@ -555,6 +555,22 @@ Applied in 0.2.0 (card 1364):
   `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,
   `tailrec`, `expect`, `actual` and `var` where present.
 
+Applied in 0.2.0 (card 1365):
+
+- Applied: a `php` extractor (`rco/extract/php.py`) on the same scanner
+  (`scan.py`, lang `php`: only the code between `<?php` and `?>` is read;
+  `#` and `//` comments, heredocs and nowdocs, and `"` strings with
+  `{$...}` are masked, while `#[...]` is an attribute). Top-level functions
+  and constants are children of the SRCMODULE (as in Go), whose `namespace`
+  attr is the file's namespace. Children: CLASS (`kind` is `class`,
+  `interface`, `trait` or `enum`), METHOD, FIELD (properties, enum cases)
+  and CONSTANT (`const`). Public means: a top-level declaration, a member
+  that is `public`, `protected` or has no visibility keyword, and every
+  member of an interface; `private` members are not shown. A declaration
+  inside a top-level `if (...) { }` block counts, as in a helpers file that
+  guards each function with `function_exists`. Attrs record `abstract`,
+  `final`, `static` and `readonly` where present.
+
 Applied in 0.1.2 (modules from manifests and an override file):
 
 - Applied: `module_of(path, layout=None)` and `group(paths, layout=None)`

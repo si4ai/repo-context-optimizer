@@ -345,6 +345,8 @@ _DECL = {  # declaration shapes per language; {n} is the name
                r"{n}\s*[(<]",),
     "kotlin": (r"^[ \t]*(?:[\w@:]+[ \t]+)*fun[ \t]+(?:<[^>\n]*>[ \t]*)?(?:[\w<>?, ]+\.)?{n}\s*[(<]",
                r"^[ \t]*(?:[\w@:]+[ \t]+)*(?:class|interface|object|typealias|val|var)[ \t]+{n}\b"),
+    "php": (r"^[ \t]*(?:[a-z]+[ \t]+)*function[ \t]+&?[ \t]*{n}[ \t]*\(",
+            r"^[ \t]*(?:[a-z]+[ \t]+)*(?:class|interface|trait|enum)[ \t]+{n}\b"),
     "go": (r"^func\s*(?:\([^)]*\)\s*)?{n}\s*[\[(]",),
     "rust": (r"\bfn\s+{n}\b",),
     "sh": (r"^[ \t]*function\s+{n}\b", r"^[ \t]*{n}\s*\(\s*\)"),

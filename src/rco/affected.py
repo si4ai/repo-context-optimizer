@@ -36,7 +36,13 @@ run time, and files opened by a computed name or a glob, are not seen.
 
 Test files: Python `test_*.py` and `*_test.py` (pytest's default); Go
 `*_test.go`; JS/TS `*.test.*`, `*.spec.*` or under `__tests__/`; Rust
-`.rs` directly in a `tests/` directory.
+`.rs` directly in a `tests/` directory; Java `*Test.java`, `*Tests.java`,
+`*IT.java`, `*TestCase.java`, `Test*.java` or under `test/` or `tests/`; C#
+`*Test.cs`, `*Tests.cs`, `*TestCase.cs`, `*Fixture.cs` or under `test/`,
+`tests/` or a `*.Tests` directory; Kotlin `*Test.kt`, `*Tests.kt`, `*IT.kt`,
+`*TestCase.kt`, `*Spec.kt` or under `test/`, `tests/` or a `*Test` source set;
+PHP `*Test.php`, `*Tests.php`,
+`*TestCase.php` or under `tests/` or `test/`.
 """
 from __future__ import annotations
 
@@ -77,6 +83,7 @@ BUILD_FILES: dict[str, tuple[str, ...]] = {
              "*.gradle.kts"),
     "kotlin": ("build.gradle.kts", "build.gradle", "settings.gradle.kts", "settings.gradle",
                "gradle.properties", "libs.versions.toml", "pom.xml", "*.gradle.kts"),
+    "php": ("composer.json", "composer.lock", "phpunit.xml", "phpunit.xml.dist", "phpunit.dist.xml"),
     "csharp": ("*.csproj", "*.sln", "*.slnx", "*.props", "*.targets", "global.json",
                "nuget.config", "NuGet.Config"),
 }
@@ -116,6 +123,8 @@ def is_test(path: str) -> bool:
     if lang == "kotlin":  # Gradle src/test, src/jvmTest, src/commonTest, and *Test names
         return (name.removesuffix(".kt").endswith(("Test", "Tests", "IT", "TestCase", "Spec"))
                 or any(d in ("test", "tests") or (d.endswith("Test") and d != "Test") for d in dirs))
+    if lang == "php":  # PHPUnit: tests/ or *Test.php
+        return name.removesuffix(".php").endswith(("Test", "Tests", "TestCase")) or "tests" in dirs or "test" in dirs
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False
