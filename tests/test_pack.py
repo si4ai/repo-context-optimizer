@@ -65,8 +65,34 @@ def test_for_gives_imported_trees_and_one_hop(tmp_path):
     # card 1340: the files engine.py imports, not its own module
     assert [t.module for t in p.trees] == ["src/app/util"]
     assert {n.path for t in p.trees for n in t.nodes} == {"src/app/util/helpers.py"}
-    assert [h.id for h in p.hop] == ["src/app", "src/app/util"]
+    # card 1347: at a full budget the one-hop modules are Forest lines, not hop lines
+    assert {"src/app", "src/app/util"} <= {e.id for e in p.forest}
+    assert [h.id for h in p.hop] == []
+    assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
     assert pack_from_obj(pack_to_obj(p)) == p
+
+
+def test_for_prints_each_one_hop_module_once(tmp_path):
+    """Card 1347: each one-hop module is a Forest line or a hop line, not both."""
+    repo, sha = _repo(tmp_path)
+    paths = ["src/app/core/engine.py", "src/app/cli.py"]
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
+    owners = {"src/app", "src/app/core"}
+    neighbors = {e.id for e in full.forest} - owners
+    assert neighbors
+    for budget in (10 ** 6, 400, 200, MIN_BUDGET):
+        p = pack(repo, sha, paths, budget, fit_to_imports=False)
+        forest_ids = {e.id for e in p.forest}
+        hop_ids = {h.id for h in p.hop}
+        assert hop_ids.isdisjoint(forest_ids)
+        assert hop_ids <= neighbors
+        # a hop line is only for a neighbor whose Forest line was cut
+        trimmed_forest = {t[7:] for t in p.trimmed if t.startswith("forest:")}
+        assert hop_ids <= trimmed_forest
+    # without --for the pack is the Forest only; hop stays empty
+    plain = pack(repo, sha, None, 10 ** 6)
+    assert plain.hop == ()
+    assert {e.id for e in full.forest} <= {e.id for e in plain.forest}
 
 
 @pytest.mark.parametrize("case", FIXTURES)
@@ -82,11 +108,20 @@ def test_never_over_budget_and_every_cut_named(tmp_path, case):
         kept = ({f"hop:{h.id}" for h in p.hop} | {f"forest:{e.id}" for e in p.forest}
                 | {f"node:{t.module}|{node_key(n.path, n.name, n.kind)}" for t in p.trees
                    for n in t.nodes})
-        everything = ({f"hop:{h.id}" for h in full_p.hop} | {f"forest:{e.id}" for e in full_p.forest}
+        everything = ({f"forest:{e.id}" for e in full_p.forest}
                       | {f"node:{t.module}|{node_key(n.path, n.name, n.kind)}"
                          for t in full_p.trees for n in t.nodes})
-        assert kept | set(p.trimmed) == everything  # nothing dropped silently
+        # card 1347: a hop line stands in for a trimmed Forest line, so hop:id
+        # in kept is covered by forest:id in everything / trimmed
+        adjusted = set(p.trimmed)
+        for hid in {h.id for h in p.hop}:
+            forest_t = f"forest:{hid}"
+            if forest_t in adjusted:
+                adjusted.remove(forest_t)
+            adjusted.add(f"hop:{hid}")
+        assert kept | adjusted == everything | {f"hop:{h.id}" for h in p.hop}
         assert not kept & set(p.trimmed)
+        assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
 
 
 def test_cut_order_hop_then_nodes_then_forest(tmp_path):
@@ -102,10 +137,11 @@ def test_cut_order_hop_then_nodes_then_forest(tmp_path):
         owners = {"src/app", "src/app/core"}
         kinds = ["owner" if t.startswith("forest:") and t[7:] in owners else t.split(":", 1)[0]
                  for t in p.trimmed]
-        # card 1342: hop lines, then neighbor Forest lines, then Tree nodes, then owners
+        # card 1347: hop lines start empty, so first cuts are neighbor Forest
+        # lines, then Tree nodes, then owners; a hop cut only appears after
+        # that hop line was put back
         assert kinds == sorted(kinds, key=["hop", "forest", "node", "owner"].index), (budget, kinds)
         seen |= set(kinds)
-    # tight budgets still cut hops first; leftover budget may put some hops back
     assert "node" in seen and "forest" in seen
 
 
@@ -248,25 +284,34 @@ def test_hop_lists_test_modules_last(tmp_path):
         "zz/z.py": "from pkg.mod import f\n\n\ndef h() -> int:\n    return f()\n",
     }
     repo, sha = fixture.make_repo(tmp_path / "hops", files)
-    p = pack(repo, sha, ["pkg/mod.py"], 10 ** 6, fit_to_imports=False)
-    ids = [h.id for h in p.hop]
-    assert "tests" in ids and "lib" in ids and "zz" in ids
-    rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
-    tests = [i for i in ids if i == "tests" or i.startswith("tests/")]
-    assert ids == sorted(rest) + sorted(tests)
+    from rco.pack import _hop_key
+    assert sorted(["tests", "lib", "zz"], key=_hop_key) == ["lib", "zz", "tests"]
+    full = pack(repo, sha, ["pkg/mod.py"], 10 ** 6, fit_to_imports=False)
+    # at a full budget the neighbors are Forest lines, not hop lines
+    assert {"tests", "lib", "zz"} <= {e.id for e in full.forest}
+    assert not {h.id for h in full.hop} & {"tests", "lib", "zz"}
+    # when hop lines remain after Forest cuts, test modules still go last
+    for budget in range(MIN_BUDGET, full.used, 8):
+        p = pack(repo, sha, ["pkg/mod.py"], budget, fit_to_imports=False)
+        ids = [h.id for h in p.hop]
+        if ids:
+            rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
+            tests = [i for i in ids if i == "tests" or i.startswith("tests/")]
+            assert ids == sorted(rest) + sorted(tests)
 
 
 def test_leftover_budget_keeps_hops_that_fit(tmp_path):
-    """A hop cut earlier is put back when later cuts leave room for it."""
+    """A hop line is put back when its Forest line was cut and it still fits."""
     from rco.forest_model import HopLine, estimate_tokens
-    from rco.pack import pack_markdown
-    from dataclasses import replace
+    from rco.pack import pack_markdown, _one_line
 
     repo, sha = _repo(tmp_path)
     paths = ["src/app/core/engine.py", "src/app/cli.py"]
     full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
-    assert full.hop
-    hop_line = {h.id: h.line for h in full.hop}
+    owners = {"src/app", "src/app/core"}
+    hop_ids = {e.id for e in full.forest} - owners
+    assert hop_ids and not full.hop
+    by_id = {e.id: e for e in full.forest}
     label = " ".join(paths)
     hits = 0
     for budget in range(MIN_BUDGET, full.used):
@@ -274,22 +319,19 @@ def test_leftover_budget_keeps_hops_that_fit(tmp_path):
             p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
+        assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
+        shown = {h.id for h in p.hop}
         for t in p.trimmed:
-            if not t.startswith("hop:"):
+            if not t.startswith("forest:") or t[7:] not in hop_ids or t[7:] in shown:
                 continue
-            mid = t[4:]
-            candidate = replace(
-                p,
-                hop=(*p.hop, HopLine(mid, hop_line[mid])),
-                trimmed=tuple(x for x in p.trimmed if x != t),
-            )
+            mid = t[7:]
+            from dataclasses import replace
+            candidate = replace(p, hop=(*p.hop, HopLine(mid, _one_line(by_id[mid]))))
             if estimate_tokens(pack_markdown(candidate, label)) <= budget:
-                raise AssertionError(f"budget {budget} left room for hop {mid} but it stayed trimmed")
+                raise AssertionError(f"budget {budget} left room for hop {mid} but it was not put back")
         if p.hop and any(t.startswith("node:") or t.startswith("forest:") for t in p.trimmed):
             hits += 1
-    # some mid budgets should keep hops even after other cuts; if none do, the
-    # fixture may be too small, but the leftover check above is the contract
-    assert hits or full.used  # always true; documents the walk ran
+    assert hits or full.used  # walk ran
 
 def test_pack_unmatched_for_warns_and_keeps_stdout(tmp_path, capsys):
     repo, _ = _repo(tmp_path)

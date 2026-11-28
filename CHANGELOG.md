@@ -24,6 +24,8 @@
 ### changed
 
 - `rco init --agents` reports the marked `AGENTS.md` block's size in tokens, using the same estimate as `rco pack` (card 1356)
+- with `--for`, a one-hop module is a Forest line or a hop line, not both:
+  a hop line is put back only after its Forest line was cut (card 1347)
 - `rco pack` counts its budget in tiktoken `o200k_base` tokens when the
   `tokens` extra is installed, otherwise characters / 3.5, rounded up, so
   signature-dense packs stay within `--budget`. After every content cut,
