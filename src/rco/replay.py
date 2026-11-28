@@ -34,6 +34,7 @@ from typing import Callable, Iterator
 
 from rco import __version__, gitread, memo
 from rco.affected import is_code
+from rco.edges import MANIFEST_NAMES
 from rco.diff import changed_paths
 from rco.imports import file_graph
 from rco.metrics import _regular, read_set
@@ -173,7 +174,16 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
     code_paths = [p for p in tree if is_code(p)]
     raw = gitread.read_blobs(repo, (tree[p] for p in code_paths))
     code = {p: raw[tree[p]] for p in code_paths}
-    graph = file_graph(sorted(tree), code)
+    # card 1350: manifests belong in the import graph, same as forest.read_sources
+    manifest_paths = [p for p in tree
+                      if p == "pyproject.toml" or p.rsplit("/", 1)[-1] in MANIFEST_NAMES]
+    need = [p for p in manifest_paths if p not in code]
+    if need:
+        extra = gitread.read_blobs(repo, (tree[p] for p in need))
+        graph_src = {**code, **{p: extra[tree[p]] for p in need}}
+    else:
+        graph_src = code
+    graph = file_graph(sorted(tree), graph_src)
     reads = [p for p in read_set(changed, graph) if p in tree]
     blobs_raw = gitread.read_blobs(repo, (tree[p] for p in reads))
     blobs = {p: blobs_raw[tree[p]] for p in reads}
