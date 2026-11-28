@@ -106,7 +106,7 @@ def make_parser() -> argparse.ArgumentParser:
     k.add_argument("sha", nargs="?", default="HEAD", help="commit (default: HEAD)")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE",
                    help="paths whose imported files get outlined, plus one module hop")
-    k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"estimated tokens (default: {DEFAULT_BUDGET})")
+    k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"tokens, o200k or characters / 3.5 (default: {DEFAULT_BUDGET})")
     _common(k)
 
     rp = sub.add_parser("replay", help="estimate rco's saving on this repo's last code commits")
@@ -115,7 +115,7 @@ def make_parser() -> argparse.ArgumentParser:
     rp.add_argument("--since", default=None, metavar="DATE",
                     help="only commits since DATE (YYYY-MM-DD means midnight local time)")
     rp.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
-                    help=f"pack budget, estimated tokens (default: {DEFAULT_BUDGET})")
+                    help=f"pack budget, o200k or characters / 3.5 (default: {DEFAULT_BUDGET})")
     rp.add_argument("--max-files", type=int, default=50,
                     help="skip commits that change more code files than this (default: 50)")
     _common(rp)
@@ -353,13 +353,13 @@ def run(args: argparse.Namespace) -> Exit:
         if sha is None:
             p = pack.empty_pack(args.budget)
             if p.used > p.budget:
-                note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
+                note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
             return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
         from rco.config import open_store
         store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
         if p.used > p.budget:
-            note(f"pack used ~{p.used} estimated tokens, over the budget of {p.budget}")
+            note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd == "replay":
         from rco import metrics, replay

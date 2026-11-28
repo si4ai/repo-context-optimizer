@@ -19,7 +19,7 @@ SCHEMA_UPDATE = "rco.update/1"
 MINED_PROMPT_VERSION = "mined/1"
 MINED_MODEL_ID = ""
 PROSE_CAP = 300  # characters, every prose source
-DEFAULT_BUDGET = 12000  # estimated tokens (characters / 4); interim, see README
+DEFAULT_BUDGET = 12000  # tokens (o200k, or characters / 3.5); interim, see README
 DEFAULT_POINTER = "main"
 
 _FOREST_KEYS = frozenset({"schema", "sha", "notes", "modules"})
@@ -147,9 +147,25 @@ def forest_hash(tree_hash: str, edges: tuple[str, ...], prompt_version: str = MI
     }))
 
 
+# tiktoken encoding, or None after a failed import; _enc_failed stays set
+# for the process so pack does not retry a missing extra on every call
+_enc = None
+_enc_failed = False
+
+
 def estimate_tokens(text: str) -> int:
-    """README: characters / 4, rounded up."""
-    return (len(text) + 3) // 4
+    """Tokens of pack text (card 1343): o200k_base when tiktoken is installed,
+    otherwise characters / 3.5, rounded up (a conservative stand-in)."""
+    global _enc, _enc_failed
+    if _enc is None and not _enc_failed:
+        try:
+            import tiktoken
+            _enc = tiktoken.get_encoding("o200k_base")
+        except Exception:
+            _enc_failed = True
+    if _enc is not None:
+        return len(_enc.encode(text, disallowed_special=()))
+    return (len(text) * 2 + 6) // 7 if text else 0
 
 
 # ---- canonical JSON ----------------------------------------------------------

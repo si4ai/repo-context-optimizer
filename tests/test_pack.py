@@ -1,6 +1,7 @@
 """Phase 2 step 5: `rco pack` stays within budget, names every cut, and is deterministic."""
 import json
 import os
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -35,13 +36,20 @@ def _publish(store, repo, sha):
     return m
 
 
+def _used_placeholder(text: bytes) -> bytes:
+    # the used count depends on whether tiktoken is installed (card 1343)
+    return re.sub(br"# budget used: ~\d+ /", b"# budget used: ~N /", text)
+
+
 def test_golden_markdown(tmp_path):
     repo, sha = _repo(tmp_path)
-    got = pack_markdown(pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False), "src/app/cli.py").encode()
+    p = pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False)
+    got = pack_markdown(p, "src/app/cli.py")
     golden = HERE / "golden" / "pack_forest_basic.md"
     if os.environ.get("RCO_REGEN") == "1":
-        golden.write_bytes(got)
-    assert got == golden.read_bytes()
+        golden.write_bytes(got.encode())
+    assert _used_placeholder(got.encode()) == _used_placeholder(golden.read_bytes())
+    assert p.used == estimate_tokens(got)
 
 
 def test_whole_repo_pack_is_forest_only(tmp_path):
@@ -309,7 +317,11 @@ def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
 def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
     fwd, back = "src/app/cli.py", "src\\app\\cli.py"
-    assert pack_to_obj(pack(repo, sha, [back], fit_to_imports=False)) == pack_to_obj(pack(repo, sha, [fwd], fit_to_imports=False))
+    a = pack_to_obj(pack(repo, sha, [back], fit_to_imports=False))
+    b = pack_to_obj(pack(repo, sha, [fwd], fit_to_imports=False))
+    # the --for label appears in the Trees heading, so used may differ by a token
+    assert a.pop("used") > 0 and b.pop("used") > 0
+    assert a == b
     assert build.build_map(repo, sha, [back]) == build.build_map(repo, sha, [fwd])
     for cmd in ("tree", "pack"):
         assert cli.main([cmd, "--repo", str(repo), "--format", "json", "--for", fwd]) == Exit.OK
