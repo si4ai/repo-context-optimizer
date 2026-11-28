@@ -1,6 +1,7 @@
 """Phase 2 step 5: `rco pack` stays within budget, names every cut, and is deterministic."""
 import json
 import os
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -35,13 +36,20 @@ def _publish(store, repo, sha):
     return m
 
 
+def _used_placeholder(text: bytes) -> bytes:
+    # the used count depends on whether tiktoken is installed (card 1343)
+    return re.sub(br"# budget used: ~\d+ /", b"# budget used: ~N /", text)
+
+
 def test_golden_markdown(tmp_path):
     repo, sha = _repo(tmp_path)
-    got = pack_markdown(pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False), "src/app/cli.py").encode()
+    p = pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False)
+    got = pack_markdown(p, "src/app/cli.py")
     golden = HERE / "golden" / "pack_forest_basic.md"
     if os.environ.get("RCO_REGEN") == "1":
-        golden.write_bytes(got)
-    assert got == golden.read_bytes()
+        golden.write_bytes(got.encode())
+    assert _used_placeholder(got.encode()) == _used_placeholder(golden.read_bytes())
+    assert p.used == estimate_tokens(got)
 
 
 def test_whole_repo_pack_is_forest_only(tmp_path):
