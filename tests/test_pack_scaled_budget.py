@@ -71,8 +71,18 @@ def test_noop_pack_keeps_the_changed_warning(tmp_path, capsys):
 def _sized(tokens: int) -> str:
     """Python source whose estimated tokens are exactly `tokens`."""
     head = "def g(x: int) -> int:\n    return x\n"
-    text = head + "#" * (tokens * 4 - len(head) - 1) + "\n"
-    assert estimate_tokens(text) == tokens
+    pad = ""
+    text = head + "# " + pad + "\n"
+    while estimate_tokens(text) < tokens:
+        pad += "z9 "
+        text = head + "# " + pad + "\n"
+        if len(pad) > tokens * 16:
+            break
+    # if the last chunk jumped past `tokens`, trim one character at a time
+    while estimate_tokens(text) > tokens and pad:
+        pad = pad[:-1]
+        text = head + "# " + pad + "\n"
+    assert estimate_tokens(text) == tokens, (estimate_tokens(text), tokens)
     return text
 
 

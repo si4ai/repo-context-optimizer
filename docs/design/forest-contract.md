@@ -81,8 +81,8 @@ changes, and prose is copied forward on equal TreeHash only.
 
 ## 4. Pack (`rco.pack/1`) and update (`rco.update/1`)
 
-`rco pack [SHA] [--for FILE...] [--budget N]`. Budget is estimated tokens,
-characters / 4 rounded up (`forest_model.estimate_tokens`), default 12000,
+`rco pack [SHA] [--for FILE...] [--budget N]`. Budget is tokens: tiktoken `o200k_base` when installed, otherwise
+characters / 3.5 rounded up (`forest_model.estimate_tokens`), default 12000,
 measured on the rendered markdown.
 
 JSON keys: `schema, sha, budget, used, forest[], trees[], hop[{id,line}],
@@ -126,7 +126,7 @@ nodes of the farthest imported file first, then the owners' Forest lines
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
 no prose) from the deepest level up, then the remaining Forest entries.
 A parent Forest line is kept
-until all of its children are cut. Nothing is cut silently. A pack that is still over budget after every cut is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
+until all of its children are cut. Nothing is cut silently. After every content cut, a pack that is still over budget shortens the trimmed footer to counts; if only the header and footer remain, a note names that residue. That residue is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:
 `name, old, new, swapped, extracted[], queued[], notes[]`. A refused swap is

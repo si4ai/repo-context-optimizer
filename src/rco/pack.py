@@ -7,8 +7,8 @@ modules as name and one line. The --for files' own outlines are left out:
 the agent opens those files anyway to edit them. Imported files are ranked
 by distance from the --for files: files more --for files import come
 first, then files whose directory is nearer, then by path. Raw files are
-fetched on demand. The budget is estimated tokens (characters / 4) of the
-rendered markdown, footer included. Over budget, cuts go in this order:
+fetched on demand. The budget is tokens of the rendered markdown, footer included:
+o200k_base when tiktoken is installed, otherwise characters / 3.5 (card 1343). Over budget, cuts go in this order:
 hop lines from the end, then empty Forest lines (layer 0, no edges, nothing
 owned, no prose) from the deepest level up, then Tree nodes of the farthest
 imported file first, then the remaining Forest entries. With --for, the
@@ -21,7 +21,7 @@ last (card 1342). After the pack
 fits, hop lines that now fit are put back, last cut first, so leftover
 budget still shows a One hop section. Hop lists put test modules after
 non-test modules. A parent Forest line is kept until all of its children
-are cut. Every cut is named in `trimmed`. A pack that is still over budget after every cut is emitted anyway: the footer reports used / budget, a note records the overrun, and the command exits 0 (exit 1 still means stale prose).
+are cut. Every cut is named in `trimmed`. After every content cut, a pack that is still over budget shortens the trimmed footer to counts and, if only the header and footer remain, records that residue in a note; the command exits 0 (exit 1 still means stale prose).
 """
 from __future__ import annotations
 
@@ -196,7 +196,10 @@ def _doc_lines(n: Node, depth: int, out: list[str], lang: str) -> None:
         _doc_lines(c, depth + 1, out, lang)
 
 
-def _trimmed_summary(trimmed: Sequence[str]) -> str:
+TRIM_COUNTS = "trimmed line shows counts only"  # card 1343: shorter footer when names would overflow
+
+
+def _trimmed_summary(trimmed: Sequence[str], counts_only: bool = False) -> str:
     hop = [t[4:] for t in trimmed if t.startswith("hop:")]
     fst = [t[7:] for t in trimmed if t.startswith("forest:")]
     nodes: dict[str, int] = {}
@@ -205,6 +208,14 @@ def _trimmed_summary(trimmed: Sequence[str]) -> str:
             mod = t[5:].split("|", 1)[0]
             nodes[mod] = nodes.get(mod, 0) + 1
     parts = []
+    if counts_only:
+        if hop:
+            parts.append(f"hop {len(hop)}")
+        if nodes:
+            parts.append(f"nodes {sum(nodes.values())}")
+        if fst:
+            parts.append(f"forest {len(fst)}")
+        return f"# trimmed: {len(trimmed)} ({'; '.join(parts)})"
     if hop:
         parts.append("hop: " + ", ".join(hop))
     if nodes:
@@ -266,7 +277,7 @@ def pack_markdown(p: Pack, for_label: str = "") -> str:
         out += [f"- {h.id}: {h.line}" for h in p.hop]
     out += ["", f"# budget used: ~{p.used} / {p.budget} estimated tokens"]
     if p.trimmed:
-        out.append(_trimmed_summary(p.trimmed))
+        out.append(_trimmed_summary(p.trimmed, TRIM_COUNTS in p.notes))
     return "\n".join(out) + "\n"
 
 
@@ -374,7 +385,13 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         code = _code_sources(repo, sha)
         fps = sorted({modules.for_path(p) for p in for_paths})
         paths = [e.path for e in gitread.ls_tree(repo, sha)]
-        ranked = rank_imports(fps, imports.file_graph(paths, code, only=fps))
+        # card 1349: drop imported paths that are not code files (a JS/TS
+        # import of package.json used to KeyError on the code-only dict)
+        # card 1350: file_graph needs manifests (go.mod, Cargo.toml, package.json)
+        # in sources so module-path and workspace imports resolve; 1349 still
+        # drops non-code paths from the outline list
+        ranked = [p for p in rank_imports(fps, imports.file_graph(paths, sources, only=fps))
+                  if p in code]
         if fit_to_imports and owners and not ranked:
             # card 1341: nothing in the repo to outline; any pack would cost more
             # than reading the --for files alone
@@ -486,10 +503,19 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
     shown = {e.id for e in p.forest}
     p = replace(p, stale=tuple(s for s in stale if s in shown))
     p = replace(p, used=_measure(p, label))
+    if p.used > p.budget and p.trimmed and TRIM_COUNTS not in p.notes:
+        # card 1343: the named cut list in the footer can itself overflow
+        compact = replace(p, notes=tuple(sorted((*p.notes, TRIM_COUNTS))), used=0)
+        compact = replace(compact, used=_measure(compact, label))
+        if compact.used <= p.used:
+            p = compact
     if p.used > p.budget:
-        note = f"over budget: {p.used} / {p.budget}"
+        residue = (not p.forest and not p.trees and not p.hop)
+        note = (f"over budget: {p.used} / {p.budget} (header and footer)" if residue
+                else f"over budget: {p.used} / {p.budget}")
         if note not in p.notes:
             p = replace(p, notes=tuple(sorted((*p.notes, note))))
+        p = replace(p, used=_measure(p, label))  # the new note is not in the markdown
     return p
 
 

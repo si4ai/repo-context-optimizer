@@ -4,10 +4,18 @@
 
 ### fixed
 
+- `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (card 1349)
+- `rco pack --for` and replay resolve go, rust and js workspace imports through go.mod, Cargo.toml and package.json (card 1350)
 - identifier findings in the commit range or PR text now fail CI, via `.github/workflows/hygiene_gate.yml` (the report-only job in ci.yml is unchanged; card 1353)
 
 ### changed
 
+- `rco pack` counts its budget in tiktoken `o200k_base` tokens when the
+  `tokens` extra is installed, otherwise characters / 3.5, rounded up, so
+  signature-dense packs stay within `--budget`. After every content cut,
+  a pack that is still over budget shortens the trimmed footer to counts
+  and, if only the header and footer remain, names that residue in a note
+  (card 1343)
 - `rco replay` counts each changed file once (the pack no longer outlines
   them), sends nothing when the pack skips (a tie), and renders each pack's
   header as if the commit were HEAD with a clean working tree, so replay no
