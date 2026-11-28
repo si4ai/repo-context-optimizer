@@ -2,10 +2,12 @@
 
 One file per pull request, rco-metrics.json, compares what an agent would
 read without rco (every changed file at the head, plus the in-repo files
-those import, one hop) with what it reads with rco (the `rco pack --for
+those import, one hop, plus the files that import a changed file whose
+public signature changed) with what it reads with rco (the `rco pack --for
 CHANGED` markdown plus the changed files, the files the agent still opens).
 A skipped pack is a tie. Both sides are counted in bytes and in tokens of one
-tokenizer. The with/without definition is shared with `rco replay` (card 1351). The file schema is an integer 1, the same document the-mill
+tokenizer. The with/without definition is shared with `rco replay` in
+`rco.meter.read_set` (cards 1351 and 1359). The file schema is an integer 1, the same document the-mill
 already uploads, so a roll-up can mix sources.
 
     rco metrics measure --base SHA --head SHA --pr N --pack pack.md \\
@@ -23,10 +25,11 @@ import statistics
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Callable, Iterable, Mapping, Sequence
+from typing import Callable, Mapping, Sequence
 
 from rco import __version__, gitread
-from rco.meter import arms, pack_is_skipped
+from rco.meter import (arms, interface_changed, merge_graphs,
+                       pack_is_skipped, read_set)
 from rco.imports import file_graph
 from rco.output import Exit, UsageError, note
 
@@ -86,31 +89,44 @@ def counter() -> tuple[str, Callable[[str], int]]:
     return TOKENIZER, lambda s: len(enc.encode(s, disallowed_special=()))
 
 
-def read_set(changed: Iterable[str], graph: Mapping[str, Sequence[str]]) -> list[str]:
-    """Changed files plus the in-repo files each imports (one hop), sorted."""
-    out = set(changed)
-    for p in list(out):
-        out.update(graph.get(p, ()))
-    return sorted(out)
+def _is_code(path: str) -> bool:
+    from rco.extract.langs import lang_of
+    return path.endswith(".py") or bool(lang_of(path))
+
+
+def _interface_paths(changed: Sequence[str], base_blobs: Mapping[str, bytes],
+                     head_blobs: Mapping[str, bytes]) -> list[str]:
+    return [p for p in changed
+            if _is_code(p) and interface_changed(p, base_blobs.get(p), head_blobs.get(p))]
 
 
 def measure(changed: Sequence[str], graph: Mapping[str, Sequence[str]],
             blobs: Mapping[str, bytes], pack_text: str,
-            count: Callable[[str], int]) -> dict:
+            count: Callable[[str], int],
+            base_blobs: Mapping[str, bytes] | None = None,
+            importer_graph: Mapping[str, Sequence[str]] | None = None) -> dict:
     """Both sides of the comparison; files not in blobs (deleted) are skipped.
 
-    `without` is the changed files plus one import hop. `with` is the pack plus
+    `without` is the changed files, plus one import hop, plus importers of
+    files whose public signature changed (card 1359). `with` is the pack plus
     the changed files (card 1351). A skipped pack is a tie.
     """
     present = [p for p in changed if p in blobs]
-    reads = [p for p in read_set(present, graph) if p in blobs]
-    imported = [p for p in reads if p not in present]
+    interface = (_interface_paths(changed, base_blobs, blobs)
+                 if base_blobs is not None else [])
+    _c, imported, importers = read_set(
+        present, graph, interface,
+        importer_graph if importer_graph is not None else graph)
+    imported = [p for p in imported if p in blobs]
+    importers = [p for p in importers if p in blobs]
+    reads = present + imported + importers
 
     def text(paths: list[str]) -> str:
         return "".join(blobs[p].decode("utf-8", "replace") for p in paths)
 
     skipped = pack_is_skipped(pack_text)
     pack_tokens = 0 if skipped else count(pack_text)
+    importer_tokens = count(text(importers))
     without, with_ = arms(
         changed_tokens=count(text(present)),
         imported_tokens=count(text(imported)),
@@ -118,11 +134,14 @@ def measure(changed: Sequence[str], graph: Mapping[str, Sequence[str]],
         skipped=skipped,
         n_changed=len(present),
         n_imported=len(imported),
+        importer_tokens=importer_tokens,
+        n_importers=len(importers),
     )
     without_bytes = sum(len(blobs[p]) for p in reads)
     with_bytes = (without_bytes if skipped
                   else len(pack_text.encode("utf-8")) + sum(len(blobs[p]) for p in present))
-    without = {**without, "bytes": without_bytes}
+    without = {**without, "bytes": without_bytes,
+               "importer_files": len(importers), "importer_tokens": importer_tokens}
     with_ = {**with_, "bytes": with_bytes}
     ratio = (round(with_["tokens"] / without["tokens"], 4)
              if without["tokens"] else None)
@@ -146,14 +165,23 @@ def write_metrics(repo: Path, base: str, head: str, pr: int, pack_text: str,
     from rco.extract.langs import lang_of
     changed = changed_paths(gitread.ls_tree(repo, base_sha),
                             gitread.ls_tree(repo, head_sha))
-    code_paths = [p for p in tree if p.endswith(".py") or lang_of(p)]
-    raw_code = gitread.read_blobs(repo, (tree[p] for p in code_paths))
-    code = {p: raw_code[tree[p]] for p in code_paths}
-    graph = file_graph(sorted(tree), code)
+    def _code_and_graph(entries: dict[str, str]) -> tuple[dict[str, bytes], dict]:
+        code_paths = [p for p in entries if p.endswith(".py") or lang_of(p)]
+        raw_code = gitread.read_blobs(repo, (entries[p] for p in code_paths))
+        code = {p: raw_code[entries[p]] for p in code_paths}
+        return code, file_graph(sorted(entries), code)
+
+    base_tree = _regular(gitread.ls_tree(repo, base_sha))
+    code, graph = _code_and_graph(tree)
+    base_code, base_graph = _code_and_graph(base_tree)
     present = [p for p in changed if p in tree]
-    want = [p for p in read_set(present, graph) if p in tree]
+    interface = _interface_paths(changed, base_code, code)
+    _c, imported, importers = read_set(present, graph, interface,
+                                       merge_graphs(graph, base_graph))
+    want = [p for p in present + imported + importers if p in tree]
     raw = gitread.read_blobs(repo, (tree[p] for p in want))
     blobs = {p: raw[tree[p]] for p in want}
+    base_blobs = dict(base_code)
     used, footer_budget = pack_footer(pack_text)
     pack_budget = budget if footer_budget is None else footer_budget
     overrun = 0 if used is None else max(0, used - pack_budget)
@@ -166,7 +194,8 @@ def write_metrics(repo: Path, base: str, head: str, pr: int, pack_text: str,
         "tokenizer": tokenizer,
         "pack_budget": pack_budget,
         "pack_overrun": overrun,
-        **measure(changed, graph, blobs, pack_text, count),
+        **measure(changed, graph, blobs, pack_text, count,
+                    base_blobs=base_blobs, importer_graph=merge_graphs(graph, base_graph)),
     }
     if used is not None:
         doc["pack_used"] = used

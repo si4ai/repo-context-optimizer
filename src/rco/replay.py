@@ -5,12 +5,12 @@ stands in for an agent's first useful edit, and the report compares what an
 agent would read for that edit:
 
 - without rco: the changed code files plus the in-repo files they import,
-  one hop (metrics.read_set). A lower bound: real agents also search.
+  one hop, plus importers when a public signature changed (meter.read_set). A lower bound: real agents also search.
 - with rco: the `rco pack --for CHANGED` text PLUS the changed files, since
   the agent still opens them to edit. The pack outlines only the files the
   changed files import, so each changed file is counted once. When pack
   skips (nothing worth outlining), the agent sends nothing and reads the
-  changed files only: a tie. metrics.measure uses the same definition (card 1351).
+  changed files only: a tie. metrics.measure uses the same definition (cards 1351 and 1359).
 
 Files and the pack are read at the commit itself, as `rco metrics measure`
 reads the head of a pull request. The pack is built from git (no store), so
@@ -36,8 +36,9 @@ from rco.affected import is_code
 from rco.edges import MANIFEST_NAMES
 from rco.diff import changed_paths
 from rco.imports import file_graph
-from rco.metrics import _regular, read_set
-from rco.meter import arms
+from rco.metrics import _regular
+from rco.meter import (arms, call_site_in_pack, call_sites, changed_names,
+                       interface_changed, merge_graphs, read_set)
 from rco.output import Exit, UsageError, timed
 
 SCHEMA = "rco.replay/1"
@@ -95,6 +96,10 @@ class ReplayReport:
                    f"{s['median_with_files']} with rco.")
         out.append(f"The pack cost more than the imported files it replaced in "
                    f"{s['worse_commits']} of {s['n']} commits.")
+        if s.get("call_site_commits"):
+            out.append(f"The pack is missing a call site for a changed public name in "
+                       f"{s['call_site_commits']} of {s['n']} commits "
+                       f"({s['call_site_misses']} sites).")
         if s["pack_skipped"]:
             out.append(f"The pack skipped {s['pack_skipped']} of {s['n']} commits (nothing worth "
                        f"outlining), so nothing was sent: a tie.")
@@ -184,15 +189,55 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
     else:
         graph_src = code
     graph = file_graph(sorted(tree), graph_src)
-    reads = [p for p in read_set(changed, graph) if p in tree]
+    parent_entries = gitread.ls_tree(repo, parent)
+    base_tree = _regular(parent_entries)
+    all_changed = changed_paths(parent_entries, head_entries)
+    need_base = [p for p in all_changed if p in base_tree and is_code(p)]
+    if need_base:
+        raw_b = gitread.read_blobs(repo, (base_tree[p] for p in need_base))
+        base_code = {p: raw_b[base_tree[p]] for p in need_base}
+    else:
+        base_code = {}
+    interface = [p for p in changed
+                 if interface_changed(p, base_code.get(p), code.get(p))]
+    deleted = [p for p in need_base if p not in tree]
+    for p in deleted:
+        if interface_changed(p, base_code.get(p), None):
+            interface.append(p)
+    # a deleted file is only in the base graph; skip that work when nothing was deleted
+    if deleted:
+        base_code_paths = [p for p in base_tree if is_code(p)]
+        missing = [p for p in base_code_paths if p not in base_code]
+        if missing:
+            raw_m = gitread.read_blobs(repo, (base_tree[p] for p in missing))
+            base_all = {**base_code, **{p: raw_m[base_tree[p]] for p in missing}}
+        else:
+            base_all = dict(base_code)
+        base_manifest = [p for p in base_tree
+                         if p == "pyproject.toml" or p.rsplit("/", 1)[-1] in MANIFEST_NAMES]
+        need_m = [p for p in base_manifest if p not in base_all]
+        if need_m:
+            extra_b = gitread.read_blobs(repo, (base_tree[p] for p in need_m))
+            base_src = {**base_all, **{p: extra_b[base_tree[p]] for p in need_m}}
+        else:
+            base_src = base_all
+        base_graph = file_graph(sorted(base_tree), base_src)
+        importer_graph = merge_graphs(graph, base_graph)
+    else:
+        base_graph = {}
+        importer_graph = graph
+    _c, imported, importers = read_set(changed, graph, interface, importer_graph)
+    imported = [p for p in imported if p in tree]
+    importers = [p for p in importers if p in tree]
+    reads = changed + imported + importers
     blobs_raw = gitread.read_blobs(repo, (tree[p] for p in reads))
     blobs = {p: blobs_raw[tree[p]] for p in reads}
 
     def text(paths: list[str]) -> str:
         return "".join(blobs[p].decode("utf-8", "replace") for p in paths)
 
-    imported = [p for p in reads if p not in changed]
     changed_tokens, imported_tokens = count(text(changed)), count(text(imported))
+    importer_tokens = count(text(importers))
     p, pack_text, skipped = _pack_at(repo, sha, changed, budget)
     in_pack = {n.path for t in p.trees for n in t.nodes}
     pack_tokens = 0 if skipped else count(pack_text)
@@ -200,14 +245,32 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
         changed_tokens=changed_tokens, imported_tokens=imported_tokens,
         pack_tokens=pack_tokens, skipped=skipped,
         n_changed=len(changed), n_imported=len(imported),
+        importer_tokens=importer_tokens, n_importers=len(importers),
     )
+    names = {p: changed_names(p, base_code.get(p), code.get(p)) for p in interface}
+    sites = 0
+    sites_in = 0
+    for imp in importers:
+        called: set[str] = set()
+        for src in interface:
+            if src in graph.get(imp, ()) or src in base_graph.get(imp, ()):
+                called |= set(names.get(src, ()))
+        for n in call_sites(blobs[imp].decode("utf-8", "replace"), called):
+            sites += 1
+            if call_site_in_pack(pack_text, imp, n):
+                sites_in += 1
     return {"sha": sha, "changed": len(changed),
             "without": {**without, "imported_files": len(imported),
-                        "imported_tokens": imported_tokens},
+                        "imported_tokens": imported_tokens,
+                        "importer_files": len(importers),
+                        "importer_tokens": importer_tokens},
             "with": with_,
             "coverage": {"changed_in_pack": sum(1 for x in changed if x in in_pack),
                          "imported_in_pack": sum(1 for x in imported if x in in_pack),
-                         "imported": len(imported)}}
+                         "imported": len(imported),
+                         "importers": len(importers),
+                         "call_sites": sites,
+                         "call_sites_in_pack": sites_in}}
 
 
 @contextmanager
@@ -258,6 +321,10 @@ def replay(repo: Path, last: int | None, budget: int, max_files: int,
         "saved_pct": round(100 * (med_wo - med_wi) / med_wo, 1) if med_wo else 0.0,
         "worse_commits": sum(1 for a, b in zip(wo, wi) if b > a),
         "pack_skipped": sum(1 for c in commits if c["with"]["pack_skipped"]),
+        "call_site_misses": sum(c["coverage"]["call_sites"] - c["coverage"]["call_sites_in_pack"]
+                                for c in commits),
+        "call_site_commits": sum(1 for c in commits
+                                 if c["coverage"]["call_sites"] > c["coverage"]["call_sites_in_pack"]),
     }
     return ReplayReport({
         "schema": SCHEMA,

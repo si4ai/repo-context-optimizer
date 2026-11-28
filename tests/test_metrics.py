@@ -60,7 +60,10 @@ def test_measure_counts_changed_files_plus_one_import_hop():
 def test_measure_skips_deleted_paths_and_null_ratio_when_without_is_zero():
     got = metrics.measure(["gone.py"], {}, {}, "", metrics.estimate)
     assert got["changed_files"] == 0
-    assert got["without_rco"] == {"files": 0, "bytes": 0, "tokens": 0}
+    assert got["without_rco"]["files"] == 0
+    assert got["without_rco"]["bytes"] == 0
+    assert got["without_rco"]["tokens"] == 0
+    assert got["without_rco"]["importer_files"] == 0
     assert got["with_rco"]["files"] == 0 and got["with_rco"]["tokens"] == 0
     assert got["with_rco"]["pack_skipped"] is True
     assert got["ratio_tokens"] is None

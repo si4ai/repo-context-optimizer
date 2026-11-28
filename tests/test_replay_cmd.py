@@ -50,16 +50,20 @@ def test_numbers_are_exact(tmp_path):
     assert "nothing to add" in pack_text_at(repo, d, ["app.py"], 12000)  # D: skipped
     want_d = {"sha": d, "changed": 1,
               "without": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B),  # app.py + pkg/core.py
-                          "imported_files": 1, "imported_tokens": _est(CORE_B)},
+                          "imported_files": 1, "imported_tokens": _est(CORE_B),
+                          "importer_files": 0, "importer_tokens": 0},
               "with": {"files": 2, "tokens": _est(APP_D) + _est(CORE_B), "pack_tokens": 0,
                        "pack_skipped": True, "changed_tokens": _est(APP_D)},
-              "coverage": {"changed_in_pack": 0, "imported_in_pack": 0, "imported": 1}}
+              "coverage": {"changed_in_pack": 0, "imported_in_pack": 0, "imported": 1,
+                          "importers": 0, "call_sites": 0, "call_sites_in_pack": 0}}
     want_b = {"sha": b, "changed": 1,
               "without": {"files": 2, "tokens": _est(CORE_B) + _est(UTIL),  # core.py + util.py
-                          "imported_files": 1, "imported_tokens": _est(UTIL)},
+                          "imported_files": 1, "imported_tokens": _est(UTIL),
+                          "importer_files": 0, "importer_tokens": 0},
               "with": {"files": 2, "tokens": pack_b + _est(CORE_B), "pack_tokens": pack_b,
                        "pack_skipped": False, "changed_tokens": _est(CORE_B)},
-              "coverage": {"changed_in_pack": 0, "imported_in_pack": 1, "imported": 1}}
+              "coverage": {"changed_in_pack": 0, "imported_in_pack": 1, "imported": 1,
+                          "importers": 0, "call_sites": 0, "call_sites_in_pack": 0}}
     assert rep["commits"] == [want_d, want_b]
     s = rep["summary"]
     wo = sorted([want_d["without"]["tokens"], want_b["without"]["tokens"]])

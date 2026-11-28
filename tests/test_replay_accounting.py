@@ -43,7 +43,12 @@ def test_with_side_counts_each_changed_file_once(tmp_path):
     assert r["without"]["tokens"] == est(USER_B) + est(BIG)
     # the pack outlines the imported file, never the changed one, so the
     # changed file is counted once: pack plus its own text
-    assert r["coverage"] == {"changed_in_pack": 0, "imported_in_pack": 1, "imported": 1}
+    assert r["coverage"]["changed_in_pack"] == 0
+    assert r["coverage"]["imported_in_pack"] == 1
+    assert r["coverage"]["imported"] == 1
+    assert r["coverage"]["importers"] == 0
+    assert r["coverage"]["call_sites"] == 0
+    assert r["coverage"]["call_sites_in_pack"] == 0
     assert r["with"]["tokens"] == r["with"]["pack_tokens"] + est(USER_B)
     assert r["with"]["pack_tokens"] > 0 and r["with"]["files"] == 2
 
@@ -84,7 +89,8 @@ def test_cli_since_and_json_fields(tmp_path, capsys):
     for c in o["commits"]:
         assert {"changed_tokens", "pack_tokens", "pack_skipped"} <= set(c["with"])
         assert {"imported_files", "imported_tokens"} <= set(c["without"])
-        assert set(c["coverage"]) == {"changed_in_pack", "imported_in_pack", "imported"}
+        assert {"changed_in_pack", "imported_in_pack", "imported",
+                "importers", "call_sites", "call_sites_in_pack"} <= set(c["coverage"])
 
 
 def test_memo_gives_the_same_rows(tmp_path):
