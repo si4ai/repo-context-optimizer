@@ -385,7 +385,10 @@ def pack(repo: Path, sha: str, for_paths: Sequence[str] | None = None,
         code = _code_sources(repo, sha)
         fps = sorted({modules.for_path(p) for p in for_paths})
         paths = [e.path for e in gitread.ls_tree(repo, sha)]
-        ranked = rank_imports(fps, imports.file_graph(paths, code, only=fps))
+        # card 1349: drop imported paths that are not code files (a JS/TS
+        # import of package.json used to KeyError on the code-only dict)
+        ranked = [p for p in rank_imports(fps, imports.file_graph(paths, code, only=fps))
+                  if p in code]
         if fit_to_imports and owners and not ranked:
             # card 1341: nothing in the repo to outline; any pack would cost more
             # than reading the --for files alone
