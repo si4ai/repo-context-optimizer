@@ -2,6 +2,15 @@
 
 ## unreleased
 
+### added
+
+- concept taxonomy v2.0.0: a documented superset of the 54 v1 concepts,
+  with `status` (`trained`, `untrained`, or `dropped`), optional
+  aliases, and a record that stays in the file when a concept is later
+  dropped. A check fails if a v1 id is deleted instead of marked
+  dropped. Labels and the baseline run stay on taxonomy 1.0.0; nothing
+  was relabelled (card 1352)
+
 ### fixed
 
 - `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (card 1349)

@@ -149,9 +149,58 @@ def test_committed_run_matches_committed_labels():
     """The run file was produced from these labels and this taxonomy."""
     run = json.loads((DATA / "baseline-run.json").read_text(encoding="utf-8"))
     tax, corpus, labels = cb.load(DATA)
-    assert run["taxonomy_version"] == tax["version"]
+    # The committed run was produced from the labelled (v1) taxonomy.
+    # The file may later be a superset (v2) without a relabel.
+    assert run["taxonomy_version"] == corpus["taxonomy_version"]
     assert run["corpus_version"] == corpus["version"]
     held = [r["id"] for r in corpus["repos"] if r["split"] == "heldout" and r["layout"] == "flat"]
     n = sum(len(labels[r]["items"]) for r in held)
     assert run["configs"]["names"]["heldout_flat"]["items"] == n
     assert set(run["configs"]) == set(cb.CONFIGS)
+
+
+def test_v1_concept_ids_must_stay_in_the_file():
+    """A v1 id may be marked dropped, but deleting it fails the check."""
+    tax, corpus, labels = cb.load(DATA)
+    ids = {c["id"] for c in tax["concepts"]}
+    assert cb.V1_CONCEPT_IDS <= ids
+    assert cb.check(tax, corpus, labels) == []
+    # deleting a v1 id is a check failure, even if labels still mention it
+    gone = next(iter(cb.V1_CONCEPT_IDS))
+    tax_del = json.loads(json.dumps(tax))
+    tax_del["concepts"] = [c for c in tax_del["concepts"] if c["id"] != gone]
+    errs = cb.check(tax_del, corpus, labels)
+    assert any("v1 id missing" in e and gone in e for e in errs)
+    # marking that same id dropped, with the required record, is allowed
+    tax_drop = json.loads(json.dumps(tax))
+    for c in tax_drop["concepts"]:
+        if c["id"] == gone:
+            c["status"] = "dropped"
+            c["dropped_reason"] = "A/B gain near zero over N tasks"
+            c["evidence"] = "docs/baseline/concepts/baseline-run.json"
+            c["dropped_on"] = "2026-11-27"
+            c["revisit_when"] = "unsure or re-fetch logs keep showing this concept"
+            break
+    assert cb.check(tax_drop, corpus, labels) == []
+
+
+def test_check_requires_status_and_dropped_fields():
+    tax, corpus, labels = cb.load(DATA)
+    tax_bad = json.loads(json.dumps(tax))
+    tax_bad["concepts"][0]["status"] = "maybe"
+    errs = cb.check(tax_bad, corpus, labels)
+    assert any("status 'maybe'" in e for e in errs)
+    tax_drop = json.loads(json.dumps(tax))
+    tax_drop["concepts"][0]["status"] = "dropped"
+    errs = cb.check(tax_drop, corpus, labels)
+    assert any("dropped but lacks dropped_reason" in e for e in errs)
+
+
+def test_untrained_concepts_are_not_in_name_index():
+    tax, _, _ = cb.load(DATA)
+    nidx = cb.name_index(tax)
+    untrained = [c for c in tax["concepts"] if c["status"] == "untrained"]
+    assert untrained
+    trained_ids = {c["id"] for c in tax["concepts"] if c["status"] == "trained"}
+    for ids in nidx.values():
+        assert set(ids) <= trained_ids
