@@ -226,3 +226,30 @@ def test_kotlin_test_files_are_tests_for_affected():
     for p in ("m/src/test/kotlin/a/Thing.kt", "a/ThingTest.kt", "a/ThingTests.kt", "m/src/jvmTest/kotlin/a/B.kt"):
         assert is_test(p), p
     assert not is_test("m/src/main/kotlin/a/Thing.kt")
+
+
+def test_a_java_file_imports_a_kotlin_class_from_another_package_by_name_and_by_star():
+    g = _edges({
+        "k/b/Greeter.kt": "package b\nclass Greeter { fun hi() {} }\n",
+        "k/b/Other.kt": "package b\nclass Other\n",
+        "j/a/ByName.java": "package a;\nimport b.Greeter;\nclass ByName { Greeter g; Other o; }\n",
+        "j/a/ByStar.java": "package a;\nimport b.*;\nclass ByStar { Other o; }\n",
+        "j/a/Nothing.java": "package a;\nclass Nothing { Greeter g; }\n",
+    })
+    assert g["j/a/ByName.java"] == ("k/b/Greeter.kt",)  # Other is not imported, so not seen
+    assert g["j/a/ByStar.java"] == ("k/b/Other.kt",)
+    assert g["j/a/Nothing.java"] == ()
+
+
+def test_java_sees_top_level_functions_through_the_file_facade():
+    g = _edges({
+        "k/b/Fac.kt": "package b\nfun twice(x: Int) = x * 2\n",
+        "k/b/Named.kt": '@file:JvmName("Util")\npackage b\nfun thrice(x: Int) = x * 3\n',
+        "k/b/OnlyClass.kt": "package b\nclass OnlyClass\n",
+        "j/a/Use.java": "package a;\nimport b.FacKt;\nimport b.Util;\nclass Use { int n = FacKt.twice(1) + Util.thrice(1); }\n",
+        "j/a/NoFacade.java": "package a;\nimport b.OnlyClassKt;\nclass NoFacade {}\n",
+        "k/b/Same.java": "package b;\nclass Same { int n = FacKt.twice(1); }\n",
+    })
+    assert g["j/a/Use.java"] == ("k/b/Fac.kt", "k/b/Named.kt")
+    assert g["j/a/NoFacade.java"] == ()
+    assert g["k/b/Same.java"] == ("k/b/Fac.kt",)

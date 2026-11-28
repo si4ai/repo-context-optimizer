@@ -10,7 +10,7 @@ secondary constructor is `constructor`; an extension function is named
 `Receiver.name`), FIELD (properties) and CONSTANT (`const val`) nest inside.
 
 Public means: not `private` and not `internal` (Kotlin's default is public).
-Interface members are public. Every enum entry is shown. A file's package
+An interface member is public unless marked private. Every enum entry is shown. A file's package
 need not match its folder, so the package line is what counts.
 """
 from __future__ import annotations

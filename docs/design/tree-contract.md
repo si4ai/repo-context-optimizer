@@ -529,8 +529,8 @@ Applied in 0.2.0 (card 1364):
   `constructor`; an extension function is named `Receiver.name`), FIELD
   (properties, including extension properties and enum entries) and CONSTANT
   (`const val`). Public means not `private` and not `internal` (Kotlin's
-  default is public); every member of an interface is public. A function or
-  property ends where the next declaration starts, so expression bodies,
+  default is public; an interface member is public unless marked
+  `private`). A function or property ends where the next declaration starts, so expression bodies,
   delegates (`by`) and `get`/`set` accessors on the lines after it work.
   Attrs record `open`, `abstract`, `sealed`, `data`, `inner`, `value`,
   `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,

@@ -46,6 +46,11 @@ no loss.
 
 ## Limits
 
+- A file with top-level functions or properties is also known by its JVM
+  facade class: `FooKt` for `Foo.kt`, or the name in `@file:JvmName("X")`
+  (files that share a name all get an edge). That is how a Java file that
+  calls `FooKt.bar()` finds `Foo.kt`; a facade named any other way is not
+  followed.
 - The pack is aimed at exactly the files the commit changed, as for every
   replay; this is an estimate, not an agent measurement.
 - 24 code commits is a small sample, and okhttp mixes Kotlin with Java

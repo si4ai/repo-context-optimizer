@@ -167,6 +167,8 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
             pk, names, _imports = _kt_file_facts(sources[p].decode("utf-8-sig", "replace"))
             kt_pkg[p] = pk
             for nm in names:
+                if nm.startswith("@facade:"):  # the JVM class of the file's top-level functions
+                    nm = nm[8:] or PurePosixPath(p).stem + "Kt"
                 kt_names.setdefault(pk, {}).setdefault(nm, []).append(p)
         if p.endswith(".java"):
             stems.setdefault(PurePosixPath(p).stem, []).append(p)
@@ -368,6 +370,7 @@ _KT_TOP = re.compile(
     rf"^[ \t]*(?:(?:{_KT_MODS}|@\w+(?::\w+)?(?:\([^)\n]*\))?)[ \t]+)*"
     rf"(?:(?:class|interface|object|typealias)[ \t]+(?P<n>{_KT_ID})|fun[ \t]+interface[ \t]+(?P<n2>{_KT_ID})"
     rf"|(?:fun|val|var)[ \t]+(?:<[^>\n]*>[ \t]*)?(?:[\w<>?,. ]*\.)?(?P<f>{_KT_ID}))", re.M)
+_KT_JVMNAME = re.compile(r'@file:JvmName\(\s*(?:name\s*=\s*)?"([A-Za-z_]\w*)"\s*\)')
 _KT_PACKAGE = re.compile(rf"^[ \t]*package[ \t]+(?P<name>{_KT_ID}(?:[ \t]*\.[ \t]*{_KT_ID})*)", re.M)
 _KT_IMPORT = re.compile(rf"^[ \t]*import[ \t]+(?P<name>{_KT_ID}(?:[ \t]*\.[ \t]*{_KT_ID})*)(?P<star>[ \t]*\.[ \t]*\*)?"
                         rf"(?:[ \t]+as[ \t]+(?P<alias>{_KT_ID}))?", re.M)
@@ -380,8 +383,12 @@ def _kt_file_facts(text: str) -> tuple[str, tuple[str, ...], tuple[tuple[str, bo
         code = s.code
         pm = _KT_PACKAGE.search(code)
         pk = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
-        names = {m.group("n") or m.group("n2") or m.group("f") for m in _KT_TOP.finditer(code)
-                 if s.depth_at(m.start("n") if m.group("n") else m.start()) == 0}
+        tops = [m for m in _KT_TOP.finditer(code)
+                if s.depth_at(m.start("n") if m.group("n") else m.start()) == 0]
+        names = {m.group("n") or m.group("n2") or m.group("f") for m in tops}
+        if any(m.group("f") for m in tops):  # Java sees top-level functions through the file facade
+            jn = _KT_JVMNAME.search(s.nc)
+            names.add("@facade:" + (jn.group(1) if jn else ""))
         imps = tuple((re.sub(r"\s+", "", m.group("name")), bool(m.group("star")), m.group("alias") or "")
                      for m in _KT_IMPORT.finditer(code))
         return pk, tuple(sorted(n for n in names if n)), imps

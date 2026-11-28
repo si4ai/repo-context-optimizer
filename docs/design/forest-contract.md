@@ -248,7 +248,9 @@ step-0 follow-up PR, sent to every open step first.
   sees Kotlin declarations by its imports and its own package. A file sees
   the other files of its own package in any source root. Twin declarations
   (a `commonMain` and a `jvmMain` file, say) that tie on every rule all get
-  an edge.
+  an edge. A file with top-level functions or properties is also known by
+  its JVM facade class (`FooKt`, or the name of `@file:JvmName`), so a Java
+  file that imports or names it reaches the file.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the
