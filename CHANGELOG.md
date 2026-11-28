@@ -11,6 +11,12 @@
   their importers. A deterministic scanner, no new dependency. The
   replay on google/guava (85% median saving, 0 losses over 43 commits)
   is in `docs/baseline/lang-java.md` (#115, card 1362)
+- PHP: signatures in the Tree (classes, interfaces, traits, enums, methods,
+  properties, constants and functions, not private) and edges from `use`,
+  names in the same namespace and literal `require` paths, resolved
+  through composer.json psr-4, so the pack, `rco replay` and `rco metrics
+  measure` see PHP files and their importers. The replay on
+  laravel/framework is in `docs/baseline/lang-php.md` (card 1365)
 
 ## 0.1.8 - 2026-11-27
 

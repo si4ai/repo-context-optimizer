@@ -240,6 +240,18 @@ step-0 follow-up PR, sent to every open step first.
   stand in for `package util;`; files with no `package` line share the
   default package in every root. Twin files that tie on every rule all
   get an edge.
+  PHP (0.2.0, card 1365): `use A\B\C;` (also a group `use A\{B, C as D}`,
+  `use function` and aliases) and a name the file writes in its own
+  namespace or fully qualified (`\A\B`) map through the composer.json
+  `autoload` and `autoload-dev` psr-4 tables (the longest matching prefix;
+  every composer.json of the repo counts, relative to its own folder, so a
+  split package such as `src/Illuminate/Bus/composer.json` works) to a file.
+  A name no prefix finds is looked up by the namespace and name the files
+  declare, which also covers classmap directories. A literal `require` or
+  `include` path maps directly; a dynamic path adds no edge. A call to a
+  global function adds no edge unless the file imports it, so a helpers
+  file is not linked everywhere. Twin declarations that tie all get an
+  edge.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the

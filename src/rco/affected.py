@@ -84,6 +84,8 @@ def is_test(path: str) -> bool:
     if lang == "java":  # Maven/Gradle src/test/java, and the usual *Test class names
         return (name.removesuffix(".java").endswith(("Test", "Tests", "IT", "TestCase"))
                 or name.startswith("Test") or "test" in dirs or "tests" in dirs)
+    if lang == "php":  # PHPUnit: tests/ or *Test.php
+        return name.removesuffix(".php").endswith(("Test", "Tests", "TestCase")) or "tests" in dirs or "test" in dirs
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False

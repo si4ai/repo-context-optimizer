@@ -27,6 +27,13 @@ commented-out import adds no edge.
   wins; otherwise the nearest one. `import a.b.*;` maps to the files of that
   package the importer names. A same-package class the importer names needs
   no import and still counts.
+- PHP: `use A\\B\\C;` (also group, `function` and `const` uses, aliases) and a
+  name the file writes in its own namespace map through composer.json
+  autoload psr-4 and autoload-dev (the longest matching prefix, every
+  composer.json of the repo, relative to its own folder) to a file; a class
+  no prefix finds is looked up by the namespace and name its file declares,
+  which also covers classmap directories. `require` and `include` with a
+  literal path map directly; a dynamic path adds no edge.
 """
 from __future__ import annotations
 
@@ -42,7 +49,7 @@ from rco.extract.langs import lang_of
 from rco.extract.scan import scan
 from rco.modules import JS_EXT, dir_of
 
-MANIFEST_NAMES = ("package.json", "go.mod", "Cargo.toml")
+MANIFEST_NAMES = ("package.json", "go.mod", "Cargo.toml", "composer.json")
 _JS_SPEC = re.compile(
     r"""(?:\bimport\s+(?:type\s+)?(?:[\w$*{}\s,]+?\s+from\s+)?|\bexport\s+(?:type\s+)?[\w$*{}\s,]+?\s+from\s+"""
     r"""|\brequire\s*\(\s*|\bimport\s*\(\s*)(["'])(?P<spec>[^"'\n]+)\1""")
@@ -107,6 +114,9 @@ class RepoFacts:
     java_dirs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # directory -> .java paths
     java_pkg: Mapping[str, str] = field(default_factory=dict)  # .java path -> its package as a path
     java_pkgs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # package path -> .java paths
+    php_psr4: tuple[tuple[str, str], ...] = ()  # (namespace prefix with \\, directory), longest first
+    php_decls: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # fq class or function -> files
+    php_shorts: frozenset[str] = frozenset()  # the last segment of every php_decls key
 
 
 def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts:
@@ -115,12 +125,16 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     go: list[tuple[str, str]] = []
     rs: dict[str, str] = {}
     roots: list[str] = []
+    psr4: list[tuple[str, str]] = []
     for p in sorted(paths):
         name = PurePosixPath(p).name
         if name not in MANIFEST_NAMES or p not in sources:
             continue
         d = dir_of(p)
         text = sources[p].decode("utf-8-sig", "replace")
+        if name == "composer.json":
+            psr4 += _composer_psr4(d, text)
+            continue
         if name == "package.json":
             try:
                 obj = json.loads(text)
@@ -139,7 +153,7 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
             m = re.search(r"^\s*module\s+(\S+)", text, re.M)
             if m:
                 go.append((m.group(1).strip('"'), d))
-        else:
+        elif name == "Cargo.toml":
             try:
                 pkg = tomllib.loads(text).get("package")
             except tomllib.TOMLDecodeError:
@@ -158,7 +172,11 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     jdirs: dict[str, list[str]] = {}
     jpkg: dict[str, str] = {}
     jpkgs: dict[str, list[str]] = {}
+    decls: dict[str, list[str]] = {}
     for p in sorted(paths):
+        if p.endswith(".php") and p in sources:
+            for fq in _php_file_facts(sources[p].decode("utf-8-sig", "replace"))[1]:
+                decls.setdefault(fq, []).append(p)
         if p.endswith(".java"):
             stems.setdefault(PurePosixPath(p).stem, []).append(p)
             jdirs.setdefault(dir_of(p), []).append(p)
@@ -166,10 +184,13 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
                 pm = _JAVA_PACKAGE.search(scan(sources[p].decode("utf-8-sig", "replace"), "java").code)
                 jpkg[p] = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
                 jpkgs.setdefault(jpkg[p], []).append(p)
+    php_decls = {k: tuple(v) for k, v in decls.items()}
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
                      {k: tuple(v) for k, v in stems.items()},
                      {k: tuple(v) for k, v in jdirs.items()}, jpkg,
-                     {k: tuple(v) for k, v in jpkgs.items()})
+                     {k: tuple(v) for k, v in jpkgs.items()},
+                     tuple(sorted(set(psr4), key=lambda x: (-len(x[0]), x))), php_decls,
+                     frozenset(k.rsplit("\\", 1)[-1] for k in php_decls))
 
 
 def _norm(path: str) -> str | None:
@@ -350,6 +371,146 @@ def _token_overlap(a: str, b: str) -> float:
     return len(x & y) / len(x | y) if x | y else 0.0
 
 
+_PHP_ID = r"[A-Za-z_\x80-\uffff][\w\x80-\uffff]*"
+_PHP_NS = re.compile(rf"\bnamespace\s+(?P<name>{_PHP_ID}(?:\\{_PHP_ID})*)\s*[;{{]")
+_PHP_TYPE = re.compile(rf"(?<![:\w$>\\])(?P<kw>class|interface|trait|enum)\s+(?P<name>{_PHP_ID})")
+_PHP_FUNC = re.compile(rf"^[ \t]{{0,4}}function[ \t]+&?[ \t]*(?P<name>{_PHP_ID})[ \t]*\(", re.M)
+_PHP_USE = re.compile(rf"^[ \t]*use[ \t]+(?:(?P<kind>function|const)[ \t]+)?(?P<body>[^;]+);", re.M)
+_PHP_REQ = re.compile(r"\b(?:require|include)(?:_once)?\b\s*\(?\s*(?:(?P<dir>__DIR__)\s*\.\s*)?(?P<q>['\"])(?P<path>[^'\"$]+)(?P=q)\s*\)?\s*;")
+_PHP_NAME = re.compile(rf"\\?{_PHP_ID}(?:\\{_PHP_ID})*")
+
+
+def _composer_psr4(d: str, text: str) -> list[tuple[str, str]]:
+    """(prefix, directory) pairs from a composer.json: autoload and autoload-dev psr-4."""
+    try:
+        obj = json.loads(text)
+    except ValueError:
+        return []
+    out: list[tuple[str, str]] = []
+    if not isinstance(obj, dict):
+        return out
+    for key in ("autoload", "autoload-dev"):
+        sect = obj.get(key)
+        maps = sect.get("psr-4") if isinstance(sect, dict) else None
+        if not isinstance(maps, dict):
+            continue
+        for prefix, dirs in maps.items():
+            for sub in ([dirs] if isinstance(dirs, str) else dirs if isinstance(dirs, list) else []):
+                if isinstance(sub, str) and isinstance(prefix, str):
+                    tgt = _norm(posixpath.join("" if d == "." else d, sub))
+                    if tgt is not None:
+                        out.append((prefix.rstrip("\\") + "\\" if prefix else "", "." if tgt == "." else tgt))
+    return out
+
+
+def _php_file_facts(text: str):
+    """(namespace, declared fq names, uses, requires): uses are (kind, alias, fq); requires (dir?, path)."""
+    def compute():
+        code = scan(text, "php").code
+        nss = [(m.start(), m.group("name")) for m in _PHP_NS.finditer(code)]
+
+        def ns_at(pos: int) -> str:
+            cur = ""
+            for at, nm in nss:
+                if at > pos:
+                    break
+                cur = nm
+            return cur
+
+        def fq(pos: int, name: str) -> str:
+            ns = ns_at(pos)
+            return f"{ns}\\{name}" if ns else name
+        decls = [fq(m.start(), m.group("name")) for m in _PHP_TYPE.finditer(code)
+                 if m.group("name") not in ("extends", "implements") and not code[:m.start()].rstrip().endswith("new")]
+        decls += [fq(m.start(), m.group("name")) + "()" for m in _PHP_FUNC.finditer(code)]
+        uses: list[tuple[str, str, str]] = []
+        for m in _PHP_USE.finditer(code):
+            body = re.sub(r"\s+", " ", m.group("body")).strip()
+            if body.startswith("(") or " function" in body[:1] :
+                continue
+            kind = m.group("kind") or "class"
+            gm = re.match(r"(?P<pre>[^{]*?)\\?\s*\{(?P<items>.*)\}\s*$", body)
+            items = []
+            if gm:
+                pre = gm.group("pre").strip().strip("\\")
+                for it in gm.group("items").split(","):
+                    it = it.strip()
+                    k2 = kind
+                    mm = re.match(r"(function|const)\s+(.*)", it)
+                    if mm:
+                        k2, it = mm.group(1), mm.group(2)
+                    if it:
+                        items.append((k2, pre + "\\" + it.strip("\\")))
+            else:
+                items = [(kind, it.strip().strip("\\")) for it in body.split(",") if it.strip()]
+            for k2, it in items:
+                am = re.match(rf"(?P<n>{_PHP_ID}(?:\\{_PHP_ID})*)(?:\s+as\s+(?P<a>{_PHP_ID}))?$", it)
+                if am:
+                    uses.append((k2, am.group("a") or am.group("n").rsplit("\\", 1)[-1], am.group("n")))
+        reqs = tuple((bool(m.group("dir")), m.group("path")) for m in _PHP_REQ.finditer(scan(text, "php").nc))
+        first = nss[0][1] if nss else ""
+        return first, tuple(dict.fromkeys(decls)), tuple(uses), reqs
+    from rco import memo
+    return memo.cached("php_facts", text, compute)
+
+
+def _php_psr4_file(fq: str, f: RepoFacts) -> str | None:
+    for prefix, d in f.php_psr4:
+        if fq.startswith(prefix) and len(fq) > len(prefix):
+            cand = _norm(posixpath.join("" if d == "." else d, fq[len(prefix):].replace("\\", "/") + ".php"))
+            if cand in f.paths:
+                return cand
+    return None
+
+
+def _php_class(fq: str, f: RepoFacts, here: str) -> list[str]:
+    """Files of a class, interface, trait or enum: composer psr-4 first, then the declaring file."""
+    got = _php_psr4_file(fq, f)
+    if got:
+        return [got]
+    hits = f.php_decls.get(fq, ())
+    if len(hits) <= 1:
+        return list(hits)
+    best = max(_common_dirs(dir_of(c), here) for c in hits)
+    return sorted(c for c in hits if _common_dirs(dir_of(c), here) == best)
+
+
+def _php(path: str, text: str, f: RepoFacts) -> set[str]:
+    here = dir_of(path)
+    ns, _decls, uses, reqs = _php_file_facts(text)
+    hits: set[str] = set()
+    alias: dict[str, str] = {}
+    for kind, al, fq in uses:
+        if kind == "class":
+            alias[al] = fq
+            hits.update(_php_class(fq, f, here))
+        elif kind == "function":
+            hits.update(_php_class(fq + "()", f, here))
+    if f.php_shorts:
+        code = scan(text, "php").code
+        for m in _PHP_NAME.finditer(code):
+            tok = m.group(0)
+            if tok.rsplit("\\", 1)[-1] not in f.php_shorts:
+                continue
+            if tok.startswith("\\"):
+                fq = tok[1:]
+            else:
+                first, _, rest = tok.partition("\\")
+                if first in alias:
+                    fq = alias[first] + ("\\" + rest if rest else "")
+                else:
+                    fq = f"{ns}\\{tok}" if ns else tok
+            hits.update(_php_class(fq, f, here))
+    for rel_dir, rel in reqs:  # literal require/include paths
+        base = here if rel_dir or not rel.startswith("/") else ""
+        tgt = _norm(posixpath.join("" if base == "." else base, rel.lstrip("/") if rel_dir else rel))
+        if tgt in f.paths:
+            hits.add(tgt)
+        elif not rel_dir and _norm(rel) in f.paths:
+            hits.add(_norm(rel))
+    return hits
+
+
 def _java_pick(hits: list[str], root: str, here: str, tail: int) -> list[str]:
     """Several files match one name (android/ and guava/, say): own root, then nearest.
     Files that tie on every rule all stay, so path order never decides."""
@@ -454,6 +615,8 @@ def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
         got = _rs(path, text, f)
     elif lang == "java":
         got = _java(path, text, f)
+    elif lang == "php":
+        got = _php(path, text, f)
     else:
         got = _sh(path, text, f, ps=path.endswith(".ps1"))
     got.discard(path)

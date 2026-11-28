@@ -811,3 +811,27 @@ nullable
 runnable
 strings
 tagged
+# card 1365
+active
+app
+arr
+attr
+batch
+bus
+countable
+far
+foo
+foundation
+illuminate
+jsonable
+legacy
+lib
+mine
+models
+notifiable
+old
+quiet
+str
+sub
+support
+unused
