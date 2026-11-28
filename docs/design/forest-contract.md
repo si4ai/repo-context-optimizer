@@ -245,8 +245,8 @@ step-0 follow-up PR, sent to every open step first.
   files that declare a type the file names in that namespace, so a file in
   the namespace needs no `using`; a partial type links all its files in the
   nearest project. A `.csproj` `ProjectReference` (followed transitively)
-  limits which projects a file can see; a file under no project sees all.
-  Twin types in projects that tie on distance all get an edge.
+  limits which projects a file can see; a file under no project sees all
+  projects. Twin types in projects equally near the file all get an edge.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the

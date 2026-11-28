@@ -13,10 +13,11 @@
   is in `docs/baseline/lang-java.md` (#115, card 1362)
 - C#: signatures in the Tree (classes, structs, interfaces, enums, records,
   delegates, methods, properties, events, indexers, operators, constants;
-  public and protected only) and edges through `using`, namespaces and
-  `.csproj` project references, with the same scanner and the shared brace
-  helpers. The replay on JamesNK/Newtonsoft.Json is in
-  `docs/baseline/lang-csharp.md` (#116, card 1363)
+  public, protected and protected internal only) and edges through `using`,
+  namespaces and `.csproj` project references, with the same scanner and the
+  shared brace helpers. The replay on JamesNK/Newtonsoft.Json (84% median
+  saving, 0 losses over 37 commits) is in `docs/baseline/lang-csharp.md`
+  (#116, card 1363)
 
 ## 0.1.8 - 2026-11-27
 

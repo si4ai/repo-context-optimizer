@@ -11,7 +11,7 @@ skipped pack is a tie.
 
 | item | value |
 |---|---|
-| repo | JamesNK/Newtonsoft.Json, head pinned at `52fa3aef1faceadcd3a3f874251eddc98d3efbbaa` (2026-09-21), 400-commit shallow clone |
+| repo | JamesNK/Newtonsoft.Json, head pinned at `52fa3aef1f2cadcd3a3f874251eddc98d3efbbaa` (2026-09-21), 400-commit shallow clone |
 | window | since 2024-01-01, not 2026-11-01: the repo has no commit after 2026-09-21. 47 non-merge commits, 37 of them touch code |
 | commits | 37 code commits; 37 replayed, 0 over 200 files |
 | losses (with > without) | 0 |
@@ -46,9 +46,9 @@ file's own namespace and parents ignored (only `using` directives and
 
 - The pack is aimed at exactly the files the commit changed, as for every
   replay; this is an estimate, not an agent measurement.
-- Newtonsoft.Json is one library with a long, quiet history: 37 commits is a
-  small sample, and its files share few namespaces. A solution of many
-  projects would show more from the `.csproj` limit.
+- Newtonsoft.Json is one library with a long, quiet history in few projects:
+  37 commits is a small sample. A solution of many projects would show more
+  from the `.csproj` limit.
 - Public means `public`, `protected` or `protected internal`; internal types
   and members are not in the Tree (they still count as import edges).
 - Types are found by name: a file that names a type in a visible namespace
