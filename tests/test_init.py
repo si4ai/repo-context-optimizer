@@ -226,6 +226,10 @@ def test_init_without_agents_omits_token_fields(tmp_path):
     assert "agents block:" not in rep.to_markdown()
 
 
+def test_agents_block_reruns_pack_after_compaction():
+    assert "- After a compaction, rerun `rco pack --for FILE...` instead of rereading the files." in AGENT_BLOCK
+
+
 def test_agents_creates_agents_md_only(tmp_path):
     repo, _ = _repo(tmp_path)
     got = _agents(repo)
