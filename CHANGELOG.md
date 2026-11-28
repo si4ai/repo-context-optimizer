@@ -23,7 +23,7 @@
   names in the same namespace and literal `require` paths, resolved
   through composer.json psr-4, so the pack, `rco replay` and `rco metrics
   measure` see PHP files and their importers. The replay on
-  laravel/framework is in `docs/baseline/lang-php.md` (card 1365)
+  laravel/framework is in `docs/baseline/lang-php.md` (#118, card 1365)
 - `rco affected`: a changed build file selects every test for each language
   (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
   like), even when a source file only names it; a test walks every language
