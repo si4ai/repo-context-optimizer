@@ -176,6 +176,29 @@ def test_same_package_use_counts_without_an_import_and_comments_do_not():
     assert g["s/p/C.java"] == () and g["s/q/D.java"] == ()
 
 
+def test_same_package_under_another_source_root_counts_too():
+    g = _edges({
+        "m/src/main/java/com/acme/app/Main.java": "package com.acme.app;\npublic class Main {}\n",
+        "m/src/main/java/com/acme/app/SideAid.java": "package com.acme.app;\nclass SideAid {}\n",
+        "m/src/test/java/com/acme/app/MainTest.java":
+            "package com.acme.app;\nclass MainTest { void t() { Main.main(); } }\n",
+        "m/src/test/java/com/acme/other/StrayOne.java": "package com.acme.other;\nclass StrayOne { Main m; }\n",
+    })
+    assert g["m/src/test/java/com/acme/app/MainTest.java"] == ("m/src/main/java/com/acme/app/Main.java",)
+    assert g["m/src/test/java/com/acme/other/StrayOne.java"] == ()  # another package: needs an import
+
+
+def test_a_twin_root_picks_its_own_copy_for_a_same_package_class_in_another_root():
+    g = _edges({
+        "guava/src/p/Strings.java": "package p;\npublic class Strings {}\n",
+        "android/guava/src/p/Strings.java": "package p;\npublic class Strings {}\n",
+        "guava-tests/test/p/StringsTest.java": "package p;\nclass StringsTest { Strings a; }\n",
+        "android/guava-tests/test/p/StringsTest.java": "package p;\nclass StringsTest { Strings a; }\n",
+    })
+    assert g["guava-tests/test/p/StringsTest.java"] == ("guava/src/p/Strings.java",)
+    assert g["android/guava-tests/test/p/StringsTest.java"] == ("android/guava/src/p/Strings.java",)
+
+
 def test_an_explicit_import_shadows_the_same_package_name():
     g = _edges({"s/p/List.java": "package p;\nclass List {}\n",
                 "s/o/List.java": "package o;\npublic class List {}\n",

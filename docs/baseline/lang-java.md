@@ -15,17 +15,25 @@ changed files. A skipped pack is a tie.
 | commits | 45 code commits since 2026-11-01; 43 replayed, 1 root or boundary commit, 1 over 200 files |
 | losses (with > without) | 0 |
 | ties (skipped packs) | 0 |
-| median tokens without rco | 237,532 |
-| median tokens with rco | 37,905 |
-| saving (median with against median without) | 84.0% |
-| saving per commit, median | 78.0% (smallest 4.5%) |
-| median files in the import hop | 35 |
-| commits where importers were added | 5 (57 changed-name call sites in importers; the pack does not carry call-site lines yet, card 1360) |
+| median tokens without rco | 250,766 |
+| median tokens with rco | 37,913 |
+| saving (median with against median without) | 84.9% |
+| saving per commit, median | 79.5% (smallest 4.5%) |
+| median files in the import hop | 40 |
+| commits where importers were added | 5 (62 changed-name call sites in importers, found in 2 of those commits; the pack does not carry call-site lines yet, card 1360) |
 
 Edges: `import a.b.C;` resolves under any source root (the importer's own
 `package` line picks the root when two match, such as `android/guava` and
 `guava`); a package import resolves to the classes the file names; a class
-of the same package that the file names counts with no import.
+of the same package that the file names counts with no import, also when
+the package sits under another source root (a test under `guava-tests/test`
+names a class of `guava/src`); of several twins the importer's own root
+wins, then the nearest by name.
+
+Check on test files: in guava, 304 files `guava-tests/test/**/XTest.java` have a
+same-package `guava/src/**/X.java`; 291 now have an edge to it (85 before
+the fix, when only the importer's own directory was searched). The other 13
+name the class only in a comment or as part of a longer name.
 
 ### How much of the saving comes from same-package edges
 
@@ -35,8 +43,8 @@ same replay with only edges from `import` statements:
 
 | edges | median without | median with | saving | losses | median import hop |
 |---|---|---|---|---|---|
-| imports and same-package use (shipped) | 237,532 | 37,905 | 84.0% | 0 | 35 |
-| imports only | 183,879 | 36,044 | 80.4% | 0 | 20 |
+| imports and same-package use (shipped) | 250,766 | 37,913 | 84.9% | 0 | 40 |
+| imports only | 183,879 | 36,030 | 80.4% | 0 | 20 |
 
 ## Limits
 

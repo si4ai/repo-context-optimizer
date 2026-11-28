@@ -233,7 +233,9 @@ step-0 follow-up PR, sent to every open step first.
   a.b.C;` maps to the file whose path ends in `a/b/C.java` under any source
   root; the importer's own `package` line picks the root when two match
   (an `android/` twin, say), a package import maps to the classes of it the
-  file names, and a same-package class the file names counts with no import.
+  file names, and a same-package class the file names counts with no import,
+  in any source root that holds the package (a `src/test/java` file names a
+  `src/main/java` class).
   C# (0.2.0, card 1363): `using N;` (also `using static`, an alias, and
   `global using`) and the file's own namespace with its parents map to the
   files that declare a type the file names in that namespace, so a file in
