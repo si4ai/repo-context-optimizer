@@ -33,7 +33,7 @@ from typing import Callable, Iterator
 
 from rco import __version__, gitread, memo
 from rco.affected import is_code
-from rco.edges import MANIFEST_NAMES
+from rco.edges import is_manifest
 from rco.diff import changed_paths
 from rco.imports import file_graph
 from rco.metrics import _regular
@@ -181,7 +181,7 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
     code = {p: raw[tree[p]] for p in code_paths}
     # card 1350: manifests belong in the import graph, same as forest.read_sources
     manifest_paths = [p for p in tree
-                      if p == "pyproject.toml" or p.rsplit("/", 1)[-1] in MANIFEST_NAMES]
+                      if p == "pyproject.toml" or is_manifest(p)]
     need = [p for p in manifest_paths if p not in code]
     if need:
         extra = gitread.read_blobs(repo, (tree[p] for p in need))
@@ -214,7 +214,7 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
         else:
             base_all = dict(base_code)
         base_manifest = [p for p in base_tree
-                         if p == "pyproject.toml" or p.rsplit("/", 1)[-1] in MANIFEST_NAMES]
+                         if p == "pyproject.toml" or is_manifest(p)]
         need_m = [p for p in base_manifest if p not in base_all]
         if need_m:
             extra_b = gitread.read_blobs(repo, (base_tree[p] for p in need_m))

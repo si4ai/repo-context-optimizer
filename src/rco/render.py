@@ -11,7 +11,7 @@ _PREFIX = {
 }
 
 
-_FN_WORD = {"js": "function ", "ts": "function ", "go": "func ", "java": "", "rust": "fn ", "sh": "function ",
+_FN_WORD = {"js": "function ", "ts": "function ", "go": "func ", "java": "", "csharp": "", "rust": "fn ", "sh": "function ",
             "powershell": "function "}
 
 
