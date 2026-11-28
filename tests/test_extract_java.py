@@ -188,6 +188,60 @@ def test_same_package_under_another_source_root_counts_too():
     assert g["m/src/test/java/com/acme/other/StrayOne.java"] == ()  # another package: needs an import
 
 
+def test_a_one_segment_package_does_not_match_an_unrelated_directory_of_the_same_name():
+    g = _edges({
+        "s/util/Tool.java": "package util;\npublic class Tool {}\n",
+        "x/y/util/Tool.java": "package other.util;\npublic class Tool {}\n",
+        "x/y/util/ToolB.java": "package other.util;\npublic class ToolB {}\n",
+        "t/util/ToolTest.java": "package util;\nclass ToolTest { Tool t; ToolB g; }\n",
+    })
+    assert g["t/util/ToolTest.java"] == ("s/util/Tool.java",)
+    # no real edge is lost: a file whose package line says util counts wherever it sits
+    k = _edges({"odd/MovedOne.java": "package util;\npublic class MovedOne {}\n",
+                "t/util/UsesMoved.java": "package util;\nclass UsesMoved { MovedOne m; }\n"})
+    assert k["t/util/UsesMoved.java"] == ("odd/MovedOne.java",)
+    h = _edges({
+        "s/util/Tool.java": "package util;\npublic class Tool {}\n",
+        "x/y/util/ToolB.java": "package other.util;\npublic class ToolB {}\n",
+        "u/WildOne.java": "package u;\nimport util.*;\nclass WildOne { Tool t; ToolB g; }\n",
+    })
+    assert h["u/WildOne.java"] == ("s/util/Tool.java",)
+
+
+def test_files_without_a_package_line_share_the_default_package_across_roots():
+    g = _edges({
+        "m/src/main/java/CalcOne.java": "public class CalcOne { int add(int a, int b) { return a + b; } }\n",
+        "m/src/test/java/CalcOneTest.java": "class CalcOneTest { void t() { new CalcOne().add(1, 2); } }\n",
+        "m/src/main/java/p/Other.java": "package p;\npublic class Other {}\n",
+        "m/src/test/java/q/QuietOne.java": "package q;\nclass QuietOne { CalcOne c; Other o; }\n",
+    })
+    assert g["m/src/test/java/CalcOneTest.java"] == ("m/src/main/java/CalcOne.java",)
+    assert g["m/src/test/java/q/QuietOne.java"] == ()  # a named package cannot see the default one
+
+
+def test_affected_selects_the_test_of_a_default_package_class_in_another_root(tmp_path):
+    from rco.affected import affected
+    repo, s1 = fixture.make_repo(tmp_path / "r", {
+        "m/src/main/java/CalcOne.java": "public class CalcOne { public int add(int a) { return a; } }\n",
+        "m/src/test/java/CalcOneTest.java": "class CalcOneTest { void t() { new CalcOne().add(1); } }\n",
+        "m/src/test/java/OtherTest.java": "class OtherTest { }\n"})
+    s2 = fixture.commit(repo, {"m/src/main/java/CalcOne.java":
+                               "public class CalcOne { public int add(int a, int b) { return a; } }\n"})
+    r = affected(repo, s1, s2)
+    assert r.tests == ("m/src/test/java/CalcOneTest.java",) and not r.run_all
+
+
+def test_twins_that_tie_all_stay():
+    g = _edges({
+        "src/p/A.java": "package p;\npublic class A {}\n",
+        "android/src/p/A.java": "package p;\npublic class A {}\n",
+        "x/p/B.java": "package p;\nclass B { A a; }\n",
+        "y/q/C.java": "package q;\nimport p.A;\nclass C {}\n",
+    })
+    assert g["x/p/B.java"] == ("android/src/p/A.java", "src/p/A.java")
+    assert g["y/q/C.java"] == ("android/src/p/A.java", "src/p/A.java")
+
+
 def test_a_twin_root_picks_its_own_copy_for_a_same_package_class_in_another_root():
     g = _edges({
         "guava/src/p/Strings.java": "package p;\npublic class Strings {}\n",

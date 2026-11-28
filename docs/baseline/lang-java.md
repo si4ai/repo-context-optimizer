@@ -28,7 +28,11 @@ Edges: `import a.b.C;` resolves under any source root (the importer's own
 of the same package that the file names counts with no import, also when
 the package sits under another source root (a test under `guava-tests/test`
 names a class of `guava/src`); of several twins the importer's own root
-wins, then the nearest by name.
+wins, then the nearest path, then the root whose words overlap most. A
+class is in a package when its own `package` line says so, so a directory
+that only ends with the package path (`a/b/util` for `package util;`) does
+not count, and files with no `package` line share the default package in
+every root. Twin files that tie on every rule all get an edge.
 
 Check on test files: in guava, 304 files `guava-tests/test/**/XTest.java` have a
 same-package `guava/src/**/X.java`; 291 now have an edge to it (85 before

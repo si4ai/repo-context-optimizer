@@ -165,6 +165,26 @@ def test_a_partial_type_links_every_file_in_the_nearest_project():
     assert g["P/Use.cs"] == ("P/Big.More.cs", "P/Big.cs")
 
 
+def test_twin_projects_that_tie_all_stay():
+    g = _edges({
+        "P/P.csproj": "<Project/>", "Q/Q.csproj": "<Project/>",
+        "R/R.csproj": '<Project><ProjectReference Include="../P/P.csproj"/>'
+                      '<ProjectReference Include="../Q/Q.csproj"/></Project>',
+        "P/DupOne.cs": "namespace N { public class DupOne {} }\n",
+        "Q/DupOne.cs": "namespace N { public class DupOne {} }\n",
+        "R/Use.cs": "namespace N { class Use { DupOne d; } }\n",
+    })
+    assert g["R/Use.cs"] == ("P/DupOne.cs", "Q/DupOne.cs")
+
+
+def test_files_with_no_namespace_share_the_global_namespace_across_projects():
+    g = _edges({
+        "m/src/Calc.cs": "public class Calc { public int Add(int a) => a; }\n",
+        "m/tests/CalcTest.cs": "class CalcTest { void T() { new Calc().Add(1); } }\n",
+    })
+    assert g["m/tests/CalcTest.cs"] == ("m/src/Calc.cs",)
+
+
 def test_csproj_project_references_limit_what_a_file_can_see():
     files = {
         "A/A.csproj": '<Project><ItemGroup><ProjectReference Include="..\\B\\B.csproj" /></ItemGroup></Project>',
