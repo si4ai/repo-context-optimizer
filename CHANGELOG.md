@@ -16,7 +16,7 @@
   public and protected only) and edges through `using`, namespaces and
   `.csproj` project references, with the same scanner and the shared brace
   helpers. The replay on JamesNK/Newtonsoft.Json is in
-  `docs/baseline/lang-csharp.md` (card 1363)
+  `docs/baseline/lang-csharp.md` (#116, card 1363)
 
 ## 0.1.8 - 2026-11-27
 
