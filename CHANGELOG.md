@@ -17,6 +17,10 @@
   through composer.json psr-4, so the pack, `rco replay` and `rco metrics
   measure` see PHP files and their importers. The replay on
   laravel/framework is in `docs/baseline/lang-php.md` (card 1365)
+- `rco affected`: a changed build file selects every test for each language
+  (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
+  like), even when a source file only names it; a test walks every language
+  in `LANG_OF` so a new one has to list its build files (card 1365)
 
 ## 0.1.8 - 2026-11-27
 

@@ -835,3 +835,7 @@ str
 sub
 support
 unused
+bnd
+directory
+reader
+include
