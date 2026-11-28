@@ -106,6 +106,7 @@ class RepoFacts:
     java_stems: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # stem -> paths of stem.java
     java_dirs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # directory -> .java paths
     java_pkg: Mapping[str, str] = field(default_factory=dict)  # .java path -> its package as a path
+    java_pkgs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # package path -> .java paths
 
 
 def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts:
@@ -156,6 +157,7 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     stems: dict[str, list[str]] = {}
     jdirs: dict[str, list[str]] = {}
     jpkg: dict[str, str] = {}
+    jpkgs: dict[str, list[str]] = {}
     for p in sorted(paths):
         if p.endswith(".java"):
             stems.setdefault(PurePosixPath(p).stem, []).append(p)
@@ -163,9 +165,11 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
             if p in sources:
                 pm = _JAVA_PACKAGE.search(scan(sources[p].decode("utf-8-sig", "replace"), "java").code)
                 jpkg[p] = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
+                jpkgs.setdefault(jpkg[p], []).append(p)
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
                      {k: tuple(v) for k, v in stems.items()},
-                     {k: tuple(v) for k, v in jdirs.items()}, jpkg)
+                     {k: tuple(v) for k, v in jdirs.items()}, jpkg,
+                     {k: tuple(v) for k, v in jpkgs.items()})
 
 
 def _norm(path: str) -> str | None:
@@ -346,19 +350,35 @@ def _token_overlap(a: str, b: str) -> float:
     return len(x & y) / len(x | y) if x | y else 0.0
 
 
-def _java_pick(hits: list[str], root: str, here: str, tail: int) -> str:
-    """Several files match one name (android/ and guava/, say): own root, then nearest."""
+def _java_pick(hits: list[str], root: str, here: str, tail: int) -> list[str]:
+    """Several files match one name (android/ and guava/, say): own root, then nearest.
+    Files that tie on every rule all stay, so path order never decides."""
     if len(hits) == 1:
-        return hits[0]
+        return hits
 
     def key(c: str) -> tuple:
         croot = c[:len(c) - tail].rstrip("/")
         # guava-tests/test sits nearer guava/src than android/ or the gwt super-source
-        return (croot != root, -_common_dirs(dir_of(c), here), -_token_overlap(croot, root), c)
-    return min(hits, key=key)
+        return (croot != root, -_common_dirs(dir_of(c), here), -_token_overlap(croot, root))
+    best = min(key(c) for c in hits)
+    return sorted(c for c in hits if key(c) == best)
 
 
-def _java_class(fq: str, f: RepoFacts, root: str, here: str) -> str | None:
+def _java_pkg_files(f: RepoFacts, pkg: str, here: str | None = None) -> list[str]:
+    """Files of one package (a/b for a.b). A file is in it when its own package line says so;
+    a directory that only ends with the package path (a/b/util for `package util;`) does not
+    count. A file whose package line is unknown (no source read) counts by directory, and the
+    importer's own directory (here) counts for a file of the same package or of unknown one."""
+    out = list(f.java_pkgs.get(pkg, ()))
+    if pkg:
+        out += [c for d in f.java_dirs if d == pkg or d.endswith("/" + pkg)
+                for c in f.java_dirs[d] if c not in f.java_pkg]
+    if here is not None:
+        out += [c for c in f.java_dirs.get(here, ()) if f.java_pkg.get(c, pkg) == pkg]
+    return sorted(set(out))
+
+
+def _java_class(fq: str, f: RepoFacts, root: str, here: str) -> list[str]:
     """File of the class a dotted name points at: a.b.C, or a.b.C.member, or a.b.C.D."""
     parts = fq.split(".")
     for i in range(len(parts), 0, -1):
@@ -366,7 +386,7 @@ def _java_class(fq: str, f: RepoFacts, root: str, here: str) -> str | None:
         hits = [c for c in f.java_stems.get(parts[i - 1], ()) if c == suffix or c.endswith("/" + suffix)]
         if hits:
             return _java_pick(hits, root, here, len(suffix))
-    return None
+    return []
 
 
 def _java(path: str, text: str, f: RepoFacts) -> set[str]:
@@ -392,34 +412,31 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
             imported.add(fq.rsplit(".", 1)[-1])
         t = _java_class(fq, f, root, here)
         if t and (not m.group("star") or fq.rsplit(".", 1)[-1][:1].isupper()):
-            hits.add(t)
+            hits.update(t)
             continue
         if m.group("star"):  # a package: the classes of it this file names
             pkg = fq.replace(".", "/")
-            dirs = sorted(d for d in f.java_dirs if (d == pkg or d.endswith("/" + pkg))
-                          and any(f.java_pkg.get(c, pkg) == pkg for c in f.java_dirs[d]))
-            if dirs:
-                d = min(dirs, key=lambda x: (x != (root + "/" + pkg if root else pkg),
-                                             -_common_dirs(x, here), x))
-                for c in f.java_dirs[d]:
-                    if PurePosixPath(c).stem in idents and f.java_pkg.get(c, pkg) == pkg:
-                        hits.add(c)
-    # same package: no import needed, and the package may sit under another source
-    # root (src/test/java names a class of src/main/java), so every directory of it counts
-    # A directory only ends with the package path by accident (`a/b/util` for `package util;`),
-    # so a file counts when its own package line is this package; one with no known line, when
-    # its directory ends with the package path.
-    pkg_dirs = sorted({here} | {d for d in f.java_dirs if pdir and (d == pdir or d.endswith("/" + pdir))})
+            by_dir: dict[str, list[str]] = {}
+            for c in _java_pkg_files(f, pkg):
+                if PurePosixPath(c).stem in idents:
+                    by_dir.setdefault(dir_of(c), []).append(c)
+            if by_dir:  # twin directories: the nearest ones; a tie keeps them all
+                def dkey(x: str) -> tuple:
+                    return (x != (root + "/" + pkg if root else pkg), -_common_dirs(x, here))
+                best = min(dkey(x) for x in by_dir)
+                for x in by_dir:
+                    if dkey(x) == best:
+                        hits.update(by_dir[x])
+    # same package: no import needed, and the package may sit under another source root
+    # (src/test/java names a class of src/main/java). A file with no package line is in the
+    # default package, shared by every other file with none.
     by_stem: dict[str, list[str]] = {}
-    for d in pkg_dirs:
-        for c in f.java_dirs.get(d, ()):
-            stem = PurePosixPath(c).stem
-            if pdir and f.java_pkg.get(c, pdir) != pdir:
-                continue
-            if stem in idents and stem not in imported:
-                by_stem.setdefault(stem, []).append(c)
+    for c in _java_pkg_files(f, pdir, here):
+        stem = PurePosixPath(c).stem
+        if stem in idents and stem not in imported:
+            by_stem.setdefault(stem, []).append(c)
     for stem, cands in by_stem.items():
-        hits.add(_java_pick(cands, root, here, len(pdir + "/" + stem + ".java") if pdir else len(stem) + 6))
+        hits.update(_java_pick(cands, root, here, len(pdir + "/" + stem + ".java") if pdir else len(stem) + 5))
     return hits
 
 

@@ -237,7 +237,9 @@ step-0 follow-up PR, sent to every open step first.
   import, in any source root that holds the package (a `src/test/java`
   file names a `src/main/java` class). A class counts as being in the
   package when its own `package` line says so, so `a/b/util` does not
-  stand in for `package util;`.
+  stand in for `package util;`; files with no `package` line share the
+  default package in every root. Twin files that tie on every rule all
+  get an edge.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the
