@@ -9,7 +9,7 @@
   protected only) and import edges through packages and any source root,
   so the pack, `rco replay` and `rco metrics measure` see Java files and
   their importers. A deterministic scanner, no new dependency. The
-  replay on google/guava (84% median saving, 0 losses over 43 commits)
+  replay on google/guava (85% median saving, 0 losses over 43 commits)
   is in `docs/baseline/lang-java.md` (#115, card 1362)
 
 ## 0.1.8 - 2026-11-27

@@ -335,6 +335,12 @@ def _common_dirs(a: str, b: str) -> int:
     return n
 
 
+def _token_overlap(a: str, b: str) -> float:
+    """How many of the words (split at / - _ .) two source roots have in common, 0 to 1."""
+    x, y = set(re.split(r"[/\-_.]", a)), set(re.split(r"[/\-_.]", b))
+    return len(x & y) / len(x | y) if x | y else 0.0
+
+
 def _java_pick(hits: list[str], root: str, here: str, tail: int) -> str:
     """Several files match one name (android/ and guava/, say): own root, then nearest."""
     if len(hits) == 1:
@@ -342,12 +348,8 @@ def _java_pick(hits: list[str], root: str, here: str, tail: int) -> str:
 
     def key(c: str) -> tuple:
         croot = c[:len(c) - tail].rstrip("/")
-        same = 0
-        for x, y in zip(croot, root):  # guava-tests/test sits nearer guava/src than android/
-            if x != y:
-                break
-            same += 1
-        return (croot != root, -_common_dirs(dir_of(c), here), -same, c)
+        # guava-tests/test sits nearer guava/src than android/ or the gwt super-source
+        return (croot != root, -_common_dirs(dir_of(c), here), -_token_overlap(croot, root), c)
     return min(hits, key=key)
 
 
@@ -369,6 +371,7 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
     here = dir_of(path)
     root = here if here != "." else ""
     pm = _JAVA_PACKAGE.search(s.code)
+    pdir = ""
     if pm:
         pdir = re.sub(r"\s+", "", pm.group("name")).replace(".", "/")
         if here == pdir:
@@ -395,10 +398,17 @@ def _java(path: str, text: str, f: RepoFacts) -> set[str]:
                 for c in f.java_dirs[d]:
                     if PurePosixPath(c).stem in idents:
                         hits.add(c)
-    for c in f.java_dirs.get(here, ()):  # same package: no import needed
-        stem = PurePosixPath(c).stem
-        if stem in idents and stem not in imported:
-            hits.add(c)
+    # same package: no import needed, and the package may sit under another source
+    # root (src/test/java names a class of src/main/java), so every directory of it counts
+    pkg_dirs = sorted({here} | {d for d in f.java_dirs if pdir and (d == pdir or d.endswith("/" + pdir))})
+    by_stem: dict[str, list[str]] = {}
+    for d in pkg_dirs:
+        for c in f.java_dirs.get(d, ()):
+            stem = PurePosixPath(c).stem
+            if stem in idents and stem not in imported:
+                by_stem.setdefault(stem, []).append(c)
+    for stem, cands in by_stem.items():
+        hits.add(_java_pick(cands, root, here, len(pdir + "/" + stem + ".java") if pdir else len(stem) + 6))
     return hits
 
 

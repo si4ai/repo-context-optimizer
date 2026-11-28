@@ -233,7 +233,8 @@ step-0 follow-up PR, sent to every open step first.
   a.b.C;` maps to the file whose path ends in `a/b/C.java` under any source
   root; the importer's own `package` line picks the root when two match
   (an `android/` twin, say), a package import maps to the classes of it the
-  file names, and a same-package class the file names counts with no import.
+  file names, and a same-package class the file names counts with no import, in any source
+  root that holds the package (a `src/test/java` file names a `src/main/java` class).
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the
