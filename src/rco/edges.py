@@ -137,7 +137,11 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
                 src = "src" if d == "." else f"{d}/src"
                 rs.setdefault(pkg["name"].replace("-", "_"), src)
                 roots.append(src)
-    go.sort(key=lambda x: (-len(x[0]), x[0]))
+    def _go_dir_depth(d: str) -> int:
+        return 0 if d == "." else d.count("/") + 1
+
+    # longest module path first; same path prefers the shallower tree (card 1350)
+    go.sort(key=lambda x: (-len(x[0]), _go_dir_depth(x[1]), x[0], x[1]))
     roots = sorted(set(roots), key=lambda x: (-len(x), x))
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots))
 

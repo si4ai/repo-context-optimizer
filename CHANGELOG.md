@@ -5,6 +5,7 @@
 ### fixed
 
 - `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (card 1349)
+- `rco pack --for` and replay resolve go, rust and js workspace imports through go.mod, Cargo.toml and package.json (card 1350)
 - the events log records `for_cut` when the `--for` list is cut to fit the
   line, notes a short write on stderr without changing the exit, logs
   `--for` paths as repo paths, and writes a line with `cmd` null for a
