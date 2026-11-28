@@ -19,7 +19,11 @@ each reason listed:
 - test config and infra (`pyproject.toml`, `pytest.ini`, `tox.ini`,
   `setup.cfg`, a top-level `conftest.py`, lock and requirements files,
   `package.json`, `go.mod`, `Cargo.toml`, `Makefile`, `rco.toml`, CI
-  workflows; see `is_infra`), even when it is code;
+  workflows, and each language's build files in `BUILD_FILES`: `*.csproj`,
+  `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and so on; see
+  `is_infra`), even when a code file names one (a build file under a
+  fixture directory such as `fixtures/`, `testdata/` or `golden/` is test
+  data; one under `test/` or `tests/` is not);
 - a changed file that is not code, not docs, and named by no code file.
 
 Docs (`*.md`, `*.rst`, `*.adoc`, `LICENSE` and the like, anything under a
@@ -51,17 +55,36 @@ from rco.output import Exit, counted
 SCHEMA_AFFECTED = "rco.affected/1"
 _TEST_DIRS = {"tests", "test"}
 # a file under one of these is test data, never docs
-_TEST_DATA_DIRS = _TEST_DIRS | {"testdata", "test_data", "fixtures", "__tests__", "golden"}
+_FIXTURE_DIRS = {"testdata", "test_data", "fixtures", "__tests__", "golden"}
+_TEST_DATA_DIRS = _TEST_DIRS | _FIXTURE_DIRS
 _DOC_DIRS = {"docs", "doc"}
 _DOC_EXT = (".md", ".markdown", ".rst", ".adoc")
 _DOC_NAMES = {"LICENSE", "LICENCE", "COPYING", "NOTICE", "AUTHORS", "CONTRIBUTORS"}
 # test config and infra: a change here may change how every test runs
-_INFRA_NAMES = {
-    "pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "pytest.ini", "noxfile.py",
-    ".coveragerc", "sitecustomize.py", "Pipfile", "Pipfile.lock", "poetry.lock", "uv.lock",
-    "package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "tsconfig.json",
-    "go.mod", "go.sum", "Cargo.toml", "Cargo.lock", "Makefile", "rco.toml",
+# Build and test config per language: a change here may change how every test runs, so
+# it selects every test. A "*.x" entry is a suffix. A language with no entry must be in
+# NO_BUILD_FILES (tests/test_affected.py walks every language in LANG_OF).
+BUILD_FILES: dict[str, tuple[str, ...]] = {
+    "python": ("pyproject.toml", "setup.cfg", "setup.py", "tox.ini", "pytest.ini", "noxfile.py",
+               ".coveragerc", "sitecustomize.py", "Pipfile", "Pipfile.lock", "poetry.lock",
+               "uv.lock", "requirements*.txt", "requirements*.in", "constraints*.txt",
+               "constraints*.in"),
+    "js": ("package.json", "package-lock.json", "yarn.lock", "pnpm-lock.yaml", "tsconfig.json"),
+    "go": ("go.mod", "go.sum"),
+    "rust": ("Cargo.toml", "Cargo.lock"),
+    "java": ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle",
+             "settings.gradle.kts", "gradle.properties", "libs.versions.toml", "*.gradle",
+             "*.gradle.kts"),
+    "csharp": ("*.csproj", "*.sln", "*.slnx", "*.props", "*.targets", "global.json",
+               "nuget.config", "NuGet.Config"),
 }
+NO_BUILD_FILES = frozenset({"sh"})  # languages whose files carry no build manifest
+_INFRA_NAMES = {"Makefile", "rco.toml"} | {
+    n for names in BUILD_FILES.values() for n in names if "*" not in n}
+_INFRA_SUFFIX = tuple(n[1:] for names in BUILD_FILES.values() for n in names
+                      if n.startswith("*") and "*" not in n[1:])
+_INFRA_GLOBS = tuple(n.split("*") for names in BUILD_FILES.values() for n in names
+                     if "*" in n[1:])
 _INFRA_PREFIX = ("jest.config.", "vitest.config.", "babel.config.")
 _INFRA_DIRS = (".github/workflows/",)
 
@@ -84,6 +107,10 @@ def is_test(path: str) -> bool:
     if lang == "java":  # Maven/Gradle src/test/java, and the usual *Test class names
         return (name.removesuffix(".java").endswith(("Test", "Tests", "IT", "TestCase"))
                 or name.startswith("Test") or "test" in dirs or "tests" in dirs)
+    if lang == "csharp":  # xUnit, NUnit, MSTest: *Tests.cs, or a *.Tests project directory
+        return (name.removesuffix(".cs").endswith(("Test", "Tests", "TestCase", "Fixture"))
+                or any(d.lower() in ("test", "tests") or d.endswith((".Tests", ".Test", ".UnitTests"))
+                       for d in dirs))
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False
@@ -93,12 +120,14 @@ def is_infra(path: str) -> bool:
     """Test config or infra: a change selects every test (`run_all`)."""
     parts = path.split("/")
     name = parts[-1]
-    if _TEST_DATA_DIRS & set(parts[:-1]) and not path.startswith(_INFRA_DIRS):
-        return False  # a fixture repo's pyproject.toml is test data
+    if _FIXTURE_DIRS & set(parts[:-1]) and not path.startswith(_INFRA_DIRS):
+        return False  # a fixture repo's pyproject.toml is test data; a build file in test/ is not
     if path == "conftest.py" or name in _INFRA_NAMES or path.startswith(_INFRA_DIRS):
         return True
-    if name.startswith(("requirements", "constraints")):
-        return name.endswith((".txt", ".in"))
+    if name.endswith(_INFRA_SUFFIX):
+        return True
+    if any(name.startswith(a) and name.endswith(b) for a, b in _INFRA_GLOBS):
+        return True
     return name.startswith(_INFRA_PREFIX)
 
 
@@ -221,9 +250,9 @@ def select(changed: Sequence[str], head_paths: Sequence[str],
 
 
 def _code_sources(repo: Path, entries: tuple[gitread.Entry, ...]) -> tuple[list[str], dict[str, bytes]]:
-    from rco.edges import MANIFEST_NAMES
+    from rco.edges import is_manifest
     ents = [e for e in entries if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
-            and (is_code(e.path) or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
+            and (is_code(e.path) or is_manifest(e.path))]
     data = gitread.read_blobs(repo, [e.blob for e in ents])
     return [e.path for e in entries], {e.path: data[e.blob] for e in ents}
 

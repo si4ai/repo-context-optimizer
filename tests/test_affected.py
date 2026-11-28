@@ -182,3 +182,46 @@ def test_snapshots_leave_the_index_alone_and_are_stable(tmp_path, capsys):
     paths = {c["path"] for c in json.loads(capsys.readouterr().out)["changes"]}
     assert paths == {"src/app/core.py", "web/a.ts", "web/b.ts"}
     assert cli.main(["diff", "--repo", str(repo), "--staged", "HEAD", "HEAD"]) == Exit.USAGE
+
+
+def test_every_language_has_build_files_that_select_every_test():
+    """A new language must name its build files here, or say it has none."""
+    from rco.affected import BUILD_FILES, NO_BUILD_FILES
+    from rco import edges
+    from rco.extract.langs import LANG_OF
+
+    langs = set(LANG_OF.values()) | {"python"}
+    assert langs <= set(BUILD_FILES) | NO_BUILD_FILES, langs - set(BUILD_FILES) - NO_BUILD_FILES
+    assert not NO_BUILD_FILES & set(BUILD_FILES)
+    for lang, names in BUILD_FILES.items():
+        assert names, lang
+        for n in names:
+            sample = n.replace("*", "x")
+            for path in (sample, f"app/{sample}", f"a/b/c/{sample}"):
+                assert is_infra(path), (lang, path)
+            assert not is_infra(f"tests/fixtures/{sample}"), (lang, sample)  # a fixture is test data
+            assert is_infra(f"test/{sample}") and is_infra(f"app/tests/Util/{sample}"), (lang, sample)
+            _, tests, run_all, _ = select([f"app/{sample}"], ["app/Fix.test.js"], [{}],
+                                         sources=[{"src/Reader.kt": f'"{sample}"'.encode()}])
+            assert run_all, (lang, sample)  # a file that only names it does not read it
+    suffixes = getattr(edges, "MANIFEST_SUFFIXES", ())
+    for n in edges.MANIFEST_NAMES + tuple("x" + s for s in suffixes):  # the manifests edges read
+        assert is_infra(n) and is_infra(f"a/{n}"), n
+
+
+def test_a_build_file_a_source_file_only_mentions_still_runs_everything():
+    srcs = [{"build-logic/src/main/kotlin/Bnd.kt": b'val f = "build.gradle.kts"'}]
+    for p in ("okhttp/build.gradle.kts", "Lib/Lib.csproj", "Directory.Build.props", "pom.xml",
+              "gradle/libs.versions.toml"):
+        sel = selection([p], ["a/T.java"], [{}], sources=srcs if p.endswith(".kts") else ())
+        assert sel.run_all and not sel.tests, p
+    assert not is_infra("notes/build-gradle.txt") and not is_infra("tests/fixtures/pom.xml")
+
+
+def test_a_build_file_in_a_test_directory_that_a_project_file_names_runs_everything():
+    srcs = [{"test/Lib.Tests/Lib.Tests.csproj":
+             b'<Project><ProjectReference Include="../TestUtils/TestUtils.csproj"/></Project>'}]
+    sel = selection(["test/TestUtils/TestUtils.csproj"], ["test/Lib.Tests/T.cs"], [{}], sources=srcs)
+    assert sel.run_all and not sel.tests
+    for p in ("tests/TestUtils/TestUtils.csproj", "test/Directory.Build.props", "tests/pom.xml"):
+        assert selection([p], [], [{}]).run_all, p

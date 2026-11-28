@@ -15,7 +15,7 @@ SIG_MAX = 240
 
 # brace languages with """ text blocks, single-line "string" and 'c' literals (card 1362);
 # later brace languages join this set as their cards land.
-_TRIPLE_LANGS = ("java",)
+_TRIPLE_LANGS = ("java", "csharp")
 
 # JS: a "/" after one of these (or at the start) starts a regex literal.
 _REGEX_PREV = set("(,=:[!&|?{};+-*%<>~^") | {""}
@@ -42,7 +42,7 @@ def _blank(chars: list[str], a: int, b: int) -> None:
 
 
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust", "java" or "sh". A replay run caches it by text (rco.memo)."""
+    """lang: "js", "go", "rust", "java", "csharp" or "sh". A replay run caches it by text (rco.memo)."""
     from rco import memo
     return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
 
@@ -77,6 +77,13 @@ def _scan(text: str, lang: str) -> Scan:
             _blank(code, i, j)
             i = j
             continue
+        if lang == "csharp" and c == "#" and not text[text.rfind("\n", 0, i) + 1:i].strip():
+            j = text.find("\n", i)  # a preprocessor line (#if, #region): no code, no doc
+            j = n if j < 0 else j
+            _blank(nc, i, j)
+            _blank(code, i, j)
+            i = j
+            continue
         if lang != "sh" and c == "/" and nxt == "/":
             j = text.find("\n", i)
             j = n if j < 0 else j
@@ -105,6 +112,16 @@ def _scan(text: str, lang: str) -> Scan:
             continue
         # strings
         q = ""
+        if lang == "csharp" and text.startswith('"""', i):  # raw string: 3 or more quotes, no escapes
+            k = 3
+            while text.startswith('"', i + k):
+                k += 1
+            e = text.find('"' * k, i + k)
+            e = n if e < 0 else e
+            _blank(code, i + k, e)
+            i = min(e + k, n)
+            last = '"'
+            continue
         if lang in _TRIPLE_LANGS and text.startswith('"""', i):  # text block: no escapes end it
             j, e = i + 3, n
             while j < n:
@@ -117,6 +134,20 @@ def _scan(text: str, lang: str) -> Scan:
                 j += 1
             _blank(code, i + 3, min(e, n))
             i = min(e + 3, n)
+            last = '"'
+            continue
+        if lang == "csharp" and c == '"' and i > 0 and (text[i - 1] == "@" or text[i - 2:i] == "@$"):
+            # verbatim ($@"..." or @$"..."): "" is a quote
+            j = i + 1
+            while j < n:
+                if text[j] == '"':
+                    if text[j + 1:j + 2] == '"':
+                        j += 2
+                        continue
+                    break
+                j += 1
+            _blank(code, i + 1, min(j, n))
+            i = min(j, n) + 1
             last = '"'
             continue
         if c in "\"'`":

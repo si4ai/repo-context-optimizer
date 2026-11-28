@@ -240,6 +240,13 @@ step-0 follow-up PR, sent to every open step first.
   stand in for `package util;`; files with no `package` line share the
   default package in every root. Twin files that tie on every rule all
   get an edge.
+  C# (0.2.0, card 1363): `using N;` (also `using static`, an alias, and
+  `global using`) and the file's own namespace with its parents map to the
+  files that declare a type the file names in that namespace, so a file in
+  the namespace needs no `using`; a partial type links all its files in the
+  nearest project. A `.csproj` `ProjectReference` (followed transitively)
+  limits which projects a file can see; a file under no project sees all
+  projects. Twin types in projects equally near the file all get an edge.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the

@@ -11,6 +11,17 @@
   their importers. A deterministic scanner, no new dependency. The
   replay on google/guava (85% median saving, 0 losses over 43 commits)
   is in `docs/baseline/lang-java.md` (#115, card 1362)
+- C#: signatures in the Tree (classes, structs, interfaces, enums, records,
+  delegates, methods, properties, events, indexers, operators, constants;
+  public, protected and protected internal only) and edges through `using`,
+  namespaces and `.csproj` project references, with the same scanner and the
+  shared brace helpers. The replay on JamesNK/Newtonsoft.Json (84% median
+  saving, 0 losses over 37 commits) is in `docs/baseline/lang-csharp.md`
+  (#116, card 1363)
+- `rco affected`: a changed build file selects every test for each language
+  (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
+  like), even when a source file only names it; a test walks every language
+  in `LANG_OF` so a new one has to list its build files (#116, card 1363)
 
 ## 0.1.8 - 2026-11-27
 

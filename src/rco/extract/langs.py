@@ -742,7 +742,7 @@ def _sh_value_end(s: Scan, i: int) -> int:
     return len(s.code) if j < 0 else j
 
 
-LANG_OF = {**{e: "js" for e in JS_EXT}, ".go": "go", ".rs": "rust", ".java": "java",
+LANG_OF = {**{e: "js" for e in JS_EXT}, ".go": "go", ".rs": "rust", ".java": "java", ".cs": "csharp",
            **{e: "sh" for e in SH_EXT}}
 
 

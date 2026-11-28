@@ -154,12 +154,12 @@ def _tree_paths(t: Tree) -> list[str]:
 def read_sources(repo: Path, sha: str) -> dict[str, bytes]:
     """Code the edge rules read at sha: Python, bundled languages, pyproject.toml and
     the package.json, go.mod and Cargo.toml manifests; no symlinks, no submodules."""
-    from rco.edges import MANIFEST_NAMES
+    from rco.edges import is_manifest
     from rco.extract.langs import lang_of
     ents = [e for e in gitread.ls_tree(repo, sha)
             if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
             and (e.path.endswith(".py") or e.path == "pyproject.toml" or lang_of(e.path)
-                 or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
+                 or is_manifest(e.path))]
     data = gitread.read_blobs(repo, [e.blob for e in ents])
     return {e.path: data[e.blob] for e in ents}
 

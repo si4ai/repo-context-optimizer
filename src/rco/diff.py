@@ -185,11 +185,11 @@ def compare(base: Map, head: Map) -> tuple[tuple[str, Op, _Entry, _Entry | None]
 
 def code_sources(repo: Path, entries: tuple[gitread.Entry, ...]) -> dict[str, bytes]:
     """path -> bytes of every code file (Python and the bundled languages) plus manifests."""
-    from rco.edges import MANIFEST_NAMES
+    from rco.edges import is_manifest
     from rco.extract.langs import lang_of
     ents = [e for e in entries if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
             and (e.path.endswith(".py") or lang_of(e.path)
-                 or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
+                 or is_manifest(e.path))]
     data = gitread.read_blobs(repo, [e.blob for e in ents])
     return {e.path: data[e.blob] for e in ents}
 
