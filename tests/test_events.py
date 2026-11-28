@@ -279,3 +279,46 @@ def test_cli_pack_writes_pack_fields(tmp_path):
     assert rec["pack_budget"] == 12000 or rec["pack_budget"] > 0
     assert "pack_skipped" in rec
     assert rec["pack_overrun"] >= 0
+
+
+def test_cli_pack_pins_skipped_and_overrun(tmp_path, monkeypatch):
+    """Card 1351 W1: pack_skipped and pack_overrun come from the pack, not defaults."""
+    from rco.forest_model import Pack
+    from rco.pack import MIN_BUDGET
+
+    # skip: --for a file that imports nothing in the repo
+    skip_repo, _ = fixture.make_repo(tmp_path / "skip", {"a.py": "print(1)\n"})
+    (skip_repo / ".rco").mkdir()
+    assert cli.main(["pack", "--repo", str(skip_repo), "--for", "a.py"]) == Exit.OK
+    rec = json.loads((skip_repo / ".rco" / "events.jsonl").read_text().splitlines()[-1])
+    assert rec["cmd"] == "pack"
+    assert rec["pack_skipped"] is True
+    assert rec["pack_overrun"] == 0
+
+    # a real pack: imported file is large enough that the hop is outlined
+    pad = "# " + ("word " * 800)
+    repo, sha = fixture.make_repo(tmp_path / "real", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n" + pad + "\n",
+        "pkg/b.py": "from pkg.a import X\n",
+    })
+    (repo / ".rco").mkdir()
+    assert cli.main(["pack", "--repo", str(repo), "--for", "pkg/b.py"]) == Exit.OK
+    rec = json.loads((repo / ".rco" / "events.jsonl").read_text().splitlines()[-1])
+    assert rec["pack_skipped"] is False
+    assert rec["pack_tokens"] > 0
+    assert rec["pack_overrun"] == 0
+
+    # overrun: the pack reports used over budget
+    def fake_pack(repo_path, sha_arg, for_paths, budget, store):
+        return Pack(sha=sha, budget=budget, used=budget + 40, forest=(),
+                    trees=(), hop=(), trimmed=(), stale=(),
+                    notes=(f"over budget: {budget + 40} / {budget}",))
+    monkeypatch.setattr("rco.pack.pack", fake_pack)
+    assert cli.main(["pack", "--repo", str(repo), "--for", "pkg/b.py",
+                     "--budget", str(MIN_BUDGET)]) == Exit.OK
+    rec = json.loads((repo / ".rco" / "events.jsonl").read_text().splitlines()[-1])
+    assert rec["pack_skipped"] is False
+    assert rec["pack_budget"] == MIN_BUDGET
+    assert rec["pack_tokens"] == MIN_BUDGET + 40
+    assert rec["pack_overrun"] == 40
