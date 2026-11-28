@@ -23,6 +23,7 @@
 
 ### changed
 
+- `rco metrics measure` counts the pack plus the changed files on the with-rco side, the same definition as `rco replay`. A skipped pack is a tie. A `rco pack` run records `pack_tokens`, `pack_budget`, `pack_skipped` and `pack_overrun` on the events line; when `.rco/` is missing, those fields are one note on stderr and the tree is not written. A recompute of 47 the-mill artifacts is in `docs/baseline/pipeline-meter-47.md` (card 1351)
 - `rco init --agents` reports the marked `AGENTS.md` block's size in tokens, using the same estimate as `rco pack` (card 1356)
 - `rco init --agents` tells the agent that after a compaction it should rerun `rco pack --for FILE...` instead of rereading the files (card 1355)
 - with `--for`, a one-hop module is a Forest line or a hop line, not both:

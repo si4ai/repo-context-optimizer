@@ -3,8 +3,9 @@
 One file per pull request, rco-metrics.json, compares what an agent would
 read without rco (every changed file at the head, plus the in-repo files
 those import, one hop) with what it reads with rco (the `rco pack --for
-CHANGED` markdown). Both sides are counted in bytes and in tokens of one
-tokenizer. The file schema is an integer 1, the same document the-mill
+CHANGED` markdown plus the changed files, the files the agent still opens).
+A skipped pack is a tie. Both sides are counted in bytes and in tokens of one
+tokenizer. The with/without definition is shared with `rco replay` (card 1351). The file schema is an integer 1, the same document the-mill
 already uploads, so a roll-up can mix sources.
 
     rco metrics measure --base SHA --head SHA --pr N --pack pack.md \\
@@ -25,6 +26,7 @@ from pathlib import Path
 from typing import Callable, Iterable, Mapping, Sequence
 
 from rco import __version__, gitread
+from rco.meter import arms, pack_is_skipped
 from rco.imports import file_graph
 from rco.output import Exit, UsageError, note
 
@@ -95,14 +97,33 @@ def read_set(changed: Iterable[str], graph: Mapping[str, Sequence[str]]) -> list
 def measure(changed: Sequence[str], graph: Mapping[str, Sequence[str]],
             blobs: Mapping[str, bytes], pack_text: str,
             count: Callable[[str], int]) -> dict:
-    """Both sides of the comparison; files not in blobs (deleted) are skipped."""
+    """Both sides of the comparison; files not in blobs (deleted) are skipped.
+
+    `without` is the changed files plus one import hop. `with` is the pack plus
+    the changed files (card 1351). A skipped pack is a tie.
+    """
     present = [p for p in changed if p in blobs]
-    files = [p for p in read_set(present, graph) if p in blobs]
-    text = "".join(blobs[p].decode("utf-8", "replace") for p in files)
-    without = {"files": len(files), "bytes": sum(len(blobs[p]) for p in files),
-               "tokens": count(text)}
-    with_ = {"files": len(present), "bytes": len(pack_text.encode("utf-8")),
-             "tokens": count(pack_text)}
+    reads = [p for p in read_set(present, graph) if p in blobs]
+    imported = [p for p in reads if p not in present]
+
+    def text(paths: list[str]) -> str:
+        return "".join(blobs[p].decode("utf-8", "replace") for p in paths)
+
+    skipped = pack_is_skipped(pack_text)
+    pack_tokens = 0 if skipped else count(pack_text)
+    without, with_ = arms(
+        changed_tokens=count(text(present)),
+        imported_tokens=count(text(imported)),
+        pack_tokens=pack_tokens,
+        skipped=skipped,
+        n_changed=len(present),
+        n_imported=len(imported),
+    )
+    without_bytes = sum(len(blobs[p]) for p in reads)
+    with_bytes = (without_bytes if skipped
+                  else len(pack_text.encode("utf-8")) + sum(len(blobs[p]) for p in present))
+    without = {**without, "bytes": without_bytes}
+    with_ = {**with_, "bytes": with_bytes}
     ratio = (round(with_["tokens"] / without["tokens"], 4)
              if without["tokens"] else None)
     return {"changed_files": len(present), "without_rco": without, "with_rco": with_,
