@@ -18,7 +18,7 @@ Open raw files only on demand.
 |---|---|---|
 | TR, FO, PK, DF, CK, UP | `rco tree`, `forest`, `pack`, `diff`, `check`, `update` | shipped |
 | PN, DR, TG, NT | `rco pin`, `drift`, `triage`, `notice` | shipped |
-| LG | bundled parsers for JavaScript/TypeScript, Go, Rust, Java, shell, and PowerShell | shipped |
+| LG | bundled parsers for JavaScript/TypeScript, Go, Rust, Java, C#, shell, and PowerShell | shipped |
 | MO | modules from `rco.toml`, then `package.json` / `Cargo.toml`, then directories | shipped |
 | CF | `rco.toml` settings and backend choice (`sqlite` or an entry point adapter) | shipped |
 | SS | a store cached across CI runs | shipped |
@@ -70,7 +70,7 @@ It prints tokens and file reads with and without rco for each commit, the median
 
 `--budget` is in tokens: tiktoken `o200k_base` when the `tokens` extra is installed, otherwise characters / 3.5, rounded up. The design default is 12000. `--for` is optional. These defaults match the [Commands](#commands) section.
 
-Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, Java, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
+Zero config is the goal: the SQLite backend is the default, with no `rco.toml` required. Cache lives in SQLite under `.rco/`, which rco adds to `.git/info/exclude`, never to `.gitignore`. Modules are detected automatically. Parsers for Python, SQL, JavaScript and TypeScript, Go, Rust, Java, C#, shell, and PowerShell come bundled. An unknown language falls back to a file outline instead of an error. No LLM, keys, or network are required.
 
 `rco.toml`, other backends, adapters, and MCP are all opt-in. If a configured backend is not installed, rco exits 2 and names it; it never silently switches to another store.
 
@@ -124,7 +124,7 @@ The first rule whose glob matches a path owns it. `*` and `?` stay inside one pa
 
 A Tree is a deterministic contract extracted from a module. It is never written by an LLM.
 
-- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, Java, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`, Java `public` and `protected`).
+- **Code contracts:** language-native skeletons with function and method bodies stripped, via Python's `ast` module and bundled deterministic scanners for JavaScript and TypeScript, Go, Rust, Java, C#, shell, and PowerShell (no tree-sitter or other dependency). Public classes and functions, signatures, type hints, the first docstring or comment line, constants, and `__all__` (or the language's equivalent: JS/TS exports, Go capitalized names, Rust `pub`, Java `public` and `protected`, C# `public`, `protected` and `protected internal`).
 - **Non-code contracts,** which often matter more across a repo than signatures alone: CLI commands and flags, SQL schema tables and columns, HTTP routes, and message or event shapes.
 
 Output is canonical (sorted JSON, no line numbers), so identical input always yields byte-identical output. The Tree hash is the sha256 of that JSON.
