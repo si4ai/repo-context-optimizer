@@ -836,3 +836,7 @@ util
 fac
 greeter
 named
+bnd
+directory
+lib
+reader

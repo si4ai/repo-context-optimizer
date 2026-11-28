@@ -18,6 +18,10 @@
   `rco replay` and `rco metrics measure` see Kotlin files and their
   importers. The replay on square/okhttp is in `docs/baseline/lang-kotlin.md`
   (#117, card 1364)
+- `rco affected`: a changed build file selects every test for each language
+  (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
+  like), even when a source file only names it; a test walks every language
+  in `LANG_OF` so a new one has to list its build files (#117, card 1364)
 
 ## 0.1.8 - 2026-11-27
 
