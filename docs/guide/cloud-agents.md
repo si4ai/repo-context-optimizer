@@ -58,7 +58,7 @@ Devin injects the first 16 KiB. `rco init --agents` warns when a file is over
 The install line is the same everywhere:
 
 ```sh
-pip install repo-context-optimizer==0.1.7 && rco update
+pip install repo-context-optimizer==0.1.8 && rco update
 ```
 
 `rco update` builds the store at `.rco/rco.db`, which is local to the
@@ -72,7 +72,7 @@ idempotent; `pip install` and `rco update` both are. Commit
 [`examples/cursor-environment.json`](examples/cursor-environment.json):
 
 ```json
-{"install":"pip install repo-context-optimizer==0.1.7 && rco update"}
+{"install":"pip install repo-context-optimizer==0.1.8 && rco update"}
 ```
 
 Cursor reads `.cursor/environment.json` only when no saved environment
