@@ -1,0 +1,1 @@
+{"install":"pip install repo-context-optimizer==0.1.7 && rco update"}

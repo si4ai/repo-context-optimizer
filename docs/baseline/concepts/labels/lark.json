@@ -1,0 +1,305 @@
+{
+ "repo": "lark",
+ "url": "https://github.com/lark-parser/lark",
+ "sha": "9a4fb9c7458e8155636773a3cded0016d52516da",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "lark",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.lexer",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.visitor",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "parsing toolkit: lexer, grammar, parsers, tree, visitors"
+  },
+  {
+   "kind": "module",
+   "path": "lark/__pyinstaller",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "arch.plugin",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "PyInstaller hook files"
+  },
+  {
+   "kind": "module",
+   "path": "lark/parsers",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "chart, LALR and CYK parser implementations"
+  },
+  {
+   "kind": "module",
+   "path": "lark/tools",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "tools: nearley converter, standalone parser generator, serialize"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite for parsers, lexer and trees"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_nearley",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the nearley grammar converter"
+  },
+  {
+   "kind": "file",
+   "path": "lark/common.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "LexerConf and ParserConf configuration objects",
+   "auto_rejected": [
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "lark/grammar.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "grammar symbols, terminals and rules"
+  },
+  {
+   "kind": "file",
+   "path": "lark/parse_tree_builder.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "builds and shapes the parse tree from rules"
+  },
+  {
+   "kind": "file",
+   "path": "lark/parser_frontends.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "parser frontends: choose and wire lexer and parser by options"
+  },
+  {
+   "kind": "file",
+   "path": "lark/parsers/earley.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "chart parser in earley.py"
+  },
+  {
+   "kind": "file",
+   "path": "lark/parsers/earley_forest.py",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.visitor",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "SPPF forest nodes with ForestVisitor and ForestTransformer"
+  },
+  {
+   "kind": "file",
+   "path": "lark/tools/nearley.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "converts nearley grammars to Lark; has main and arg parser"
+  },
+  {
+   "kind": "file",
+   "path": "lark/tools/serialize.py",
+   "concepts": [
+    {
+     "id": "ser.serialization",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "serialize a parser to JSON, argparse main"
+  },
+  {
+   "kind": "file",
+   "path": "lark/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers including Serialize and SerializeMemoizer"
+  },
+  {
+   "kind": "file",
+   "path": "tests/__main__.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test runner entry point"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tools.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests the standalone tool"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_tree_templates.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests tree templates"
+  }
+ ]
+}

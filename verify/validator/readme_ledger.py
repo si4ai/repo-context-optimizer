@@ -41,13 +41,13 @@ def no_rco_code(t: Path):
 
 def defaults_consistent(t: Path):
     r = CTX["readme"]
-    need = {"quick start budget 8000": "--budget 8000" in r, "planned default 8000": "Design default: 8000." in r,
-            "open question 8000": "8000 estimated tokens is the design default" in r,
+    need = {"quick start budget 12000": "--budget 12000" in r, "planned default 12000": "Design default: 12000." in r,
+            "open question 12000": "12000 estimated tokens is the interim design default" in r,
             "SHA=HEAD quick start": "SHA=HEAD" in r, "SHA defaults HEAD": "`SHA` defaults to `HEAD`." in r,
             "--for optional (both)": r.count("`--for` is optional") >= 2,
             "diff BASE=merge-base (both)": "BASE=merge-base(default branch, HEAD)" in r and "`BASE` defaults to the merge-base" in r}
     bad = [k for k, v in need.items() if not v]
-    return ("PASS", "budget 8000, SHA=HEAD, --for optional, diff base agree") if not bad else ("FAIL", f"mismatch: {bad}")
+    return ("PASS", "budget 12000, SHA=HEAD, --for optional, diff base agree") if not bad else ("FAIL", f"mismatch: {bad}")
 
 
 def sample_pack_tokens(t: Path):
@@ -203,6 +203,116 @@ def hygiene_check_present(t: Path):
 def role_trailer_present(t: Path):
     h = _find(r"trailer|role")
     return ("PASS", f"role-trailer check present: {h}") if h else ("FAIL", "not met yet: no role-trailer check in the repo (Auditor is porting it, card 1126)")
+
+
+def _fixture(t: Path, work: Path):
+    """A one-commit git repo under work, plus a runner for this ref's rco (git archive tree t)."""
+    env = {**os.environ, "PYTHONPATH": str(t / "src"), "PYTHONDONTWRITEBYTECODE": "1"}
+    env.pop("RCO_DEBUG", None)
+    def sh(*a, **k):
+        return subprocess.run(a, cwd=work, capture_output=True, text=True, env=env, **k)
+    (work / "pkg").mkdir(parents=True)
+    (work / "pkg/__init__.py").write_text("")
+    (work / "pkg/mod.py").write_text("def a(x):\n    return x\n")
+    sh("git", "init", "-q", ".")
+    sh("git", "add", "-A")
+    sh("git", "-c", "user.name=ledger", "-c", "user.email=ledger@example.invalid", "commit", "-q", "-m", "init")
+    head = sh("git", "rev-parse", "HEAD").stdout.strip()
+    return (lambda *a: sh(sys.executable, "-m", "rco", *a)), head
+
+
+def _events(work: Path):
+    f = work / ".rco/events.jsonl"
+    return [json.loads(l) for l in f.read_text().splitlines()] if f.is_file() else []
+
+
+def events_update_creates(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        if (w / ".rco").exists(): return ("FAIL", ".rco exists before update")
+        p = rco("update")
+        ev = _events(w)
+        if p.returncode != 0 or len(ev) != 1: return ("FAIL", f"update exit {p.returncode}, {len(ev)} lines: {p.stderr[-200:]}")
+        e = ev[0]
+        ok = e.get("cmd") == "update" and e.get("exit") == 0 and e.get("store") == head
+        return ("PASS", "update created .rco/events.jsonl: cmd=update exit=0 store=HEAD") if ok else ("FAIL", f"first line {e}")
+
+
+def events_runs_append(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        rco("update")
+        rco("pack", "--for", "pkg/mod.py")
+        after_pack = _events(w)
+        rco("check", "forest")
+        after_check = _events(w)
+        required = {"v", "run", "ts", "cmd", "exit", "store", "head", "ms", "for"}
+        optional = {"for_cut"}
+        pack_keys = {"pack_tokens", "pack_budget", "pack_skipped", "pack_overrun"}
+        probs = []
+        if [e.get("cmd") for e in after_pack] != ["update", "pack"]: probs.append(f"after pack: {[e.get('cmd') for e in after_pack]}")
+        elif after_pack[1].get("for") != ["pkg/mod.py"] or after_pack[1].get("exit") != 0: probs.append(f"pack line {after_pack[1]}")
+        if len(after_check) != 3 or after_check[-1].get("cmd") != "check": probs.append(f"check did not append: {len(after_check)} lines")
+        for e in after_check:
+            keys = set(e)
+            missing = required - keys
+            extra = keys - required - optional - pack_keys
+            if missing or extra:
+                probs.append(f"line cmd={e.get('cmd')} keys {sorted(keys)}")
+            elif e.get("cmd") == "pack":
+                if not pack_keys <= keys:
+                    probs.append(f"pack line missing {sorted(pack_keys - keys)}")
+            elif keys & pack_keys:
+                probs.append(f"{e.get('cmd')} line has pack keys")
+        return ("PASS", "update, pack, check each append one line; pack lines include pack token fields") if not probs else ("FAIL", "; ".join(probs))
+
+
+def events_help_version_add_no_line(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        rco("update")
+        before = _events(w)
+        p_help = rco("--help")
+        p_ver = rco("--version")
+        after = _events(w)
+        probs = []
+        if p_help.returncode != 0: probs.append(f"--help exit {p_help.returncode}")
+        if p_ver.returncode != 0: probs.append(f"--version exit {p_ver.returncode}")
+        if after != before: probs.append(f"--help or --version appended a line: before {len(before)} after {len(after)}")
+        return ("PASS", "--help and --version added no line") if not probs else ("FAIL", "; ".join(probs))
+
+
+def events_not_written_without_rco_dir(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        p1 = rco("pack", "--for", "pkg/mod.py"); rco("check", "forest")
+        if p1.returncode != 0: return ("FAIL", f"pack exit {p1.returncode}")
+        return ("PASS", "pack and check in a tree with no .rco/ left no .rco/") if not (w / ".rco").exists() else ("FAIL", f".rco appeared: {sorted(x.name for x in (w / '.rco').iterdir())}")
+
+
+def readonly_commands_create_no_store(t: Path):
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        (w / ".rco").mkdir()
+        rco("pack", "--for", "pkg/mod.py"); rco("check", "forest")
+        dbs = sorted(x.name for x in (w / ".rco").iterdir() if x.name.startswith("rco.db"))
+        return ("PASS", "pack and check beside an empty .rco/ created no rco.db") if not dbs else ("FAIL", f"store files appeared: {dbs}")
+
+
+def no_events_table(t: Path):
+    import sqlite3
+    with tempfile.TemporaryDirectory() as td:
+        w = Path(td) / "w"; rco, head = _fixture(t, w)
+        rco("update"); rco("pack", "--for", "pkg/mod.py")
+        db = w / ".rco/rco.db"
+        if not db.is_file(): return ("FAIL", "no rco.db after update")
+        con = sqlite3.connect(f"file:{db}?mode=ro", uri=True)
+        try:
+            tables = sorted(r[0] for r in con.execute("select name from sqlite_master where type='table'"))
+        finally:
+            con.close()
+        bad = [x for x in tables if "event" in x.lower()]
+        return ("PASS", f"tables {tables}: no events table") if not bad else ("FAIL", f"events table present: {bad}")
 
 
 PROBES = {k: v for k, v in globals().items() if callable(v) and not k.startswith("_")}

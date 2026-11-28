@@ -48,14 +48,20 @@ def nodes_for(src: SourceFile, link: bool = False) -> list[Node]:
     return uniq
 
 
+def _file_nodes(src: SourceFile, link: bool) -> tuple[Node, ...]:
+    """The redacted, sorted nodes of one file; a replay run caches them by path and bytes."""
+    from rco import memo
+    return memo.cached("file_nodes", (src.path, src.data, link),
+                       lambda: tuple(_sorted(redact.redact_node(n)) for n in nodes_for(src, link)))
+
+
 def build_tree(module: Module, files: Sequence[SourceFile],
                links: frozenset[str] = frozenset()) -> Tree:
     """Tree of one module. files must cover module.files; links are symlink paths."""
     by_path = {f.path: f for f in files}
     nodes: list[Node] = []
     for p in module.files:
-        nodes.extend(nodes_for(by_path[p], p in links))
-    nodes = [_sorted(redact.redact_node(n)) for n in nodes]
+        nodes.extend(_file_nodes(by_path[p], p in links))
     vers = extract.versions()
     return Tree(
         module=module.id,

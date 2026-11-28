@@ -1,0 +1,305 @@
+{
+ "repo": "httpx",
+ "url": "https://github.com/encode/httpx",
+ "sha": "e347fb5e93b91f7cf63a575f595f33db8d90fe20",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "httpx",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP client package: client, models, auth, transports"
+  },
+  {
+   "kind": "module",
+   "path": "httpx/_transports",
+   "concepts": [
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "transport adapters: default, asgi, wsgi, mock"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/client",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "client tests",
+   "auto_rejected": [
+    "arch.client_server"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "tests/models",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "request, response, URL model tests",
+   "auto_rejected": [
+    "cs.ml"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_auth.py",
+   "concepts": [
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Auth flows: basic, digest, netrc"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_content.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "request body encoding streams"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_exceptions.py",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "exception hierarchy"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_multipart.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "multipart form encoding"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_status_codes.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "status code enum"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_transports/base.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "auto"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "BaseTransport abstract classes"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_transports/wsgi.py",
+   "concepts": [
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "WSGI transport adapter",
+   "auto_rejected": [
+    "arch.mvc",
+    "net.server"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_types.py",
+   "concepts": [
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "type definitions"
+  },
+  {
+   "kind": "file",
+   "path": "httpx/_utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "helpers: proxies, string conversion"
+  },
+  {
+   "kind": "file",
+   "path": "tests/models/test_whatwg.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests URL parsing"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_config.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.security",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests SSL config"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_timeouts.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests timeouts"
+  }
+ ]
+}

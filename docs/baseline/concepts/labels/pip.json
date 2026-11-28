@@ -1,0 +1,489 @@
+{
+ "repo": "pip",
+ "url": "https://github.com/pypa/pip",
+ "sha": "5b4d45102eb54ceb77740f83c80ef09017565a67",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/pip/_internal",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "pip internals root: main, cache, configuration, wheel builder",
+   "auto_rejected": [
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/build_env",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.os",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "isolated build environments for build backends"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/cli",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command-line parsing, base command, options, spinners"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/commands",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "install, download, freeze and other commands"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/distributions",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "sdist, wheel and installed distribution abstractions"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/exceptions",
+   "concepts": [
+    {
+     "id": "xcut.errors",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "exception package"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/models",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "entity models: link, candidate, index",
+   "auto_rejected": [
+    "cs.ml"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/network",
+   "concepts": [
+    {
+     "id": "net.transport",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "network: session, auth, HTTP cache, download"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/req",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "requirement parsing, req files, install and uninstall"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/resolution/resolvelib",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "resolvelib-based resolver with provider and factory"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/utils",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.compat",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "utilities: filesystem, logging, compat, hashes"
+  },
+  {
+   "kind": "module",
+   "path": "src/pip/_internal/vcs",
+   "concepts": [
+    {
+     "id": "scm.vcs",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "git, hg, svn, bazaar backends on a VersionControl base"
+  },
+  {
+   "kind": "module",
+   "path": "tests/functional",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "functional tests of pip commands",
+   "auto_rejected": [
+    "layer.util"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "tests/lib",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test support library"
+  },
+  {
+   "kind": "module",
+   "path": "tests/unit",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "unit tests"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/__init__.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "internal main entry"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/cli/spinners.py",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.interface",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "progress spinners"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/commands/__init__.py",
+   "concepts": [
+    {
+     "id": "pattern.factory",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command registry and create_command factory"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/commands/freeze.py",
+   "concepts": [
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "freeze command"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/network/cache.py",
+   "concepts": [
+    {
+     "id": "xcut.caching",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP cache on disk"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/operations/check.py",
+   "concepts": [
+    {
+     "id": "xcut.validation",
+     "prov": "auto"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "dependency validation of installed packages"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/pyproject.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "load pyproject.toml build config"
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/resolution/legacy/resolver.py",
+   "concepts": [
+    {
+     "id": "scm.packaging",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.strategy",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "legacy dependency resolver",
+   "auto_rejected": [
+    "net.transport"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "src/pip/_internal/utils/urls.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.io",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "URL to path conversion"
+  },
+  {
+   "kind": "file",
+   "path": "tests/functional/test_install_wheel.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests wheel installs"
+  },
+  {
+   "kind": "file",
+   "path": "tests/lib/local_repos.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.vcs",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "local svn/git repos for tests"
+  },
+  {
+   "kind": "file",
+   "path": "tests/unit/resolution_resolvelib/test_reporter.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "scm.packaging",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests resolver reporter messages"
+  }
+ ]
+}

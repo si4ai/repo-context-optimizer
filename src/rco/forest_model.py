@@ -19,7 +19,7 @@ SCHEMA_UPDATE = "rco.update/1"
 MINED_PROMPT_VERSION = "mined/1"
 MINED_MODEL_ID = ""
 PROSE_CAP = 300  # characters, every prose source
-DEFAULT_BUDGET = 8000  # estimated tokens (characters / 4)
+DEFAULT_BUDGET = 12000  # tokens (o200k, or characters / 3.5); interim, see README
 DEFAULT_POINTER = "main"
 
 _FOREST_KEYS = frozenset({"schema", "sha", "notes", "modules"})
@@ -28,7 +28,8 @@ _ENTRY_KEYS = frozenset({"id", "layer", "depends_on", "used_by", "entry_points",
 _OWNS_KEYS = frozenset({"commands", "tables", "routes"})
 _PROSE_KEYS = frozenset({"text", "source", "tree_hash", "prompt_version", "model_id"})
 _PACK_KEYS = frozenset({"schema", "sha", "budget", "used", "forest", "trees", "hop",
-                        "trimmed", "stale", "notes"})
+                        "trimmed", "stale", "notes", "built"})
+_BUILT_KEYS = frozenset({"source", "head", "behind", "differs"})
 
 
 class ProseSource(str, Enum):
@@ -87,16 +88,33 @@ class HopLine:
 
 
 @dataclass(frozen=True, slots=True)
+class BuiltFrom:
+    """Where a pack came from, computed when it was built (card 1315).
+
+    source is "store" or "git"; head is HEAD at build time (None without a
+    commit); behind counts commits from the pack's SHA to HEAD (None when the
+    SHA is not on HEAD's history); differs lists working-tree paths that
+    differ from the pack's SHA (tracked changes plus untracked files).
+    """
+
+    source: str
+    head: str | None
+    behind: int | None
+    differs: tuple[str, ...] = ()
+
+
+@dataclass(frozen=True, slots=True)
 class Pack:
     sha: str
     budget: int  # estimated tokens
     used: int  # estimated tokens of the rendered markdown
     forest: tuple[ForestEntry, ...]
-    trees: tuple[Tree, ...]  # full Trees for the --for modules
+    trees: tuple[Tree, ...]  # with --for: one Tree per imported file, nearest first (card 1340)
     hop: tuple[HopLine, ...]  # one import hop out, name and one line
     trimmed: tuple[str, ...]  # every module or node cut for budget, in cut order
     stale: tuple[str, ...]  # module ids whose prose TreeHash != current TreeHash
     notes: tuple[str, ...] = ()
+    built: BuiltFrom | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -129,9 +147,31 @@ def forest_hash(tree_hash: str, edges: tuple[str, ...], prompt_version: str = MI
     }))
 
 
+# tiktoken encoding, or None after a failed import; _enc_failed stays set
+# for the process so pack does not retry a missing extra on every call
+_enc = None
+_enc_failed = False
+
+
 def estimate_tokens(text: str) -> int:
-    """README: characters / 4, rounded up."""
-    return (len(text) + 3) // 4
+    """Tokens of pack text (card 1343): o200k_base when tiktoken is installed,
+    otherwise characters / 3.5, rounded up (a conservative stand-in)."""
+    global _enc, _enc_failed
+    if _enc is None and not _enc_failed:
+        try:
+            import tiktoken
+            _enc = tiktoken.get_encoding("o200k_base")
+        except Exception:
+            _enc_failed = True
+    if _enc is not None:
+        return len(_enc.encode(text, disallowed_special=()))
+    return (len(text) * 2 + 6) // 7 if text else 0
+
+
+def token_method() -> str:
+    """How estimate_tokens is counting, after the same one-time probe."""
+    estimate_tokens("")
+    return "tiktoken o200k_base" if _enc is not None else "characters / 3.5"
 
 
 # ---- canonical JSON ----------------------------------------------------------
@@ -221,6 +261,9 @@ def pack_to_obj(p: Pack) -> dict:
         "trimmed": list(p.trimmed),
         "stale": list(p.stale),
         "notes": list(p.notes),
+        "built": None if p.built is None else {
+            "source": p.built.source, "head": p.built.head,
+            "behind": p.built.behind, "differs": list(p.built.differs)},
     }
 
 
@@ -236,4 +279,15 @@ def pack_from_obj(o: object) -> Pack:
         trimmed=tuple(str(x) for x in o["trimmed"]),
         stale=tuple(str(x) for x in o["stale"]),
         notes=tuple(str(x) for x in o.get("notes", [])),
+        built=_built_from_obj(o.get("built")),
     )
+
+
+def _built_from_obj(o: object) -> BuiltFrom | None:
+    if o is None:
+        return None
+    o = _strict(o, _BUILT_KEYS, "pack built")
+    head, behind = o.get("head"), o.get("behind")
+    return BuiltFrom(source=str(o["source"]), head=None if head is None else str(head),
+                 behind=None if behind is None else int(behind),
+                 differs=tuple(str(x) for x in o.get("differs", [])))

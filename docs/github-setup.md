@@ -1,6 +1,6 @@
 # Configure GitHub for a user repository
 
-This file is optional repository process. To adopt rco the product, `pip install repo-context-optimizer==0.1.6` and `rco init` are enough; see [adopting rco](guide/adopting-rco.md). Use this file only if you also want the repository process around it: checks over rules, report-only checks that show facts rather than hard-blocking a merge, and test selection.
+This file is optional repository process. To adopt rco the product, `pip install repo-context-optimizer==0.1.7` and `rco init` are enough; see [adopting rco](guide/adopting-rco.md). Use this file only if you also want the repository process around it: checks over rules, report-only checks that show facts rather than hard-blocking a merge, and test selection.
 
 The lines below are defaults to adapt, not fixed rules. This project uses an independent Validator that passes and merges pull requests, and by default authors do not merge their own PRs; another repository can pick a different passer.
 
@@ -51,7 +51,7 @@ These jobs are report-only: keep them off the required checks and out of the mer
 
 - `rco init` writes `.github/workflows/rco.yml` with one job, `rco`. On a pull request it writes `rco diff`, `rco affected`, `rco drift` (when `pins/` exists) and the cross-PR notice (`python -m rco.notice_report`) to the job summary. On a push to the default branch it runs `rco update --name <branch>`. It has no `merge_group` trigger, so a queue does not wait for it.
 - The notice ships in the wheel; there is nothing to copy. Its private-repository limit (the checkout drops its token) is in [adopting rco](guide/adopting-rco.md#setup-t0-rco-init).
-- Do not copy this repository's `drift_report` and `notice_report` jobs; the `rco` job covers both.
+- Do not copy this repository's `drift_report`, `notice_report`, `diff_affected_report` and `update_store` jobs; the `rco` job covers them.
 
 ## Validator GitHub App
 
@@ -117,7 +117,9 @@ Flags `--map` and `--control-plane` override the same fields. Defaults match the
 
 ## Hygiene and PR text
 
-`hygiene_report` runs `tools/check_hygiene.py` on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. It is report-only (no `--strict` in CI). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, byte-order marks, and junk files, in the commit range and in the PR title and body. The report names the kind and the path or commit, never the matched text; a crash fails the job. Flags or `ci/hygiene.toml` tune the words file and options.
+`hygiene_report` in `.github/workflows/ci.yml` calls the shared `si4ai/.github` hygiene workflow, pinned to a full commit sha, on every pull request, push to the default branch, and `merge_group`, the same way as `hidden_code_report`. That workflow runs the same `tools/check_hygiene.py`; this repo keeps its copy for the pre-commit hook. The `ci.yml` job is still report-only (no `--strict`), because `ci.yml` is a watched file. The merge gate is `.github/workflows/hygiene_gate.yml`, which calls the same shared workflow with `strict: true` so identifier findings fail the check (card 1353). It flags non-documentation addresses, home paths with a login segment, emails outside placeholder domains, credential shapes, title-case name tokens that are not ordinary words, typographic marks, byte-order marks, and junk files, in the commit range and in the PR title and body. The report names the kind and the path or commit, never the matched text; a crash fails the job. Flags or `ci/hygiene.toml` tune the words file and options.
+
+`.github/workflows/pr_text.yml` calls the shared pr_text workflow. It scans PR and issue titles and bodies and comments when they are posted or edited, plus a daily sweep, and fails on a hit, because the edit history keeps every revision. Title-case words this repo uses in headings belong in `tools/hygiene_words.txt`.
 
 Once per checkout, turn on the repo hooks with `git config core.hooksPath .githooks`. `pre-commit` runs `tools/check_hygiene.py --staged --strict` on staged blobs (byte-order marks and typographic marks on the whole blob; the other rules on added lines).
 

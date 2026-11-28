@@ -38,7 +38,12 @@ def _blank(chars: list[str], a: int, b: int) -> None:
 
 
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust" or "sh"."""
+    """lang: "js", "go", "rust" or "sh". A replay run caches it by text (rco.memo)."""
+    from rco import memo
+    return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
+
+
+def _scan(text: str, lang: str) -> Scan:
     n = len(text)
     nc = list(text)
     code = list(text)

@@ -1,0 +1,242 @@
+{
+ "repo": "jinja",
+ "url": "https://github.com/pallets/jinja",
+ "sha": "5ef70112a1ff19c05324ff889dd30405b1002044",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/jinja2",
+   "concepts": [
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.lexer",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "template engine: lexer, parser, nodes, compiler, runtime"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.ui",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/async_utils.py",
+   "concepts": [
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.decorator",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "async variants and auto-await helpers"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/constants.py",
+   "concepts": [
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "constants"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/debug.py",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "traceback rewriting for templates"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/idtracking.py",
+   "concepts": [
+    {
+     "id": "pattern.visitor",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "symbol tracking via node visitors"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/meta.py",
+   "concepts": [
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.visitor",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "template introspection helpers"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/nativetypes.py",
+   "concepts": [
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "native type code generator and environment"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/nodes.py",
+   "concepts": [
+    {
+     "id": "parse.ast",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.visitor",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "AST node classes"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/optimizer.py",
+   "concepts": [
+    {
+     "id": "parse.ast",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.visitor",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "constant-folding optimizer over the AST"
+  },
+  {
+   "kind": "file",
+   "path": "src/jinja2/utils.py",
+   "concepts": [
+    {
+     "id": "layer.util",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "helpers"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_async.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests async rendering"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_debug.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests debug tracebacks"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_lexnparse.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.lexer",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests lexer and parser"
+  }
+ ]
+}

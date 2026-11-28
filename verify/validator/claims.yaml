@@ -5,7 +5,7 @@
 - {id: R01, kind: now, quote: "Nothing is implemented yet.", probe: no_rco_code}
 - {id: R02, kind: now, quote: "Nothing below is implemented yet. Defaults match the", probe: no_rco_code}
 - {id: R03, kind: now, quote: "These defaults match the [Planned commands](#planned-commands) section.", probe: defaults_consistent}
-- {id: R04, kind: now, quote: "8000 estimated tokens is the design default", probe: defaults_consistent}
+- {id: R04, kind: now, quote: "12000 estimated tokens is the interim design default", probe: defaults_consistent}
 - {id: R05, kind: now, quote: "This sample is about 120 estimated tokens", probe: sample_pack_tokens}
 - {id: R06, kind: now, quote: "It was unclaimed on PyPI on 2026-11-09", probe: pypi_unclaimed}
 - {id: R07, kind: now, quote: "Status: modelled in `verify/spin/rco_update.pml`", probe: spin_model_present}
@@ -44,3 +44,9 @@
 - {id: R40, kind: planned, quote: "A conformance test suite is the check that an adapter is honest.", probe: null}
 - {id: R41, kind: planned, quote: "Modules detected from the package layout; Trees extracted;", probe: null}
 - {id: R42, kind: planned, quote: "`rco update` re-extracts only modules whose tree ids changed", probe: null}
+- {id: R43, kind: now, quote: "`rco update` creates `.rco/events.jsonl` and writes its first line.", probe: events_update_creates}
+- {id: R44, kind: now, quote: "Every later run appends one line, `pack` and `check` included, once `.rco/` exists.", probe: events_runs_append}
+- {id: R45, kind: now, quote: "`--help` and `--version` add no line.", probe: events_help_version_add_no_line}
+- {id: R46, kind: now, quote: "A `pack` or `check` in a tree with no `.rco/` writes nothing.", probe: events_not_written_without_rco_dir}
+- {id: R47, kind: now, quote: "`rco pack` and `rco check` never create a store, so no `rco.db` appears from either.", probe: readonly_commands_create_no_store}
+- {id: R48, kind: now, quote: "There is no `events` table in the SQLite store.", probe: no_events_table}

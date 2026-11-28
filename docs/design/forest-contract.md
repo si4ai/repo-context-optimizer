@@ -81,8 +81,8 @@ changes, and prose is copied forward on equal TreeHash only.
 
 ## 4. Pack (`rco.pack/1`) and update (`rco.update/1`)
 
-`rco pack [SHA] [--for FILE...] [--budget N]`. Budget is estimated tokens,
-characters / 4 rounded up (`forest_model.estimate_tokens`), default 8000,
+`rco pack [SHA] [--for FILE...] [--budget N]`. Budget is tokens: tiktoken `o200k_base` when installed, otherwise
+characters / 3.5 rounded up (`forest_model.estimate_tokens`), default 12000,
 measured on the rendered markdown.
 
 JSON keys: `schema, sha, budget, used, forest[], trees[], hop[{id,line}],
@@ -93,14 +93,14 @@ prose.
 Markdown follows the README example, plus a trimmed line:
 
 ```markdown
-# rco pack  (SHA=abc1234, budget=8000 estimated tokens)
+# rco pack  (SHA=abc1234, budget=12000 estimated tokens)
 
 ## Forest
 - <id>: <one line> (depends on: a, b) (used by: c)
 
-## Trees (full, for --for <files>)
+## Trees (files imported by --for <files>; the --for files are not outlined)
 ### <id>
-<one line per node, the rco tree markdown>
+<one line per node of each imported file, the rco tree markdown>
 
 ## One hop (name and one line)
 - <id>: <one line>
@@ -109,12 +109,26 @@ Markdown follows the README example, plus a trimmed line:
 # trimmed: x, y
 ```
 
-Without `--for` the pack is the Forest only. Cut order when over budget: one
+Without `--for` the pack is the Forest only and keeps the given budget. With
+`--for`, the budget is min(`--budget`, half the estimated tokens of the
+imported files), and when the `--for` files import no other file in the
+repo, or that budget is under 128, the pack is a single `nothing to add`
+line, exit 0 (card 1341). With `--for` the Trees section
+holds the signatures of the files the `--for` files import, one hop in the
+file import graph and across module boundaries, never the `--for` files' own
+outlines (card 1340). Imported files are ranked nearest first: imported by
+more `--for` files, then a smaller directory distance to the nearest
+importing `--for` file, then path. With `--for` the Forest holds only
+the owning modules and their one-hop modules (depends on and used by), and
+the cut order is: those neighbor Forest lines, then Tree
+nodes of the farthest imported file first, then the owners' Forest lines
+(card 1342). A one-hop module is named once: as a Forest line, or as a hop
+line if that Forest line was cut and the hop line still fits (card 1347).
+Without `--for`, cut order when over budget: one
 hop lines first, then empty Forest lines (layer 0, no edges, nothing owned,
-no prose) from the deepest level up, then Tree nodes from the end of each
-full Tree, then the remaining Forest entries. A parent Forest line is kept
-until all of its children are cut. Nothing is cut silently. Exit 1 when the pack shows a stale entry,
-else 0 (README Output contract).
+no prose) from the deepest level up, then the remaining Forest entries.
+A parent Forest line is kept
+until all of its children are cut. Nothing is cut silently. After every content cut, a pack that is still over budget shortens the trimmed footer to counts; if only the header and footer remain, a note names that residue. That residue is a warning (a note, and a line on stderr), not a failed command: exit 1 when the pack shows a stale entry, else 0 (README Output contract).
 
 `rco update [NEW] [--name main]` prints an `rco.update/1` report:
 `name, old, new, swapped, extracted[], queued[], notes[]`. A refused swap is
@@ -196,7 +210,7 @@ step-0 follow-up PR, sent to every open step first.
 - Applied: the prose queue worker drops a queued row whose TreeHash the
   published pointer does not show. `rco update` queues only after its swap,
   so such a row was superseded (step 4).
-- Applied: `rco pack` refuses `--budget` under 64 (exit 2). An owner Tree
+- Applied: `rco pack` refuses `--budget` under 128 (exit 2). An owner Tree
   whose nodes are all cut loses its heading; its nodes are named in
   `trimmed` (step 5).
 - Applied: the update/pack/forest placeholders are gone; all three are built.

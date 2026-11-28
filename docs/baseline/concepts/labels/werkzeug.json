@@ -1,0 +1,378 @@
+{
+ "repo": "werkzeug",
+ "url": "https://github.com/pallets/werkzeug",
+ "sha": "0f43c6ebd426039e4b99ec22535c2c8a2ec2f69f",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "src/werkzeug",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.util",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "WSGI toolkit: http, serving, routing, wrappers, security"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/datastructures",
+   "concepts": [
+    {
+     "id": "cs.data_structures",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP data structures: headers, accept, cache control"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/debug",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "interactive debugger and traceback tools"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/middleware",
+   "concepts": [
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "WSGI middleware: dispatcher, proxy fix, profiler, shared data"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/routing",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "URL routing: map, rules, converters, matcher"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/sansio",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "IO-free request, response and multipart parsing"
+  },
+  {
+   "kind": "module",
+   "path": "src/werkzeug/wrappers",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.adapter",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Request and Response objects"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/live_apps",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "apps for live server tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/middleware",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.chain",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "middleware tests"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/datastructures/cache_control.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Cache-Control header structures"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/datastructures/etag.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.data_structures",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "ETag and ETagSet"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/datastructures/set.py",
+   "concepts": [
+    {
+     "id": "cs.data_structures",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HeaderSet"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/http.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "auto"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "HTTP header parsing and formatting"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/routing/map.py",
+   "concepts": [
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "routing Map and MapAdapter"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/security.py",
+   "concepts": [
+    {
+     "id": "xcut.security",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.auth",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "password hashing and safe_join"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/serving.py",
+   "concepts": [
+    {
+     "id": "net.server",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.security",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "development WSGI server with adhoc SSL"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/user_agent.py",
+   "concepts": [
+    {
+     "id": "net.http",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.value_object",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "user agent value"
+  },
+  {
+   "kind": "file",
+   "path": "src/werkzeug/wrappers/response.py",
+   "concepts": [
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    },
+    {
+     "id": "net.http",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "Response object"
+  },
+  {
+   "kind": "file",
+   "path": "tests/conftest.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "dev server fixtures and client"
+  },
+  {
+   "kind": "file",
+   "path": "tests/sansio/test_utils.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.http",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests host helpers"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_security.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.security",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests password hashing"
+  }
+ ]
+}

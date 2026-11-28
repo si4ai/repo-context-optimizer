@@ -5,12 +5,13 @@ import argparse
 import json
 import os
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Sequence
 
 from rco import __version__, build, canon, check, diff, gitread
-from rco.forest_model import Forest
+from rco.forest_model import DEFAULT_BUDGET, Forest
 from rco.model import Map
 from rco.output import Exit, UsageError, emit, note
 
@@ -81,6 +82,10 @@ def make_parser() -> argparse.ArgumentParser:
     i.add_argument("--remove-hooks", action="store_true", help="remove rco's post-merge hook")
     i.add_argument("--no-config", dest="config", action="store_false", help="skip rco.toml")
     i.add_argument("--no-ci", dest="ci", action="store_false", help="skip the CI workflow")
+    i.add_argument("--metrics", action="store_true",
+                   help="also write and upload rco-metrics.json on pull requests")
+    i.add_argument("--agents", action="store_true",
+                   help="write the rco pack pointer into agent instruction files")
     _common(i)
 
     lv = sub.add_parser("live", help="check the map against captured real outputs")
@@ -96,12 +101,24 @@ def make_parser() -> argparse.ArgumentParser:
     u.add_argument("--name", default="main", help="pointer name (default: main)")
     _common(u)
 
-    k = sub.add_parser("pack", help="Forest plus Trees for an agent, within a token budget")
+    k = sub.add_parser("pack", help="module map for an agent; with --for, the nearby modules "
+                                   "and the signatures of the files they import, within a token budget")
     k.add_argument("sha", nargs="?", default="HEAD", help="commit (default: HEAD)")
     k.add_argument("--for", dest="for_paths", nargs="+", default=None, metavar="FILE",
-                   help="paths whose owning modules get full Trees and one import hop")
-    k.add_argument("--budget", type=int, default=8000, help="estimated tokens (default: 8000)")
+                   help="paths whose imported files get outlined, plus one module hop")
+    k.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"tokens, o200k or characters / 3.5 (default: {DEFAULT_BUDGET})")
     _common(k)
+
+    rp = sub.add_parser("replay", help="estimate rco's saving on this repo's last code commits")
+    rp.add_argument("--last", type=int, default=None,
+                    help="code commits to replay (default: 10, or all with --since)")
+    rp.add_argument("--since", default=None, metavar="DATE",
+                    help="only commits since DATE (YYYY-MM-DD means midnight local time)")
+    rp.add_argument("--budget", type=int, default=DEFAULT_BUDGET,
+                    help=f"pack budget, o200k or characters / 3.5 (default: {DEFAULT_BUDGET})")
+    rp.add_argument("--max-files", type=int, default=50,
+                    help="skip commits that change more code files than this (default: 50)")
+    _common(rp)
 
     r = sub.add_parser("triage", help="hint per branch: clean or a structural brief (never rebases)")
     r.add_argument("branches", nargs="+", metavar="BRANCH",
@@ -138,6 +155,30 @@ def make_parser() -> argparse.ArgumentParser:
     dr.add_argument("pins", nargs="+", type=Path, metavar="PIN", help="pin file or directory of *.json pins")
     dr.add_argument("--at", default="HEAD", help="commit to check (default: HEAD)")
     _common(dr)
+
+    m = sub.add_parser("metrics", help="token-efficiency metrics for pull requests")
+    ms = m.add_subparsers(dest="metrics_cmd", required=True, parser_class=_Parser)
+    sm = ms.add_parser("summary", help="roll up many rco-metrics.json files")
+    sm.add_argument("paths", nargs="+", metavar="PATH",
+                    help="rco-metrics.json file or a directory of them")
+    sm.add_argument("--json", action="store_true", help="same as --format json")
+    _common(sm)
+    mm = ms.add_parser("measure", help="write rco-metrics.json for one pull request")
+    mm.add_argument("--base", required=True, help="base commit")
+    mm.add_argument("--head", required=True, help="head commit")
+    mm.add_argument("--pr", type=int, required=True, help="pull request number")
+    mm.add_argument("--pack", default=None, help="rco pack markdown for the changed files")
+    mm.add_argument("--budget", type=int, default=DEFAULT_BUDGET, help=f"pack budget recorded in the file (default: {DEFAULT_BUDGET})")
+    _common(mm)
+    bp = ms.add_parser("bypass", help="code commits with no rco pack run before them")
+    bp.add_argument("--base", default=None, help="check BASE..HEAD (default: the last --days days)")
+    bp.add_argument("--days", type=int, default=None, help="look back this many days when no --base (default: 14)")
+    bp.add_argument("--window-min", type=int, default=240, help="a pack run covers a commit made within this many minutes after it (default: 240)")
+    bp.add_argument("--events", type=Path, default=None, help="events file (default: .rco/events.jsonl)")
+    bp.add_argument("--strict", action="store_true", help="exit 1 when any code commit is uncovered")
+    _common(bp)
+    ck = ms.add_parser("check", help="exit 1 unless the metrics file is present and complete")
+    ck.add_argument("file", help="rco-metrics.json to check")
     return p
 
 
@@ -200,6 +241,9 @@ def _read_claim(path: str) -> Map | Forest:
 
 
 def run(args: argparse.Namespace) -> Exit:
+    if args.cmd == "metrics" and getattr(args, "metrics_cmd", None) == "check":
+        from rco import metrics
+        return metrics.check_file(Path(args.file))
     repo = Path(args.repo)
     if args.cmd == "tree":
         sha = _resolve_sha(repo, args.sha)
@@ -232,8 +276,48 @@ def run(args: argparse.Namespace) -> Exit:
         from rco import init
         if args.hooks and args.remove_hooks:
             raise UsageError("init takes --hooks or --remove-hooks, not both")
-        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks)
+        if args.metrics and not args.ci:
+            raise UsageError("init --metrics needs the CI workflow (omit --no-ci)")
+        rep = init.init(repo, args.config, args.ci, args.hooks, args.remove_hooks,
+                        args.metrics, args.agents)
         return emit(rep, args.format, args.out)
+    if args.cmd == "metrics":
+        from rco import metrics
+        if args.metrics_cmd == "summary":
+            if args.json:
+                args.format = "json"
+            return emit(metrics.summarize([Path(p) for p in args.paths]),
+                        args.format, args.out)
+        if args.metrics_cmd == "measure":
+            pack_text = ""
+            if args.pack:
+                try:
+                    pack_text = Path(args.pack).read_text(encoding="utf-8")
+                except OSError as e:
+                    raise UsageError(f"unreadable pack {args.pack}: {e}") from None
+            name, count = metrics.counter()
+            doc = metrics.write_metrics(repo, args.base, args.head, args.pr,
+                                        pack_text, args.budget, count, name)
+            if doc.get("pack_overrun"):
+                note(f"pack used ~{doc.get('pack_used')} estimated tokens, "
+                     f"over the budget of {doc.get('pack_budget')}")
+            metrics.announce_pack_budget(doc.get("pack_used"), int(doc["pack_budget"]))
+            return emit(metrics.MetricsReport(doc), args.format, args.out)
+        if args.metrics_cmd == "bypass":
+            from rco import bypass, events
+            from rco.config import worktree_top
+            if args.days is not None and args.base:
+                raise UsageError("bypass takes --base or --days, not both")
+            if args.days is not None and args.days < 1:
+                raise UsageError("--days must be at least 1")
+            if args.window_min < 0:
+                raise UsageError("--window-min must not be negative")
+            path = args.events or worktree_top(repo) / events.EVENTS_RELPATH
+            found, bad = bypass.read_events(path)
+            commits = bypass.code_commits(repo, args.base, args.days or 14)
+            rep = bypass.bypass(repo, found, commits, args.window_min * 60, bad, args.strict)
+            return emit(rep, args.format, args.out)
+        raise UsageError(f"unknown command metrics {args.metrics_cmd}")
     if args.cmd == "live":
         from rco import live
         sha = gitread.resolve(repo, args.sha)
@@ -267,12 +351,25 @@ def run(args: argparse.Namespace) -> Exit:
         sha = _resolve_sha(repo, args.sha)
         _warn_unmatched_for(repo, sha, args.for_paths)
         if sha is None:
-            return emit(pack.PackReport(pack.empty_pack(args.budget),
-                                       " ".join(args.for_paths or ())), args.format, args.out)
+            p = pack.empty_pack(args.budget)
+            if p.used > p.budget:
+                note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
+            _set_pack_event(p)
+            return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
         from rco.config import open_store
         store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
+        if p.used > p.budget:
+            note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
+        _set_pack_event(p)
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
+    if args.cmd == "replay":
+        from rco import metrics, replay
+        name, count = metrics.counter()
+        last = args.last if args.last is not None or args.since else 10
+        return emit(replay.replay(repo, last, args.budget, args.max_files, count, name,
+                                  since=args.since),
+                    args.format, args.out)
     if args.cmd == "pin":
         from rco import pin
         sha = gitread.resolve(repo, args.sha)
@@ -285,18 +382,75 @@ def run(args: argparse.Namespace) -> Exit:
     raise UsageError(f"unknown command {args.cmd}")
 
 
+_pack_event: dict | None = None
+
+
+def _set_pack_event(p: object) -> None:
+    """Stash pack token fields for the events line (card 1351)."""
+    global _pack_event
+    from rco.pack import NOOP_NOTES
+    notes = getattr(p, "notes", ())
+    used = int(getattr(p, "used"))
+    budget = int(getattr(p, "budget"))
+    _pack_event = {
+        "pack_tokens": used,
+        "pack_budget": budget,
+        "pack_skipped": any(n in notes for n in NOOP_NOTES),
+        "pack_overrun": max(0, used - budget),
+    }
+
+
+def _event_cmd(args: object | None) -> str | None:
+    """The events-log command name: the subcommand, plus the metrics subcommand."""
+    cmd = getattr(args, "cmd", None)
+    if not cmd:
+        return None
+    sub = getattr(args, "metrics_cmd", None) if cmd == "metrics" else None
+    return f"{cmd} {sub}" if sub else cmd
+
+
+def _repo_from_argv(argv: Sequence[str] | None) -> Path:
+    """--repo from argv when the parser did not return args (a usage error)."""
+    av = list(argv) if argv is not None else sys.argv[1:]
+    for i, a in enumerate(av):
+        if a == "--repo" and i + 1 < len(av):
+            return Path(av[i + 1])
+        if a.startswith("--repo="):
+            return Path(a.split("=", 1)[1])
+    return Path(".")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
+    t0 = time.monotonic()
+    start_wall = time.time()
+    args = None
+    code = int(Exit.INTERNAL)
     try:
         args = make_parser().parse_args(argv)
-        return int(run(args))
+        code = int(run(args))
     except UsageError as e:
         text = str(e) if isinstance(e, _ParserError) else f"rco: {e}"
         print(text, file=sys.stderr)
-        return int(Exit.USAGE)
-    except SystemExit as e:  # --help / --version
+        code = int(Exit.USAGE)
+    except SystemExit as e:  # --help / --version: not a run, no event
         return int(e.code or 0)
     except Exception as e:  # noqa: BLE001 - the exit-3 contract
         if os.environ.get("RCO_DEBUG") == "1":
             raise
         print(f"rco: internal error: {type(e).__name__}: {e}", file=sys.stderr)
-        return int(Exit.INTERNAL)
+        code = int(Exit.INTERNAL)
+    cmd = _event_cmd(args)
+    # a usage error (args is None) still logs, with cmd null, when .rco/ exists.
+    if cmd is not None or args is None:
+        from rco import events
+        if args is not None:
+            repo = Path(getattr(args, "repo", "."))
+            for_paths = (getattr(args, "for_paths", None) or []) if args.cmd == "pack" else None
+        else:
+            repo = _repo_from_argv(argv)
+            for_paths = None
+        global _pack_event
+        pack = _pack_event
+        _pack_event = None
+        events.record(repo, cmd, code, t0, start_wall, for_paths, pack)
+    return code

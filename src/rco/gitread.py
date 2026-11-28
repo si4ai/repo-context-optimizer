@@ -147,3 +147,23 @@ def default_branch(repo: Path) -> str:
         except UsageError:
             continue
     raise UsageError("no default branch: no origin/HEAD, main or master")
+
+
+def worktree_differs(repo: Path, sha: str) -> tuple[str, ...]:
+    """Paths where the working tree differs from sha: tracked changes plus untracked files.
+
+    Untracked files honour the standard excludes (.gitignore, info/exclude),
+    so .rco/ never shows up. Sorted, unique.
+    """
+    out = _git(repo, "diff", "--name-only", "-z", "--no-renames", sha)
+    new = _git(repo, "ls-files", "-z", "--others", "--exclude-standard")
+    return tuple(sorted({p.decode("utf-8", "surrogateescape")
+                         for p in (*out.split(b"\0"), *new.split(b"\0")) if p}))
+
+
+def commits_behind(repo: Path, sha: str, head: str) -> int | None:
+    """Commits in sha..head, or None when sha is not an ancestor of head."""
+    from rco.update import is_ancestor
+    if not is_ancestor(repo, sha, head):
+        return None
+    return int(_git(repo, "rev-list", "--count", f"{sha}..{head}").decode().strip())

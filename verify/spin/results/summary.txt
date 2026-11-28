@@ -48,6 +48,8 @@ bcas_qafter  P4   PASS   PASS   2386770
 bcas_qafter  P5   FAIL   FAIL       101  trail: results/bcas_qafter-P5/trail-events.txt (16 events)
 bcas_qafter  P6   PASS   PASS   8820746  
 bcas_qafter  P7   PASS   PASS   4401995  
+code010      P8   FAIL   FAIL   1636281  trail: results/code010-P8/trail-events.txt (30 events)
+code1318     P8   PASS   PASS  28582084  
 spin: Spin Version 6.5.1 -- 20 December 2019
-checks: 49, seconds: 251; exit 0
-every check matches its expectation: 23 PASS, 26 FAIL
+checks: 51, seconds: 264; exit 0
+every check matches its expectation: 24 PASS, 27 FAIL

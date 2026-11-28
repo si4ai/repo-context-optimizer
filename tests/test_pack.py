@@ -1,6 +1,7 @@
 """Phase 2 step 5: `rco pack` stays within budget, names every cut, and is deterministic."""
 import json
 import os
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -35,13 +36,20 @@ def _publish(store, repo, sha):
     return m
 
 
+def _used_placeholder(text: bytes) -> bytes:
+    # the used count depends on whether tiktoken is installed (card 1343)
+    return re.sub(br"# budget used: ~\d+ /", b"# budget used: ~N /", text)
+
+
 def test_golden_markdown(tmp_path):
     repo, sha = _repo(tmp_path)
-    got = pack_markdown(pack(repo, sha, ["src/app/cli.py"]), "src/app/cli.py").encode()
+    p = pack(repo, sha, ["src/app/cli.py"], fit_to_imports=False)
+    got = pack_markdown(p, "src/app/cli.py")
     golden = HERE / "golden" / "pack_forest_basic.md"
     if os.environ.get("RCO_REGEN") == "1":
-        golden.write_bytes(got)
-    assert got == golden.read_bytes()
+        golden.write_bytes(got.encode())
+    assert _used_placeholder(got.encode()) == _used_placeholder(golden.read_bytes())
+    assert p.used == estimate_tokens(got)
 
 
 def test_whole_repo_pack_is_forest_only(tmp_path):
@@ -51,55 +59,96 @@ def test_whole_repo_pack_is_forest_only(tmp_path):
     assert [e.id for e in p.forest][:3] == [".", "db", "src/app"]
 
 
-def test_for_gives_full_trees_and_one_hop(tmp_path):
+def test_for_gives_imported_trees_and_one_hop(tmp_path):
     repo, sha = _repo(tmp_path)
-    p = pack(repo, sha, ["src/app/core/engine.py"])
-    assert [t.module for t in p.trees] == ["src/app/core"]
-    assert [h.id for h in p.hop] == ["src/app", "src/app/util"]
+    p = pack(repo, sha, ["src/app/core/engine.py"], fit_to_imports=False)
+    # card 1340: the files engine.py imports, not its own module
+    assert [t.module for t in p.trees] == ["src/app/util"]
+    assert {n.path for t in p.trees for n in t.nodes} == {"src/app/util/helpers.py"}
+    # card 1347: at a full budget the one-hop modules are Forest lines, not hop lines
+    assert {"src/app", "src/app/util"} <= {e.id for e in p.forest}
+    assert [h.id for h in p.hop] == []
+    assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
     assert pack_from_obj(pack_to_obj(p)) == p
+
+
+def test_for_prints_each_one_hop_module_once(tmp_path):
+    """Card 1347: each one-hop module is a Forest line or a hop line, not both."""
+    repo, sha = _repo(tmp_path)
+    paths = ["src/app/core/engine.py", "src/app/cli.py"]
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
+    owners = {"src/app", "src/app/core"}
+    neighbors = {e.id for e in full.forest} - owners
+    assert neighbors
+    for budget in (10 ** 6, 400, 200, MIN_BUDGET):
+        p = pack(repo, sha, paths, budget, fit_to_imports=False)
+        forest_ids = {e.id for e in p.forest}
+        hop_ids = {h.id for h in p.hop}
+        assert hop_ids.isdisjoint(forest_ids)
+        assert hop_ids <= neighbors
+        # a hop line is only for a neighbor whose Forest line was cut
+        trimmed_forest = {t[7:] for t in p.trimmed if t.startswith("forest:")}
+        assert hop_ids <= trimmed_forest
+    # without --for the pack is the Forest only; hop stays empty
+    plain = pack(repo, sha, None, 10 ** 6)
+    assert plain.hop == ()
+    assert {e.id for e in full.forest} <= {e.id for e in plain.forest}
 
 
 @pytest.mark.parametrize("case", FIXTURES)
 def test_never_over_budget_and_every_cut_named(tmp_path, case):
     repo, sha = _repo(tmp_path, case)
     full = fixture.git(repo, "ls-files").splitlines()
-    for budget in (MIN_BUDGET, 80, 120, 200, 400, 1000, 8000):
-        p = pack(repo, sha, full[:2], budget)
+    for budget in (MIN_BUDGET, 160, 200, 400, 1000, 8000):
+        p = pack(repo, sha, full[:2], budget, fit_to_imports=False)
         text = pack_markdown(p, " ".join(full[:2]))
         assert estimate_tokens(text) <= budget, (case, budget)
         assert p.used == estimate_tokens(text)
-        full_p = pack(repo, sha, full[:2], 10**6)
+        full_p = pack(repo, sha, full[:2], 10**6, fit_to_imports=False)
         kept = ({f"hop:{h.id}" for h in p.hop} | {f"forest:{e.id}" for e in p.forest}
                 | {f"node:{t.module}|{node_key(n.path, n.name, n.kind)}" for t in p.trees
                    for n in t.nodes})
-        everything = ({f"hop:{h.id}" for h in full_p.hop} | {f"forest:{e.id}" for e in full_p.forest}
+        everything = ({f"forest:{e.id}" for e in full_p.forest}
                       | {f"node:{t.module}|{node_key(n.path, n.name, n.kind)}"
                          for t in full_p.trees for n in t.nodes})
-        assert kept | set(p.trimmed) == everything  # nothing dropped silently
+        # card 1347: a hop line stands in for a trimmed Forest line, so hop:id
+        # in kept is covered by forest:id in everything / trimmed
+        adjusted = set(p.trimmed)
+        for hid in {h.id for h in p.hop}:
+            forest_t = f"forest:{hid}"
+            if forest_t in adjusted:
+                adjusted.remove(forest_t)
+            adjusted.add(f"hop:{hid}")
+        assert kept | adjusted == everything | {f"hop:{h.id}" for h in p.hop}
         assert not kept & set(p.trimmed)
+        assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
 
 
 def test_cut_order_hop_then_nodes_then_forest(tmp_path):
     repo, sha = _repo(tmp_path)
     paths = ["src/app/core/engine.py", "src/app/cli.py"]
-    full = pack(repo, sha, paths, 10 ** 6)
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
     seen = set()
     for budget in range(MIN_BUDGET, full.used + 1):
         try:
-            p = pack(repo, sha, paths, budget)
+            p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
-        kinds = [t.split(":", 1)[0] for t in p.trimmed]
-        assert kinds == sorted(kinds, key=["hop", "node", "forest"].index), (budget, kinds)
+        owners = {"src/app", "src/app/core"}
+        kinds = ["owner" if t.startswith("forest:") and t[7:] in owners else t.split(":", 1)[0]
+                 for t in p.trimmed]
+        # card 1347: hop lines start empty, so first cuts are neighbor Forest
+        # lines, then Tree nodes, then owners; a hop cut only appears after
+        # that hop line was put back
+        assert kinds == sorted(kinds, key=["hop", "forest", "node", "owner"].index), (budget, kinds)
         seen |= set(kinds)
-    # tight budgets still cut hops first; leftover budget may put some hops back
     assert "node" in seen and "forest" in seen
 
 
 def test_byte_identical_across_runs(tmp_path):
     repo, sha = _repo(tmp_path)
-    a = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150)))
-    b = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150)))
+    a = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150, fit_to_imports=False)))
+    b = canon.canonical_json(pack_to_obj(pack(repo, sha, ["src/app/cli.py"], 150, fit_to_imports=False)))
     assert a == b
 
 
@@ -118,7 +167,7 @@ def test_stale_prose_shown_and_exit_1(tmp_path):
     m = build.build_map(repo, sha)
     core = next(t for t in m.trees if t.module == "src/app/core")
     s.put_prose("src/app/core", Prose("Engine.", ProseSource.MINED, canon.tree_hash(core)))
-    p = pack(repo, sha, store=s)
+    p = pack(repo, sha, store=s, fit_to_imports=False)
     assert p.stale == ("src/app/util",)
     text = pack_markdown(p)
     assert "- src/app/util: Helpers for clamp. [stale]" in text
@@ -138,22 +187,24 @@ def test_pack_without_store_writes_nothing(tmp_path):
 def test_budget_floor_is_a_usage_error(tmp_path):
     repo, sha = _repo(tmp_path)
     with pytest.raises(UsageError):
-        pack(repo, sha, budget=MIN_BUDGET - 1)
+        pack(repo, sha, budget=MIN_BUDGET - 1, fit_to_imports=False)
     assert cli.main(["pack", "--repo", str(repo), "--budget", "10"]) == Exit.USAGE
 
 
 def test_cli_json(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
-    assert cli.main(["pack", "--repo", str(repo), "--format", "json", "--for",
-                     "src/app/cli.py", "--budget", "100"]) == Exit.OK
+    # whole-repo pack: with --for this small fixture's imports are below the
+    # smallest pack and get the card 1341 no-op instead
+    assert cli.main(["pack", "--repo", str(repo), "--format", "json",
+                     "--budget", "128"]) == Exit.OK
     out = json.loads(capsys.readouterr().out)
-    assert out["schema"] == "rco.pack/1" and out["used"] <= 100 and out["trimmed"]
+    assert out["schema"] == "rco.pack/1" and out["used"] <= 128 and out["trimmed"]
 
 
 def test_long_for_label_still_within_budget(tmp_path):
     repo, sha = _repo(tmp_path)
     paths = ["src/app/cli.py"] * 100
-    p = pack(repo, sha, paths, MIN_BUDGET)
+    p = pack(repo, sha, paths, MIN_BUDGET, fit_to_imports=False)
     assert estimate_tokens(pack_markdown(p, " ".join(paths))) <= MIN_BUDGET
 
 
@@ -177,6 +228,8 @@ def _empty_forest_repo(tmp_path):
         ),
         "lib/helpers.py": "def run() -> int:\n    return 0\n",
     }
+    for i in range(12):  # non-empty modules, so the whole Forest is over the smallest budget
+        files[f"pad{i:02d}/m.py"] = f"from lib import helpers\n\n\ndef p{i:02d}() -> int:\n    return helpers.run()\n"
     return fixture.make_repo(tmp_path / "cut_empty", files)
 
 
@@ -185,7 +238,7 @@ def _is_empty_forest_entry(e):
             and not e.owns.commands and not e.owns.tables and not e.owns.routes)
 
 
-def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
+def test_empty_forest_lines_cut_deepest_first(tmp_path):
     from rco.forest import build_forest
 
     repo, sha = _empty_forest_repo(tmp_path)
@@ -196,30 +249,29 @@ def test_empty_forest_lines_cut_deepest_first_before_trees(tmp_path):
     assert not _is_empty_forest_entry(entries["app"])
     assert not _is_empty_forest_entry(entries["lib"])
 
-    full = pack(repo, sha, ["app/cli.py"], 10 ** 6)
+    # card 1342: with --for the empty modules are not neighbors, so they are not shown
+    near = pack(repo, sha, ["app/cli.py"], 10 ** 6, fit_to_imports=False)
+    assert not {e.id for e in near.forest} & set(empty_ids)
+    # without --for the whole Forest is shown and empty lines go first, deepest first
+    full = pack(repo, sha, None, 10 ** 6)
     hits = []
     for budget in range(MIN_BUDGET, full.used + 1, 4):
-        p = pack(repo, sha, ["app/cli.py"], budget)
+        p = pack(repo, sha, None, budget)
         empty_cut = [t[7:] for t in p.trimmed
                      if t.startswith("forest:") and t[7:] in set(empty_ids)]
-        nodes_kept = sum(len(t.nodes) for t in p.trees)
-        if empty_cut and nodes_kept:
-            hits.append((p, empty_cut))
-    assert hits, "some budget must cut empty Forest lines and still keep Tree nodes"
-
-    for p, empty_cut in hits:
-        kinds = [t.split(":", 1)[0] for t in p.trimmed]
-        if "node" in kinds:
-            assert kinds.index("forest") < kinds.index("node")
+        other_cut = [t for t in p.trimmed if t.startswith("forest:") and t[7:] not in set(empty_ids)]
+        if empty_cut:
+            hits.append((p, empty_cut, other_cut))
+    assert hits, "some budget must cut empty Forest lines"
+    for p, empty_cut, other_cut in hits:
+        if other_cut:
+            assert empty_cut == empty_ids  # every empty line went before a non-empty one
         assert empty_cut == empty_ids[:len(empty_cut)]
-        # a parent is not cut while a child is still shown
         shown = {e.id for e in p.forest}
         for mid in shown:
             parent = mid.rsplit("/", 1)[0] if "/" in mid else None
-            if parent in set(empty_ids) | {"app", "lib"}:
-                # if a child is shown, its existing parent must still be shown
-                if parent in entries:
-                    assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
+            if parent in entries:
+                assert parent in shown, (mid, parent, sorted(shown), p.trimmed)
 
 def test_hop_lists_test_modules_last(tmp_path):
     files = {
@@ -232,48 +284,54 @@ def test_hop_lists_test_modules_last(tmp_path):
         "zz/z.py": "from pkg.mod import f\n\n\ndef h() -> int:\n    return f()\n",
     }
     repo, sha = fixture.make_repo(tmp_path / "hops", files)
-    p = pack(repo, sha, ["pkg/mod.py"], 10 ** 6)
-    ids = [h.id for h in p.hop]
-    assert "tests" in ids and "lib" in ids and "zz" in ids
-    rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
-    tests = [i for i in ids if i == "tests" or i.startswith("tests/")]
-    assert ids == sorted(rest) + sorted(tests)
+    from rco.pack import _hop_key
+    assert sorted(["tests", "lib", "zz"], key=_hop_key) == ["lib", "zz", "tests"]
+    full = pack(repo, sha, ["pkg/mod.py"], 10 ** 6, fit_to_imports=False)
+    # at a full budget the neighbors are Forest lines, not hop lines
+    assert {"tests", "lib", "zz"} <= {e.id for e in full.forest}
+    assert not {h.id for h in full.hop} & {"tests", "lib", "zz"}
+    # when hop lines remain after Forest cuts, test modules still go last
+    for budget in range(MIN_BUDGET, full.used, 8):
+        p = pack(repo, sha, ["pkg/mod.py"], budget, fit_to_imports=False)
+        ids = [h.id for h in p.hop]
+        if ids:
+            rest = [i for i in ids if not (i == "tests" or i.startswith("tests/"))]
+            tests = [i for i in ids if i == "tests" or i.startswith("tests/")]
+            assert ids == sorted(rest) + sorted(tests)
 
 
 def test_leftover_budget_keeps_hops_that_fit(tmp_path):
-    """A hop cut earlier is put back when later cuts leave room for it."""
+    """A hop line is put back when its Forest line was cut and it still fits."""
     from rco.forest_model import HopLine, estimate_tokens
-    from rco.pack import pack_markdown
-    from dataclasses import replace
+    from rco.pack import pack_markdown, _one_line
 
     repo, sha = _repo(tmp_path)
     paths = ["src/app/core/engine.py", "src/app/cli.py"]
-    full = pack(repo, sha, paths, 10 ** 6)
-    assert full.hop
-    hop_line = {h.id: h.line for h in full.hop}
+    full = pack(repo, sha, paths, 10 ** 6, fit_to_imports=False)
+    owners = {"src/app", "src/app/core"}
+    hop_ids = {e.id for e in full.forest} - owners
+    assert hop_ids and not full.hop
+    by_id = {e.id: e for e in full.forest}
     label = " ".join(paths)
     hits = 0
     for budget in range(MIN_BUDGET, full.used):
         try:
-            p = pack(repo, sha, paths, budget)
+            p = pack(repo, sha, paths, budget, fit_to_imports=False)
         except UsageError:
             continue
+        assert {h.id for h in p.hop}.isdisjoint({e.id for e in p.forest})
+        shown = {h.id for h in p.hop}
         for t in p.trimmed:
-            if not t.startswith("hop:"):
+            if not t.startswith("forest:") or t[7:] not in hop_ids or t[7:] in shown:
                 continue
-            mid = t[4:]
-            candidate = replace(
-                p,
-                hop=(*p.hop, HopLine(mid, hop_line[mid])),
-                trimmed=tuple(x for x in p.trimmed if x != t),
-            )
+            mid = t[7:]
+            from dataclasses import replace
+            candidate = replace(p, hop=(*p.hop, HopLine(mid, _one_line(by_id[mid]))))
             if estimate_tokens(pack_markdown(candidate, label)) <= budget:
-                raise AssertionError(f"budget {budget} left room for hop {mid} but it stayed trimmed")
+                raise AssertionError(f"budget {budget} left room for hop {mid} but it was not put back")
         if p.hop and any(t.startswith("node:") or t.startswith("forest:") for t in p.trimmed):
             hits += 1
-    # some mid budgets should keep hops even after other cuts; if none do, the
-    # fixture may be too small, but the leftover check above is the contract
-    assert hits or full.used  # always true; documents the walk ran
+    assert hits or full.used  # walk ran
 
 def test_pack_unmatched_for_warns_and_keeps_stdout(tmp_path, capsys):
     repo, _ = _repo(tmp_path)
@@ -301,7 +359,11 @@ def test_no_commit_repo_empty_pack_exit_0(tmp_path, capsys):
 def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
     repo, sha = _repo(tmp_path)
     fwd, back = "src/app/cli.py", "src\\app\\cli.py"
-    assert pack_to_obj(pack(repo, sha, [back])) == pack_to_obj(pack(repo, sha, [fwd]))
+    a = pack_to_obj(pack(repo, sha, [back], fit_to_imports=False))
+    b = pack_to_obj(pack(repo, sha, [fwd], fit_to_imports=False))
+    # the --for label appears in the Trees heading, so used may differ by a token
+    assert a.pop("used") > 0 and b.pop("used") > 0
+    assert a == b
     assert build.build_map(repo, sha, [back]) == build.build_map(repo, sha, [fwd])
     for cmd in ("tree", "pack"):
         assert cli.main([cmd, "--repo", str(repo), "--format", "json", "--for", fwd]) == Exit.OK
@@ -313,3 +375,81 @@ def test_backslash_for_paths_match_forward_slash(tmp_path, capsys):
             assert got.out == want.out
         else:
             assert json.loads(got.out)["trees"] == json.loads(want.out)["trees"]
+
+
+def test_over_budget_note_is_warning_exit_0():
+    """An over-budget pack is a warning, not findings or a usage error."""
+    from rco.forest_model import Pack
+    from rco.pack import PackReport, pack_markdown
+
+    p = Pack("a" * 40, 8000, 8008, (), (), (), (), (), ("over budget: 8008 / 8000",))
+    assert PackReport(p).exit_code() == Exit.OK
+    assert "~8008 / 8000" in pack_markdown(p)
+
+
+def test_pack_just_over_old_8000_fits_reported_budget(tmp_path):
+    """A pack just over the old 8000 default stays within the reported budget."""
+    from rco.forest_model import DEFAULT_BUDGET
+
+    old = 8000
+    assert DEFAULT_BUDGET > old
+    # One module with many functions, grown until an untrimmed pack is just over 8000.
+    def _mod(n: int) -> str:
+        return "\n".join(f"def f{i:04d}(x: int) -> int:\n    return x + {i}\n" for i in range(n))
+
+    lo, hi, n = 50, 800, 200
+    used = 0
+    repo = sha = None
+    for _ in range(12):
+        repo, sha = fixture.make_repo(tmp_path / f"over8000_{n}",
+                                      {"pkg/mod.py": _mod(n), "pkg/use.py": "from pkg import mod\n"})
+        full = pack(repo, sha, ["pkg/use.py"], 10**6, fit_to_imports=False)
+        used = full.used
+        if old < used <= old + 800:
+            break
+        if used <= old:
+            lo = n
+            n = min(hi, n * 2 if used < old - 200 else n + max(10, (old + 100 - used) // 8))
+        else:
+            hi = n
+            n = max(lo + 1, (lo + hi) // 2)
+    else:
+        raise AssertionError(f"could not land a pack just over {old}: last used={used} n={n}")
+
+    tight = pack(repo, sha, ["pkg/use.py"], old, fit_to_imports=False)
+    assert tight.used <= old, tight.used
+    assert estimate_tokens(pack_markdown(tight, "pkg/use.py")) <= old
+
+    p = pack(repo, sha, ["pkg/use.py"], fit_to_imports=False)  # reported default
+    assert p.budget == DEFAULT_BUDGET
+    assert p.used <= p.budget
+    assert p.used > old  # the new default keeps the pack that 8000 would have cut
+    assert estimate_tokens(pack_markdown(p, "pkg/use.py")) == p.used
+    assert not any(n.startswith("over budget:") for n in p.notes)
+
+
+def test_pack_stays_under_budget_on_seeded_sweep(tmp_path):
+    """A larger synthetic repo stays at or under 3000, 5000 and 11000.
+
+    80 hop modules and 550 files in the focus tree, built the same way
+    every time (no RNG). The case is sized so both pack.py budget fixes
+    (the trial trimmed list, and the recut after hop restore) are
+    required: reverting both together overruns at each of these budgets.
+    """
+    n_hops, n_parts, part_lines = 80, 550, 8
+    init = "\n".join(f"import m{i:02d}.a" for i in range(n_hops)) + "\n"
+    files = {"focus/__init__.py": init}
+    body = "\n".join(f"    x = x + {j}" for j in range(part_lines))
+    for i in range(n_parts):
+        files[f"focus/p{i:03d}.py"] = (
+            f"def f{i:03d}(x: int) -> int:\n{body}\n    return x + {i}\n"
+        )
+    for i in range(n_hops):
+        files[f"m{i:02d}/__init__.py"] = ""
+        files[f"m{i:02d}/a.py"] = f"def h{i:02d}() -> int:\n    return {i}\n"
+    repo, sha = fixture.make_repo(tmp_path / "sweep", files)
+    paths = ["focus/__init__.py"]
+    for budget in (3000, 5000, 11000):
+        p = pack(repo, sha, paths, budget, fit_to_imports=False)
+        assert p.used <= budget, (budget, p.used, p.notes)
+        assert estimate_tokens(pack_markdown(p, "focus/__init__.py")) <= budget

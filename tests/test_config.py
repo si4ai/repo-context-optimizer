@@ -39,7 +39,7 @@ def test_store_path_from_rco_toml(tmp_path, capsys):
     (repo / "rco.toml").write_text('[store]\npath = "cache/rco/rco.db"\n')
     assert cli.main(["update", "--repo", str(repo)]) == Exit.OK
     assert (repo / "cache/rco/rco.db").exists() and not (repo / ".rco").exists()
-    assert cli.main(["pack", "--repo", str(repo), "--for", "pkg/a.py"]) == Exit.OK
+    assert cli.main(["pack", "--repo", str(repo)]) == Exit.OK  # prose read from that store
     assert "A." in capsys.readouterr().out
 
 
@@ -117,10 +117,10 @@ def test_no_shipped_backend_keeps_a_reserved_name():
 
 def test_affected_ignore_from_rco_toml(tmp_path, capsys):
     repo, s1 = _repo(tmp_path)
-    s2 = fixture.commit(repo, {"README.md": "x\n"})
+    s2 = fixture.commit(repo, {"data.csv": "x\n"})
     assert cli.main(["affected", "--repo", str(repo), s1, s2, "--format", "json"]) == Exit.OK
     assert '"run_all":true' in capsys.readouterr().out
-    (repo / "rco.toml").write_text('[affected]\nignore = ["*.md"]\n')
+    (repo / "rco.toml").write_text('[affected]\nignore = ["*.csv"]\n')
     assert cli.main(["affected", "--repo", str(repo), s1, s2, "--format", "json"]) == Exit.OK
     assert '"run_all":false' in capsys.readouterr().out
 

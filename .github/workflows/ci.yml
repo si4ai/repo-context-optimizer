@@ -17,10 +17,10 @@ jobs:
       pytest: ${{ steps.select.outputs.pytest }}
       spin: ${{ steps.select.outputs.spin }}
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Select test jobs
@@ -57,11 +57,11 @@ jobs:
     if: needs.select.outputs.pytest == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Install pytest
@@ -77,10 +77,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: Build sdist and wheel
@@ -103,7 +103,7 @@ jobs:
     if: needs.select.outputs.spin == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Install Spin
         run: sudo apt-get update && sudo apt-get install -y spin
       - name: Run SPIN model
@@ -119,7 +119,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -163,55 +163,14 @@ jobs:
   # hygiene report: identifiers, secrets, home paths, addresses, emails,
   # name tokens, typographic marks, and junk files in the commit range,
   # plus the PR title and body when the event is a pull request. report
-  # only: no --strict here. a crash or git failure fails the job. kept
+  # only: strict is left false. a crash or git failure fails the job. kept
   # out of ci/test-select.toml on purpose so it runs on every trigger.
+  # the shared org workflow runs the same check_hygiene.py, byte for byte;
+  # tools/check_hygiene.py stays here for the pre-commit hook.
   hygiene_report:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-        with:
-          fetch-depth: 0
-          persist-credentials: false
-      - env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE: ${{ github.event.pull_request.base.sha }}
-          PR_HEAD: ${{ github.event.pull_request.head.sha }}
-          MQ_BASE: ${{ github.event.merge_group.base_sha }}
-          MQ_HEAD: ${{ github.event.merge_group.head_sha }}
-          PUSH_BEFORE: ${{ github.event.before }}
-          PUSH_SHA: ${{ github.sha }}
-          EVENT_PATH: ${{ github.event_path }}
-        run: |
-          set -euo pipefail
-          base=""
-          head="$PUSH_SHA"
-          case "$EVENT_NAME" in
-            pull_request)
-              head="$PR_HEAD"
-              base=$(git merge-base "$PR_BASE" "$PR_HEAD" 2>/dev/null || echo "$PR_BASE")
-              ;;
-            merge_group)
-              base="$MQ_BASE"
-              head="$MQ_HEAD"
-              ;;
-            push)
-              base="$PUSH_BEFORE"
-              ;;
-          esac
-          if ! git cat-file -e "${base:-missing}^{commit}" 2>/dev/null; then
-            base=$(git rev-parse --verify --quiet "$head^1" || true)
-            echo "no usable base for this event; scanning the last commit against its first parent."
-          fi
-          if [ -z "$base" ]; then
-            echo "root commit, nothing to compare: no hygiene report."
-            exit 0
-          fi
-          event_args=()
-          if [ -n "${EVENT_PATH:-}" ] && [ -f "$EVENT_PATH" ]; then
-            event_args=(--event "$EVENT_PATH")
-          fi
-          python3 tools/check_hygiene.py --base "$base" --head "$head" "${event_args[@]}"
+    permissions:
+      contents: read
+    uses: si4ai/.github/.github/workflows/hygiene.yml@23c056780f193d140e042491ac81a59cafb71a14
 
   # role-trailer report: each commit in the range must carry a Role:
   # trailer naming a configured desk. report only: no --strict here.
@@ -221,7 +180,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -271,10 +230,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - run: |
@@ -309,11 +268,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
           fetch-depth: 0
-      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
         with:
           python-version: "3.12"
       - name: List other open PR heads and write the notice
@@ -329,3 +288,77 @@ jobs:
           PUSH_REF_NAME: ${{ github.ref_name }}
         # the tree under test, not the published wheel (rco init runs the wheel)
         run: PYTHONPATH=src python -m rco.notice_report
+
+  # contract diff and affected-test report: public contract changes
+  # and which tests rco would select, written to the job summary. a
+  # visible hint, never a block: exit 1 (findings) passes the job; a
+  # usage error or crash (2/3) fails it. pull requests only, so it is
+  # skipped in the merge queue and on push. kept out of
+  # ci/test-select.toml so it is not product-gated. runs the tree
+  # under test, like drift_report and notice_report, not a published
+  # wheel.
+  diff_affected_report:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - name: Contract diff and affected tests
+        env:
+          PR_BASE: ${{ github.event.pull_request.base.sha }}
+          PR_HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -u
+          base=$(git merge-base "$PR_BASE" "$PR_HEAD")
+          worst=0
+          run() {
+            out=$1
+            shift
+            code=0
+            PYTHONPATH=src python -m rco "$@" > "$out" || code=$?
+            cat "$out"
+            cat "$out" >> "$GITHUB_STEP_SUMMARY"
+            if [ "$code" -ge 2 ]; then worst=$code; fi
+          }
+          run diff.md diff "$base" "$PR_HEAD"
+          run affected.md affected "$base" "$PR_HEAD"
+          exit "$worst"
+
+  # after a push to main, refresh the cached rco store. skipped on
+  # pull requests and in the merge queue. kept out of
+  # ci/test-select.toml. a usage error or crash (2/3) fails the job.
+  # runs the tree under test, like the other rco jobs in this file.
+  update_store:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: "3.12"
+      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: .rco
+          key: rco-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            rco-${{ github.ref_name }}-
+            rco-main-
+      - name: Update the store
+        run: |
+          set -u
+          code=0
+          PYTHONPATH=src python -m rco update --name "${{ github.ref_name }}" || code=$?
+          case "$code" in
+            0|1) exit 0 ;;
+            *) exit "$code" ;;
+          esac

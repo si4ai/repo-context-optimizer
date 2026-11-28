@@ -6,8 +6,9 @@ map helps. This document is the method. Card 1190
 (`repo-context-optimizer/phase3-ab-harness`).
 
 `rco pack` itself landed with the phase 2 fold on `main`. This slice is the
-harness only. The counting run is the decided plan below, after RCO 0.1.1
-is tagged and installed from the index. The harness never launches agents.
+harness only. The counting run is the decided plan below. RCO 0.1.1 is on
+the package index, so the run is no longer waiting on a release; it has not
+been run yet. The harness never launches agents.
 
 ## what it measures
 
@@ -33,7 +34,7 @@ The script is standard library plus the installed `rco` package (or
 
 ```sh
 python3 tools/phase3_ab.py prepare --repo REPO --sha HEAD \
-    --for path/to/file.py --budget 8000 \
+    --for path/to/file.py --budget 12000 \
     --task-file TASK.md --out ab-run/
 
 python3 tools/phase3_ab.py score \
@@ -45,8 +46,9 @@ python3 tools/phase3_ab.py score \
 
 `prepare` writes `ab-run/manifest.json`, `ab-run/control/brief.md`, and
 `ab-run/treatment/{brief.md,pack.md,pack.json}`. The treatment brief
-embeds a live `rco pack` (forest, trees for `--for`, one import hop,
-budget). The control brief has the same task and no pack. `rco pack` is
+embeds a live `rco pack --for` (owner and one-hop forest lines, trees of
+the imported files, one import hop, budget; or the one-line no-op when
+nothing worth outlining is imported). The control brief has the same task and no pack. `rco pack` is
 read-only: it does not create `.rco/` in the target repo.
 
 `score` parses kit logs with the phase 0 parser
@@ -71,16 +73,18 @@ count, sets `savings_claimable` to false and lists the reason in
 ## counting run
 
 The counting run is the decided plan in [decided (A/B plan)](#decided-ab-plan).
-It starts after RCO 0.1.1 is tagged and installed from the index. The
+RCO 0.1.1 is on the package index; the run has not been started. The
 commands above stay the two-arm log scorer; they do not define the run.
+`rco replay` gives a no-agent estimate from a repo's own commits;
+it does not replace this run.
 
 Until that run exists, no savings figure belongs in the README.
 
 ## not done (by design)
 
 - No live agents are launched by the harness or by this slice's tests.
-- No counting comparison is recorded yet: it waits on the 0.1.1 tag,
-  then the decided plan above.
+- No counting comparison is recorded yet: 0.1.1 is on the index, and the
+  run follows the decided plan above once seated tester desks run it.
 - No new CI job: the counting run needs seated tester desks, as phase 0
   did. The harness's pure functions and fixture-log scoring run in
   `tests/test_phase3_ab.py` on every PR that touches them.

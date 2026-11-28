@@ -41,6 +41,13 @@ if "$rco" pack --help > /dev/null 2>&1; then
   expect 0 "$rco" pack
   expect 0 "$rco" pack --for pkg/core.py --budget 200
 fi
+# rco replay, once the wheel has it: two commits, the second changes code
+if "$rco" replay --help > /dev/null 2>&1; then
+  expect 0 "$rco" replay
+  grep -q '(method and limits)' out.txt
+  expect 0 "$rco" replay --format json
+  grep -q '"schema":"rco.replay/1"' out.txt
+fi
 # Phase 4 commands, once the wheel has them; the pin lives outside the repo
 if "$rco" drift --help > /dev/null 2>&1; then
   expect 0 "$rco" pin HEAD~1 --for pkg/core.py --format json --out "$work/core.pin.json"

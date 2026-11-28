@@ -1,0 +1,207 @@
+{
+ "repo": "nanogpt",
+ "url": "https://github.com/karpathy/nanoGPT",
+ "sha": "3adf61e154c3fe3fca428ad6bc3818b27a3b8291",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "config",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "auto"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "training and eval configuration presets"
+  },
+  {
+   "kind": "file",
+   "path": "bench.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.build",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "benchmark script"
+  },
+  {
+   "kind": "file",
+   "path": "config/eval_gpt2.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "eval preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/eval_gpt2_large.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "eval preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/eval_gpt2_medium.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "eval preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/eval_gpt2_xl.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "eval preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/finetune_shakespeare.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "finetune preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/train_gpt2.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "train preset"
+  },
+  {
+   "kind": "file",
+   "path": "config/train_shakespeare_char.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "cs.ml",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "train preset"
+  },
+  {
+   "kind": "file",
+   "path": "configurator.py",
+   "concepts": [
+    {
+     "id": "layer.config",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "configurator overrides globals from argv and files"
+  },
+  {
+   "kind": "file",
+   "path": "model.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.domain",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "GPT model definition"
+  },
+  {
+   "kind": "file",
+   "path": "sample.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "sampling script"
+  },
+  {
+   "kind": "file",
+   "path": "train.py",
+   "concepts": [
+    {
+     "id": "cs.ml",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.cli",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "training script with distributed data parallel"
+  }
+ ]
+}

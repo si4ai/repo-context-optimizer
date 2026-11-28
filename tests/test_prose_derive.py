@@ -128,14 +128,18 @@ def test_drain_writes_derived_prose_when_nothing_is_mined(tmp_path):
 
 def test_pack_shows_docs_and_is_byte_identical(tmp_path):
     repo, sha, _ = _map(tmp_path)
-    a = pack(repo, sha, ["pkg/core.py"])
-    b = pack(repo, sha, ["pkg/core.py"])
+    a = pack(repo, sha, ["pkg/core.py"], fit_to_imports=False)
+    b = pack(repo, sha, ["pkg/core.py"], fit_to_imports=False)
     ja = json.dumps(pack_to_obj(a), sort_keys=True)
     assert ja == json.dumps(pack_to_obj(b), sort_keys=True)
     md = pack_markdown(a, "pkg/core.py")
     assert "def clamp(x: int) -> int  # Clamp x." in md
-    assert "# Run. Takes x. Returns int." in md
-    assert "- web: layer 0; Defines functions draw, helper, paint." in md
+    # card 1340: the --for file's own outline is left out; imported files keep derived docs
+    assert "# Run. Takes x. Returns int." not in md
+    assert "Takes x. Returns int. Called by core.py:run." in md
+    # card 1342: web is not a neighbor of pkg, so its line is only in the whole-repo pack
+    assert "- web:" not in md
+    assert "- web: layer 0; Defines functions draw, helper, paint." in pack_markdown(pack(repo, sha))
 
 
 def test_function_local_imports_resolve(tmp_path):

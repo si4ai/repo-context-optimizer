@@ -522,6 +522,10 @@ Applied in 0.1.2 (staged and working-tree input, test selection):
 - Applied: `rco affected [BASE] [HEAD] [--staged|--worktree] [--ignore
   GLOB] [--list]` reports `rco.affected/1` (`base`, `head`, `changed`,
   `files`, `tests`, `run_all`, `reasons`) and always exits 0.
+- Applied (card 1235 step 1): `rco.affected/1` adds `select` (`all`,
+  `tests` or `none`), `by_path` (changed path to the code files that name
+  its file name) and `docs` (changed docs no code file names, which select
+  nothing). Test config and infra set `run_all` even when they are code.
 - Applied: `rco init` reports `rco.init/1` (`steps`: `path`, `action` in
   wrote, kept, removed or absent, `detail`) and always exits 0. It never
   overwrites a file; `--remove-hooks` deletes only a hook carrying rco's

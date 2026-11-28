@@ -1,0 +1,438 @@
+{
+ "repo": "redis-py",
+ "url": "https://github.com/redis/redis-py",
+ "sha": "7ec0553cdb4b77a0a6fda44d4ed652df52bb54a1",
+ "taxonomy_version": "1.0.0",
+ "items": [
+  {
+   "kind": "module",
+   "path": "doctests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "documentation examples as tests"
+  },
+  {
+   "kind": "module",
+   "path": "redis",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.caching",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "Redis client: connections, cluster, cache, lock, retry"
+  },
+  {
+   "kind": "module",
+   "path": "redis/_parsers",
+   "concepts": [
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "RESP2/RESP3 protocol parsers and encoders"
+  },
+  {
+   "kind": "module",
+   "path": "redis/asyncio",
+   "concepts": [
+    {
+     "id": "xcut.concurrency",
+     "prov": "auto"
+    },
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "asyncio client, connection, cluster"
+  },
+  {
+   "kind": "module",
+   "path": "redis/asyncio/multidb",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.state_machine",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "async multi-database client with failover and circuit breaker"
+  },
+  {
+   "kind": "module",
+   "path": "redis/auth",
+   "concepts": [
+    {
+     "id": "xcut.auth",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "token-based authentication"
+  },
+  {
+   "kind": "module",
+   "path": "redis/commands",
+   "concepts": [
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "command mixins per data type",
+   "auto_rejected": [
+    "layer.cli"
+   ]
+  },
+  {
+   "kind": "module",
+   "path": "redis/commands/json",
+   "concepts": [
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "ser.serialization",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "JSON commands"
+  },
+  {
+   "kind": "module",
+   "path": "redis/commands/search",
+   "concepts": [
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.persistence",
+     "prov": "judged"
+    },
+    {
+     "id": "parse.parser",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "search commands, queries, fields"
+  },
+  {
+   "kind": "module",
+   "path": "redis/commands/timeseries",
+   "concepts": [
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "timeseries commands"
+  },
+  {
+   "kind": "module",
+   "path": "redis/multidb",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.state_machine",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.errors",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "multi-database client with failover and circuit breaker"
+  },
+  {
+   "kind": "module",
+   "path": "redis/observability",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "OpenTelemetry metrics"
+  },
+  {
+   "kind": "module",
+   "path": "tests",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "test suite"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_asyncio",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "async tests"
+  },
+  {
+   "kind": "module",
+   "path": "tests/test_multidb",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "ood.state_machine",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "multidb tests"
+  },
+  {
+   "kind": "file",
+   "path": "doctests/cmds_generic.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "generic commands examples"
+  },
+  {
+   "kind": "file",
+   "path": "doctests/cmds_set.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "set commands examples"
+  },
+  {
+   "kind": "file",
+   "path": "redis/asyncio/multidb/client.py",
+   "concepts": [
+    {
+     "id": "net.client",
+     "prov": "auto"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "MultiDBClient",
+   "auto_rejected": [
+    "arch.client_server"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "redis/commands/policies.py",
+   "concepts": [
+    {
+     "id": "pattern.strategy",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "command routing policy resolvers"
+  },
+  {
+   "kind": "file",
+   "path": "redis/commands/search/field.py",
+   "concepts": [
+    {
+     "id": "ood.value_object",
+     "prov": "auto"
+    },
+    {
+     "id": "ood.inheritance",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "search Field types"
+  },
+  {
+   "kind": "file",
+   "path": "redis/commands/search/querystring.py",
+   "concepts": [
+    {
+     "id": "parse.codegen",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "query string builders"
+  },
+  {
+   "kind": "file",
+   "path": "redis/observability/metrics.py",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "metrics collector"
+  },
+  {
+   "kind": "file",
+   "path": "redis/observability/recorder.py",
+   "concepts": [
+    {
+     "id": "xcut.logging",
+     "prov": "judged"
+    },
+    {
+     "id": "layer.api",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "metrics recording API"
+  },
+  {
+   "kind": "file",
+   "path": "tasks.py",
+   "concepts": [
+    {
+     "id": "layer.build",
+     "prov": "auto"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "auto"
+    }
+   ],
+   "evidence": "invoke development tasks",
+   "auto_rejected": [
+    "xcut.concurrency"
+   ]
+  },
+  {
+   "kind": "file",
+   "path": "tests/maint_notifications/proxy_server_helpers.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "net.server",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.proxy",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "proxy server helpers"
+  },
+  {
+   "kind": "file",
+   "path": "tests/maint_notifications/test_async_cluster_maint_notifications_handling.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.observer",
+     "prov": "judged"
+    },
+    {
+     "id": "net.transport",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "tests maintenance notifications handling"
+  },
+  {
+   "kind": "file",
+   "path": "tests/test_asyncio/test_timeseries.py",
+   "concepts": [
+    {
+     "id": "layer.tests",
+     "prov": "judged"
+    },
+    {
+     "id": "xcut.concurrency",
+     "prov": "judged"
+    },
+    {
+     "id": "pattern.command",
+     "prov": "judged"
+    }
+   ],
+   "evidence": "async timeseries tests"
+  }
+ ]
+}
