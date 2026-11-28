@@ -196,6 +196,10 @@ def _strip_block(data: bytes, nl: bytes) -> bytes:
     return data[:begin] + data[end:]
 
 
+def test_agents_block_reruns_pack_after_compaction():
+    assert "- After a compaction, rerun `rco pack` rather than rereading files." in AGENT_BLOCK
+
+
 def test_agents_creates_agents_md_only(tmp_path):
     repo, _ = _repo(tmp_path)
     got = _agents(repo)
