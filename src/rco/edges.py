@@ -27,6 +27,12 @@ commented-out import adds no edge.
   wins; otherwise the nearest one. `import a.b.*;` maps to the files of that
   package the importer names. A same-package class the importer names needs
   no import and still counts.
+- C#: `using N;` (`using static N.T;`, `using A = N.T;`, `global using N;`) and
+  the file's own namespace with its parents map to the files that declare a
+  type the importer names in that namespace, so no `using` is needed inside
+  the namespace. A project's .csproj ProjectReference edges (followed
+  transitively) limit which projects a file can see; a file outside every
+  project sees all.
 """
 from __future__ import annotations
 
@@ -43,6 +49,13 @@ from rco.extract.scan import scan
 from rco.modules import JS_EXT, dir_of
 
 MANIFEST_NAMES = ("package.json", "go.mod", "Cargo.toml")
+MANIFEST_SUFFIXES = (".csproj",)
+
+
+def is_manifest(path: str) -> bool:
+    """A manifest the edge rules read: a named file, or one with a project suffix (.csproj)."""
+    name = path.rsplit("/", 1)[-1]
+    return name in MANIFEST_NAMES or name.endswith(MANIFEST_SUFFIXES)
 _JS_SPEC = re.compile(
     r"""(?:\bimport\s+(?:type\s+)?(?:[\w$*{}\s,]+?\s+from\s+)?|\bexport\s+(?:type\s+)?[\w$*{}\s,]+?\s+from\s+"""
     r"""|\brequire\s*\(\s*|\bimport\s*\(\s*)(["'])(?P<spec>[^"'\n]+)\1""")
@@ -109,6 +122,10 @@ class RepoFacts:
     java_pkgs: Mapping[str, tuple[str, ...]] = field(default_factory=dict)  # package path -> .java paths
     kt_pkg: Mapping[str, str] = field(default_factory=dict)  # .kt path -> its package as a path
     kt_names: Mapping[str, Mapping[str, tuple[str, ...]]] = field(default_factory=dict)  # package -> name -> .kt paths
+    cs_types: Mapping[str, Mapping[str, tuple[str, ...]]] = field(default_factory=dict)  # ns -> type -> files
+    cs_global: tuple[str, ...] = ()  # namespaces every file uses (global using)
+    cs_projects: tuple[str, ...] = ()  # directories holding a .csproj, longest first
+    cs_visible: Mapping[str, frozenset[str]] = field(default_factory=dict)  # project dir -> dirs it sees
 
 
 def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts:
@@ -117,12 +134,16 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
     go: list[tuple[str, str]] = []
     rs: dict[str, str] = {}
     roots: list[str] = []
+    csproj: dict[str, str] = {}
     for p in sorted(paths):
         name = PurePosixPath(p).name
-        if name not in MANIFEST_NAMES or p not in sources:
+        if not is_manifest(p) or p not in sources:
             continue
         d = dir_of(p)
         text = sources[p].decode("utf-8-sig", "replace")
+        if name.endswith(".csproj"):
+            csproj[p] = text
+            continue
         if name == "package.json":
             try:
                 obj = json.loads(text)
@@ -177,11 +198,126 @@ def repo_facts(paths: frozenset[str], sources: Mapping[str, bytes]) -> RepoFacts
                 pm = _JAVA_PACKAGE.search(scan(sources[p].decode("utf-8-sig", "replace"), "java").code)
                 jpkg[p] = re.sub(r"\s+", "", pm.group("name")).replace(".", "/") if pm else ""
                 jpkgs.setdefault(jpkg[p], []).append(p)
+    cs_types, cs_global = _cs_index(paths, sources)
+    cs_projects, cs_visible = _cs_projects(csproj)
     return RepoFacts(frozenset(paths), js, mains, tuple(go), rs, tuple(roots),
                      {k: tuple(v) for k, v in stems.items()},
                      {k: tuple(v) for k, v in jdirs.items()}, jpkg,
                      {k: tuple(v) for k, v in jpkgs.items()}, kt_pkg,
-                     {pk: {nm: tuple(v) for nm, v in d.items()} for pk, d in kt_names.items()})
+                     {pk: {nm: tuple(v) for nm, v in d.items()} for pk, d in kt_names.items()},
+                     cs_types, cs_global, cs_projects, cs_visible)
+
+
+_CS_ID = r"[A-Za-z_]\w*"
+_CS_NS = re.compile(rf"\bnamespace\s+(?P<name>{_CS_ID}(?:\s*\.\s*{_CS_ID})*)\s*[{{;]")
+_CS_TYPE = re.compile(rf"\b(?:class|struct|interface|enum|record(?:\s+(?:class|struct))?)\s+"
+                      rf"(?P<name>{_CS_ID})\s*(?=[<:{{(;]|where\b|$)", re.M)
+_CS_DELEGATE = re.compile(rf"\bdelegate\b[^;(){{}}]*?\b(?P<name>{_CS_ID})\s*(?:<[^>;(){{}}]*>)?\s*\(")
+_CS_USING = re.compile(rf"\b(?P<g>global\s+)?using\s+(?:(?P<static>static\s+)|(?P<alias>{_CS_ID})\s*=\s*)?"
+                       rf"(?P<name>{_CS_ID}(?:\s*\.\s*{_CS_ID})*)\s*;")
+_CS_REF = re.compile(r"<ProjectReference\s[^>]*?Include\s*=\s*\"(?P<p>[^\"]+)\"", re.I)
+
+
+def _cs_file_facts(text: str) -> tuple[tuple[str, ...], tuple[str, ...], tuple[tuple, ...]]:
+    """(namespaces, type names, usings) a C# file declares; usings are (global, kind, alias, name)."""
+    def compute():
+        code = scan(text, "csharp").code
+        nss = tuple(dict.fromkeys(re.sub(r"\s+", "", m.group("name")) for m in _CS_NS.finditer(code)))
+        types = {m.group("name") for m in _CS_TYPE.finditer(code)} - {"where", "new", "class", "struct"}
+        types |= {m.group("name") for m in _CS_DELEGATE.finditer(code)}
+        uses = tuple((bool(m.group("g")), "static" if m.group("static") else ("alias" if m.group("alias") else "ns"),
+                      m.group("alias") or "", re.sub(r"\s+", "", m.group("name")))
+                     for m in _CS_USING.finditer(code))
+        return nss, tuple(sorted(types)), uses
+    from rco import memo
+    return memo.cached("cs_facts", text, compute)
+
+
+def _cs_index(paths: frozenset[str], sources: Mapping[str, bytes]):
+    types: dict[str, dict[str, list[str]]] = {}
+    glob: list[str] = []
+    for p in sorted(paths):
+        if not p.endswith(".cs") or p not in sources:
+            continue
+        nss, tnames, uses = _cs_file_facts(sources[p].decode("utf-8-sig", "replace"))
+        for ns in nss or ("",):
+            bucket = types.setdefault(ns, {})
+            for t in tnames:
+                bucket.setdefault(t, []).append(p)
+        glob += [n for g, k, _a, n in uses if g and k == "ns"]
+    return ({ns: {t: tuple(v) for t, v in b.items()} for ns, b in types.items()},
+            tuple(sorted(set(glob))))
+
+
+def _cs_projects(csproj: Mapping[str, str]):
+    dirs = sorted({dir_of(p) for p in csproj}, key=lambda x: (-len(x), x))
+    refs: dict[str, set[str]] = {d: set() for d in dirs}
+    for p, text in csproj.items():
+        for m in _CS_REF.finditer(text):
+            tgt = _norm(posixpath.join("" if dir_of(p) == "." else dir_of(p), m.group("p").replace("\\", "/")))
+            if tgt:
+                refs[dir_of(p)].add(dir_of(tgt))
+    seen: dict[str, frozenset[str]] = {}
+    for d in dirs:  # transitive closure, the project itself included
+        todo, got = [d], {d}
+        while todo:
+            for n in refs.get(todo.pop(), ()):
+                if n not in got:
+                    got.add(n)
+                    todo.append(n)
+        seen[d] = frozenset(got)
+    return tuple(dirs), seen
+
+
+def _cs_project_of(path: str, f: RepoFacts) -> str | None:
+    return next((d for d in f.cs_projects if d == "." or path.startswith(d + "/")), None)
+
+
+def _cs(path: str, text: str, f: RepoFacts) -> set[str]:
+    if not f.cs_types:
+        return set()
+    nss, _types, uses = _cs_file_facts(text)
+    idents = set(re.findall(_CS_ID, scan(text, "csharp").code))
+    me = _cs_project_of(path, f)
+    sees = f.cs_visible.get(me) if me is not None else None
+    visible: dict[str, None] = {}
+    for ns in nss or ("",):  # the file's own namespace and its parents need no using
+        parts = ns.split(".") if ns else []
+        for i in range(len(parts), -1, -1):
+            visible[".".join(parts[:i])] = None
+    for ns in f.cs_global:
+        visible[ns] = None
+    named: list[tuple[str, str]] = []  # (namespace, type) a using names directly
+    for _g, kind, _alias, name in uses:
+        if kind == "ns":
+            visible[name] = None
+        else:  # using static N.T; using A = N.T;
+            ns, _, t = name.rpartition(".")
+            named.append((ns, t))
+            visible[name] = None
+    hits: set[str] = set()
+
+    def take(files: tuple[str, ...]) -> None:
+        keep = [c for c in files if c != path and (sees is None or _cs_project_of(c, f) is None
+                                                    or _cs_project_of(c, f) in sees)]
+        if not keep:
+            return
+        def pkey(pr: str) -> tuple:  # own project, then nearest; projects that tie all stay
+            return (pr != (me or ""), -_common_dirs(pr, dir_of(path)))
+        best = min(pkey(_cs_project_of(c, f) or "") for c in keep)
+        hits.update(c for c in keep if pkey(_cs_project_of(c, f) or "") == best)
+
+    for ns in visible:
+        bucket = f.cs_types.get(ns)
+        if not bucket:
+            continue
+        for t in idents.intersection(bucket) if len(idents) < len(bucket) else (x for x in bucket if x in idents):
+            take(bucket[t])
+    for ns, t in named:
+        files = f.cs_types.get(ns, {}).get(t)
+        if files:
+            take(files)
+    return hits
 
 
 def _norm(path: str) -> str | None:
@@ -580,6 +716,8 @@ def file_edges(path: str, data: bytes, f: RepoFacts) -> tuple[str, ...]:
         got = _rs(path, text, f)
     elif lang == "java":
         got = _java(path, text, f)
+    elif lang == "csharp":
+        got = _cs(path, text, f)
     elif lang == "kotlin":
         got = _kt(path, text, f)
     else:

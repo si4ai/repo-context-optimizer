@@ -21,8 +21,8 @@ each reason listed:
   `package.json`, `go.mod`, `Cargo.toml`, `Makefile`, `rco.toml`, CI
   workflows, and each language's build files in `BUILD_FILES`: `*.csproj`,
   `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and so on; see
-  `is_infra`), even when a code file names one (a build file under a
-  fixture directory such as `fixtures/`, `testdata/` or `golden/` is test
+  `is_infra`), even when a code file names one (an infra file under
+  `fixtures/`, `testdata/`, `test_data/`, `golden/` or `__tests__/` is test
   data; one under `test/` or `tests/` is not);
 - a changed file that is not code, not docs, and named by no code file.
 
@@ -109,6 +109,10 @@ def is_test(path: str) -> bool:
     if lang == "java":  # Maven/Gradle src/test/java, and the usual *Test class names
         return (name.removesuffix(".java").endswith(("Test", "Tests", "IT", "TestCase"))
                 or name.startswith("Test") or "test" in dirs or "tests" in dirs)
+    if lang == "csharp":  # xUnit, NUnit, MSTest: *Tests.cs, or a *.Tests project directory
+        return (name.removesuffix(".cs").endswith(("Test", "Tests", "TestCase", "Fixture"))
+                or any(d.lower() in ("test", "tests") or d.endswith((".Tests", ".Test", ".UnitTests"))
+                       for d in dirs))
     if lang == "kotlin":  # Gradle src/test, src/jvmTest, src/commonTest, and *Test names
         return (name.removesuffix(".kt").endswith(("Test", "Tests", "IT", "TestCase", "Spec"))
                 or any(d in ("test", "tests") or (d.endswith("Test") and d != "Test") for d in dirs))
@@ -251,9 +255,9 @@ def select(changed: Sequence[str], head_paths: Sequence[str],
 
 
 def _code_sources(repo: Path, entries: tuple[gitread.Entry, ...]) -> tuple[list[str], dict[str, bytes]]:
-    from rco.edges import MANIFEST_NAMES
+    from rco.edges import is_manifest
     ents = [e for e in entries if e.mode not in (gitread.MODE_SUBMODULE, gitread.MODE_SYMLINK)
-            and (is_code(e.path) or e.path.rsplit("/", 1)[-1] in MANIFEST_NAMES)]
+            and (is_code(e.path) or is_manifest(e.path))]
     data = gitread.read_blobs(repo, [e.blob for e in ents])
     return [e.path for e in entries], {e.path: data[e.blob] for e in ents}
 

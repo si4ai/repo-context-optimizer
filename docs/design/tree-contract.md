@@ -517,6 +517,24 @@ Applied in 0.2.0 (card 1362):
   annotations, modifiers and brackets are in `rco/extract/brace.py` so the
   other brace languages can share them.
 
+Applied in 0.2.0 (card 1363):
+
+- Applied: a `csharp` extractor (`rco/extract/csharp.py`) on the same scanner
+  (`scan.py`, lang `csharp`: it also masks verbatim `@"..."` strings, `"""`
+  raw strings and preprocessor lines such as `#if`). Namespaces are
+  flattened, both the block form and `namespace X;`; the first one is the
+  SRCMODULE `namespace` attr. Children: CLASS (`kind` is `class`, `struct`,
+  `interface`, `enum`, `record` or `delegate`; a record's parameters are in
+  its sig), METHOD (a constructor is named `constructor`; an operator is
+  named `operator +`), FIELD (properties, events and indexers, an indexer
+  being named `this`; a property's accessors are in its attrs) and CONSTANT
+  (`const`, `static readonly`). Public means: a `public` top-level type; a
+  `public`, `protected` or `protected internal` member (not `private
+  protected`); every member of an interface and every enum member. Explicit
+  interface implementations are left out. Attrs record `abstract`,
+  `sealed`, `static`, `virtual`, `override`, `readonly` and `partial` where
+  present. `[Attr]` lists are skipped by `rco/extract/brace.py`.
+
 Applied in 0.2.0 (card 1364):
 
 - Applied: a `kotlin` extractor (`rco/extract/kotlin.py`) on the same scanner
@@ -530,8 +548,9 @@ Applied in 0.2.0 (card 1364):
   (properties, including extension properties and enum entries) and CONSTANT
   (`const val`). Public means not `private` and not `internal` (Kotlin's
   default is public; an interface member is public unless marked
-  `private`). A function or property ends where the next declaration starts, so expression bodies,
-  delegates (`by`) and `get`/`set` accessors on the lines after it work.
+  `private`). A function or property ends where the next declaration
+  starts, so expression bodies, delegates (`by`) and `get`/`set` accessors
+  on the lines after it work.
   Attrs record `open`, `abstract`, `sealed`, `data`, `inner`, `value`,
   `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,
   `tailrec`, `expect`, `actual` and `var` where present.

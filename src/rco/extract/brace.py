@@ -39,13 +39,15 @@ def strip_annotations(text: str) -> str:
     return _ANNO_TEXT.sub("", text)
 
 
-def read_mods(code: str, i: int, hi: int, words: Iterable[str]) -> tuple[list[str], int]:
-    """The modifier keywords at i (annotations between them are skipped)."""
+def read_mods(code: str, i: int, hi: int, words: Iterable[str],
+              bracket: bool = False) -> tuple[list[str], int]:
+    """The modifier keywords at i; `@Name` annotations (or, with bracket, `[Attr]` lists)
+    between them are skipped."""
     rx = re.compile(r"(?:" + "|".join(sorted(map(re.escape, words), key=len, reverse=True))
                     + r")(?![\w$-])")
     mods: list[str] = []
     while True:
-        i = skip_annotations(code, i, hi)
+        i = skip_brackets(code, i, hi) if bracket else skip_annotations(code, i, hi)
         m = rx.match(code, i, hi)
         if not m:
             return mods, i
@@ -66,6 +68,43 @@ def find_term(code: str, i: int, hi: int, chars: str) -> int:
             d -= 1
             if d < 0:
                 return -1
+    return -1
+
+
+def skip_brackets(code: str, i: int, hi: int) -> int:
+    """Index after any `[Attr]` / `[Attr(args), Other]` attribute lists that start at i (C#)."""
+    while True:
+        i = skip_ws(code, i, hi)
+        if i >= hi or code[i] != "[":
+            return i
+        i = match_paren(code, i, "[", "]") + 1
+
+
+_BRACKET_ATTR = re.compile(r"(?<![\w\]>)])\[\s*[A-Za-z_@][^\[\]]*(?:\[[^\[\]]*\][^\[\]]*)*\]\s*")
+
+
+def strip_bracket_attrs(text: str) -> str:
+    """Drop `[Attr]` attribute lists from a signature piece; `int[]` and `T[,]` stay."""
+    return _BRACKET_ATTR.sub("", text)
+
+
+def find_term_generic(code: str, i: int, hi: int, chars: str) -> int:
+    """find_term, but a terminator inside <...> generic arguments (or a tuple type) does not count."""
+    d = a = 0
+    for j in range(i, hi):
+        ch = code[j]
+        if d == 0 and a == 0 and ch in chars:
+            return j
+        if ch in "([{":
+            d += 1
+        elif ch in ")]}":
+            d -= 1
+            if d < 0:
+                return -1
+        elif ch == "<" and d == 0 and j > i and (code[j - 1].isalnum() or code[j - 1] in "_>?"):
+            a += 1
+        elif ch == ">" and a and d == 0 and code[j - 1] != "=":
+            a -= 1
     return -1
 
 
@@ -106,5 +145,6 @@ def block_end(code: str, i: int) -> int:
     return min(match_brace(code, i) + 1, len(code))
 
 
-__all__ = ["IDENT", "block_end", "find_term", "norm", "read_mods", "skip_angles",
-           "skip_annotations", "skip_ws", "split_top", "strip_annotations"]
+__all__ = ["IDENT", "block_end", "find_term", "find_term_generic", "norm", "read_mods",
+           "skip_angles", "skip_annotations", "skip_brackets", "skip_ws", "split_top",
+           "strip_annotations", "strip_bracket_attrs"]
