@@ -235,3 +235,54 @@ def test_php_test_files_are_tests_for_affected():
     for p in ("tests/Support/StrTest.php", "src/ThingTest.php", "tests/Foundation/Fixtures/x.php"):
         assert is_test(p), p
     assert not is_test("src/Illuminate/Support/Str.php")
+
+
+
+def test_a_line_comment_ends_at_the_php_closer_so_the_next_block_is_read():
+    """In PHP, `//` and `#` comments end at `?>` as well as at the newline (D1)."""
+    for comment in ("// c", "# c"):
+        text = f"<?php\n{comment} ?> html\n<?php\nfunction a1() {{}}\n"
+        n = PhpExtractor().extract(SourceFile("a.php", "x", text.encode()))[0]
+        assert [c.name for c in n.children] == ["a1"], comment
+        s = scan(text, "php")
+        assert "function a1()" in s.code and "html" not in s.code
+    text = "<?php\n// c ?>\nhtml function c_html() {}\n<?php\nfunction c1() {}\n"
+    n = PhpExtractor().extract(SourceFile("c.php", "x", text.encode()))[0]
+    assert [c.name for c in n.children] == ["c1"]
+
+
+def test_use_function_finds_a_function_at_any_indent_in_a_braced_namespace():
+    """A function_exists guard at indent 8 is still a `use function` target (D2, W1)."""
+    g, _ = _edges({
+        "composer.json": COMPOSER,
+        "app/Lib.php": "<?php\nnamespace App {\n    if (!function_exists('deep')) {\n"
+                       "        function deep() {}\n    }\n    class C { function meth() {} }\n}\n",
+        "app/U.php": "<?php\nnamespace App;\nuse function App\\deep;\nclass U { function f() { deep(); } }\n",
+    })
+    assert g["app/U.php"] == ("app/Lib.php",)
+    g2, _ = _edges({
+        "composer.json": COMPOSER,
+        "app/Lib.php": "<?php\nnamespace App;\nclass C { function meth() {} }\n",
+        "app/U.php": "<?php\nnamespace App;\nuse function App\\meth;\nclass U {}\n",
+    })
+    assert g2["app/U.php"] == ()
+
+
+def test_the_longest_psr4_prefix_wins_when_two_prefixes_match():
+    """Two prefixes can map the same name; the longer one wins (W1)."""
+    g, facts = _edges({
+        "composer.json": json.dumps({"autoload": {"psr-4": {"App\\": "src/", "App\\Svc\\": "lib/svc/"}}}),
+        "src/Svc/Foo.php": "<?php\nnamespace App\\Svc;\nclass Foo {}\n",
+        "lib/svc/Foo.php": "<?php\nnamespace App\\Svc;\nclass Foo {}\n",
+        "app/Use.php": "<?php\nnamespace App;\nuse App\\Svc\\Foo;\nclass Use1 {}\n",
+    })
+    assert ("App\\Svc\\", "lib/svc") in facts.php_psr4
+    assert g["app/Use.php"] == ("lib/svc/Foo.php",)
+
+
+def test_composer_lock_and_phpunit_dist_are_build_files():
+    from rco.affected import BUILD_FILES, is_infra
+    names = BUILD_FILES["php"]
+    for n in ("composer.lock", "phpunit.xml.dist"):
+        assert n in names, n
+        assert is_infra(n) and is_infra(f"pkg/{n}"), n

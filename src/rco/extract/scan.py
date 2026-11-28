@@ -44,9 +44,19 @@ def _blank(chars: list[str], a: int, b: int) -> None:
             chars[k] = " "
 
 
+
+def _line_comment_end(text: str, i: int, n: int, lang: str) -> int:
+    """Index of the first newline after i, or of `?>` when that comes first in PHP."""
+    j = text.find("\n", i)
+    j = n if j < 0 else j
+    if lang == "php":
+        k = text.find("?>", i)
+        if 0 <= k < j:
+            return k
+    return j
+
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust", "java", "kotlin", "csharp" or "sh". A replay run caches it by text (rco.memo)."""
-    """lang: "js", "go", "rust", "java", "csharp", "php" or "sh". A replay run caches it by text (rco.memo)."""
+    """lang: "js", "go", "rust", "java", "kotlin", "csharp", "php" or "sh". A replay run caches it by text (rco.memo)."""
     from rco import memo
     return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
 
@@ -86,8 +96,7 @@ def _scan(text: str, lang: str) -> Scan:
                 i, in_php = i + 2, False
                 continue
             if c == "#" and nxt != "[":
-                j = text.find("\n", i)
-                j = n if j < 0 else j
+                j = _line_comment_end(text, i, n, "php")
                 comments.append((i, j))
                 _blank(nc, i, j)
                 _blank(code, i, j)
@@ -125,8 +134,7 @@ def _scan(text: str, lang: str) -> Scan:
             i = j
             continue
         if lang != "sh" and c == "/" and nxt == "/":
-            j = text.find("\n", i)
-            j = n if j < 0 else j
+            j = _line_comment_end(text, i, n, lang)
             comments.append((i, j))
             _blank(nc, i, j)
             _blank(code, i, j)

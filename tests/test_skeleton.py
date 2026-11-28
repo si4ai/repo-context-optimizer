@@ -40,3 +40,27 @@ def test_readme_names_landed_diff_and_output_contract():
     assert "rco pack" in shipped and "rco update" in shipped and "have landed" in shipped
     assert "rco triage" in shipped and "rco notice" in shipped and "have landed" in shipped
     assert "not implemented yet" not in shipped
+
+
+def test_a_module_has_only_one_leading_docstring():
+    """A second module or function docstring is a dead string, as in the scan.scan merge (D3)."""
+    import ast
+    from pathlib import Path
+
+    def leading(body: list) -> int:
+        n = 0
+        for stmt in body:
+            val = getattr(stmt, "value", None)
+            if isinstance(stmt, ast.Expr) and isinstance(val, ast.Constant) and isinstance(val.value, str):
+                n += 1
+            else:
+                break
+        return n
+
+    root = Path(__file__).resolve().parents[1] / "src"
+    for path in sorted(root.rglob("*.py")):
+        tree = ast.parse(path.read_text())
+        nodes = [tree, * (n for n in ast.walk(tree)
+                          if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)))]
+        for node in nodes:
+            assert leading(node.body) <= 1, (path, getattr(node, "name", "<module>"))

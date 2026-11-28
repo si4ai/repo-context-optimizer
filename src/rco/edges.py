@@ -52,7 +52,7 @@ from pathlib import PurePosixPath
 from typing import Mapping
 
 from rco.extract.langs import lang_of
-from rco.extract.scan import scan
+from rco.extract.scan import match_brace, scan
 from rco.modules import JS_EXT, dir_of
 
 MANIFEST_NAMES = ("package.json", "go.mod", "Cargo.toml", "composer.json")
@@ -586,7 +586,7 @@ def _kt_lookup(parts: list[str], f: RepoFacts, root: str, here: str) -> list[str
 _PHP_ID = r"[A-Za-z_\x80-\uffff][\w\x80-\uffff]*"
 _PHP_NS = re.compile(rf"\bnamespace\s+(?P<name>{_PHP_ID}(?:\\{_PHP_ID})*)\s*[;{{]")
 _PHP_TYPE = re.compile(rf"(?<![:\w$>\\])(?P<kw>class|interface|trait|enum)\s+(?P<name>{_PHP_ID})")
-_PHP_FUNC = re.compile(rf"^[ \t]{{0,4}}function[ \t]+&?[ \t]*(?P<name>{_PHP_ID})[ \t]*\(", re.M)
+_PHP_FUNC = re.compile(rf"(?<![\w$])function[ \t]+&?[ \t]*(?P<name>{_PHP_ID})[ \t]*\(")
 _PHP_USE = re.compile(rf"^[ \t]*use[ \t]+(?:(?P<kind>function|const)[ \t]+)?(?P<body>[^;]+);", re.M)
 _PHP_REQ = re.compile(r"\b(?:require|include)(?:_once)?\b\s*\(?\s*(?:(?P<dir>__DIR__)\s*\.\s*)?(?P<q>['\"])(?P<path>[^'\"$]+)(?P=q)\s*\)?\s*;")
 _PHP_NAME = re.compile(rf"\\?{_PHP_ID}(?:\\{_PHP_ID})*")
@@ -615,6 +615,21 @@ def _composer_psr4(d: str, text: str) -> list[tuple[str, str]]:
     return out
 
 
+
+def _php_type_bodies(code: str) -> tuple[tuple[int, int], ...]:
+    """Spans of class, interface, trait and enum bodies, so a method is not a function."""
+    out: list[tuple[int, int]] = []
+    for m in _PHP_TYPE.finditer(code):
+        if m.group("name") in ("extends", "implements") or code[:m.start()].rstrip().endswith("new"):
+            continue
+        o = code.find("{", m.end())
+        semi = code.find(";", m.end())
+        if o < 0 or (0 <= semi < o):
+            continue
+        out.append((o, match_brace(code, o)))
+    return tuple(out)
+
+
 def _php_file_facts(text: str):
     """(namespace, declared fq names, uses, requires): uses are (kind, alias, fq); requires (dir?, path)."""
     def compute():
@@ -634,7 +649,9 @@ def _php_file_facts(text: str):
             return f"{ns}\\{name}" if ns else name
         decls = [fq(m.start(), m.group("name")) for m in _PHP_TYPE.finditer(code)
                  if m.group("name") not in ("extends", "implements") and not code[:m.start()].rstrip().endswith("new")]
-        decls += [fq(m.start(), m.group("name")) + "()" for m in _PHP_FUNC.finditer(code)]
+        bodies = _php_type_bodies(code)
+        decls += [fq(m.start(), m.group("name")) + "()" for m in _PHP_FUNC.finditer(code)
+                  if not any(a <= m.start() < b for a, b in bodies)]
         uses: list[tuple[str, str, str]] = []
         for m in _PHP_USE.finditer(code):
             body = re.sub(r"\s+", " ", m.group("body")).strip()
