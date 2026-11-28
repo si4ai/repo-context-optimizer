@@ -200,6 +200,7 @@ def test_every_language_has_build_files_that_select_every_test():
             for path in (sample, f"app/{sample}", f"a/b/c/{sample}"):
                 assert is_infra(path), (lang, path)
             assert not is_infra(f"tests/fixtures/{sample}"), (lang, sample)  # a fixture is test data
+            assert is_infra(f"test/{sample}") and is_infra(f"app/tests/Util/{sample}"), (lang, sample)
             _, tests, run_all, _ = select([f"app/{sample}"], ["app/Fix.test.js"], [{}],
                                          sources=[{"src/Reader.kt": f'"{sample}"'.encode()}])
             assert run_all, (lang, sample)  # a file that only names it does not read it
@@ -214,4 +215,13 @@ def test_a_build_file_a_source_file_only_mentions_still_runs_everything():
               "gradle/libs.versions.toml"):
         sel = selection([p], ["a/T.java"], [{}], sources=srcs if p.endswith(".kts") else ())
         assert sel.run_all and not sel.tests, p
-    assert not is_infra("notes/build-gradle.txt") and not is_infra("tests/data/pom.xml")
+    assert not is_infra("notes/build-gradle.txt") and not is_infra("tests/fixtures/pom.xml")
+
+
+def test_a_build_file_in_a_test_directory_that_a_project_file_names_runs_everything():
+    srcs = [{"test/Lib.Tests/Lib.Tests.csproj":
+             b'<Project><ProjectReference Include="../TestUtils/TestUtils.csproj"/></Project>'}]
+    sel = selection(["test/TestUtils/TestUtils.csproj"], ["test/Lib.Tests/T.cs"], [{}], sources=srcs)
+    assert sel.run_all and not sel.tests
+    for p in ("tests/TestUtils/TestUtils.csproj", "test/Directory.Build.props", "tests/pom.xml"):
+        assert selection([p], [], [{}]).run_all, p

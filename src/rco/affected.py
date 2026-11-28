@@ -21,7 +21,9 @@ each reason listed:
   `package.json`, `go.mod`, `Cargo.toml`, `Makefile`, `rco.toml`, CI
   workflows, and each language's build files in `BUILD_FILES`: `*.csproj`,
   `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and so on; see
-  `is_infra`), even when a code file names one;
+  `is_infra`), even when a code file names one (a build file under a
+  fixture directory such as `fixtures/`, `testdata/` or `golden/` is test
+  data; one under `test/` or `tests/` is not);
 - a changed file that is not code, not docs, and named by no code file.
 
 Docs (`*.md`, `*.rst`, `*.adoc`, `LICENSE` and the like, anything under a
@@ -53,7 +55,8 @@ from rco.output import Exit, counted
 SCHEMA_AFFECTED = "rco.affected/1"
 _TEST_DIRS = {"tests", "test"}
 # a file under one of these is test data, never docs
-_TEST_DATA_DIRS = _TEST_DIRS | {"testdata", "test_data", "fixtures", "__tests__", "golden"}
+_FIXTURE_DIRS = {"testdata", "test_data", "fixtures", "__tests__", "golden"}
+_TEST_DATA_DIRS = _TEST_DIRS | _FIXTURE_DIRS
 _DOC_DIRS = {"docs", "doc"}
 _DOC_EXT = (".md", ".markdown", ".rst", ".adoc")
 _DOC_NAMES = {"LICENSE", "LICENCE", "COPYING", "NOTICE", "AUTHORS", "CONTRIBUTORS"}
@@ -115,8 +118,8 @@ def is_infra(path: str) -> bool:
     """Test config or infra: a change selects every test (`run_all`)."""
     parts = path.split("/")
     name = parts[-1]
-    if _TEST_DATA_DIRS & set(parts[:-1]) and not path.startswith(_INFRA_DIRS):
-        return False  # a fixture repo's pyproject.toml is test data
+    if _FIXTURE_DIRS & set(parts[:-1]) and not path.startswith(_INFRA_DIRS):
+        return False  # a fixture repo's pyproject.toml is test data; a build file in test/ is not
     if path == "conftest.py" or name in _INFRA_NAMES or path.startswith(_INFRA_DIRS):
         return True
     if name.endswith(_INFRA_SUFFIX):
