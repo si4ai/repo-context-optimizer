@@ -1,67 +1,78 @@
 # Changelog
 
-## unreleased
+## 0.1.8 - 2026-11-27
+
+`rco pack --for` now outlines only the files those paths import, caps
+its budget at half their size, and counts tokens with tiktoken
+`o200k_base` when the `tokens` extra is installed. Replay and metrics
+count the pack plus the changed files on the with-rco side, and
+importers of a changed public signature on the without-rco side.
+Trees, Forests and packs stay deterministic: no LLM runs, and the
+same commit gives the same output.
 
 ### added
 
-- a root `.gitattributes` pins LF checkout, so a checkout on any OS keeps LF bytes in fixtures and goldens (card 1220)
+- a labelled set and no-ML baseline for the 54 v1 concepts, in
+  `docs/baseline/concepts/` (#98, card 1338)
+- a root `.gitattributes` pins LF checkout, so a checkout on any OS keeps LF bytes in fixtures and goldens (#71, card 1220)
 - concept taxonomy v2.0.0: a documented superset of the 54 v1 concepts,
   with `status` (`trained`, `untrained`, or `dropped`), optional
   aliases, and a record that stays in the file when a concept is later
   dropped. A check fails if a v1 id is deleted instead of marked
   dropped. Labels and the baseline run stay on taxonomy 1.0.0; nothing
-  was relabelled (card 1352)
+  was relabelled (#107, card 1352)
 
 ### fixed
 
-- `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (card 1349)
-- `rco pack --for` and replay resolve go, rust and js workspace imports through go.mod, Cargo.toml and package.json (card 1350)
+- `rco pack --for` no longer crashes when a JS or TS file imports an in-repo JSON file such as package.json (#104, card 1349)
+- `rco pack --for` and replay resolve go, rust and js workspace imports through go.mod, Cargo.toml and package.json (#105, card 1350)
 - the events log records `for_cut` when the `--for` list is cut to fit the
   line, notes a short write on stderr without changing the exit, logs
   `--for` paths as repo paths, and writes a line with `cmd` null for a
-  usage error (card 1348)
-- identifier findings in the commit range or PR text now fail CI, via `.github/workflows/hygiene_gate.yml` (the report-only job in ci.yml is unchanged; card 1353)
+  usage error (#108, card 1348)
+- identifier findings in the commit range or PR text now fail CI, via `.github/workflows/hygiene_gate.yml` (the report-only job in ci.yml is unchanged; #106, card 1353)
 
 ### changed
 
 - the without-rco side of `rco metrics measure` and `rco replay` also counts
   the files that import a changed file whose public signature changed. The
   files counted are defined once, in `rco.meter.read_set`. The pack itself
-  does not yet add importer call sites; that is card 1360 (card 1359)
-- `rco metrics measure` counts the pack plus the changed files on the with-rco side, the same definition as `rco replay`. A skipped pack is a tie. A `rco pack` run records `pack_tokens`, `pack_budget`, `pack_skipped` and `pack_overrun` on the events line; when `.rco/` is missing, those fields are one note on stderr and the tree is not written. A recompute of 47 the-mill artifacts is in `docs/baseline/pipeline-meter-47.md` (card 1351)
-- `rco init --agents` reports the marked `AGENTS.md` block's size in tokens, using the same estimate as `rco pack` (card 1356)
-- `rco init --agents` tells the agent that after a compaction it should rerun `rco pack --for FILE...` instead of rereading the files (card 1355)
+  does not yet add importer call sites; that is card 1360 (#113, card 1359)
+- `rco metrics measure` counts the pack plus the changed files on the with-rco side, the same definition as `rco replay`. A skipped pack is a tie. A `rco pack` run records `pack_tokens`, `pack_budget`, `pack_skipped` and `pack_overrun` on the events line; when `.rco/` is missing, those fields are one note on stderr and the tree is not written. A recompute of 47 the-mill artifacts is in `docs/baseline/pipeline-meter-47.md` (#112, card 1351)
+- `rco init --agents` reports the marked `AGENTS.md` block's size in tokens, using the same estimate as `rco pack` (#111, card 1356)
+- `rco init --agents` tells the agent that after a compaction it should rerun `rco pack --for FILE...` instead of rereading the files (#110, card 1355)
 - with `--for`, a one-hop module is a Forest line or a hop line, not both:
-  a hop line is put back only after its Forest line was cut (card 1347)
+  a hop line is put back only after its Forest line was cut (#109, card 1347)
 - `rco pack` counts its budget in tiktoken `o200k_base` tokens when the
   `tokens` extra is installed, otherwise characters / 3.5, rounded up, so
   signature-dense packs stay within `--budget`. After every content cut,
   a pack that is still over budget shortens the trimmed footer to counts
   and, if only the header and footer remain, names that residue in a note
-  (card 1343)
+  (#102, card 1343)
 - `rco replay` counts each changed file once (the pack no longer outlines
   them), sends nothing when the pack skips (a tie), and renders each pack's
   header as if the commit were HEAD with a clean working tree, so replay no
   longer adds a "files differ" warning no agent would see. `--format json`
   adds per-commit changed and imported tokens, imported files, pack tokens,
   `pack_skipped` and signature `coverage`; `--since DATE` replays every code
-  commit since a date. Per-file work is cached for the run (card 1344)
-- the `rco pack` line in `rco --help` describes the --for pack (card 1344)
+  commit since a date. Per-file work is cached for the run (#101, card 1344)
+- the `rco pack` line in `rco --help` describes the --for pack (#101, card 1344)
 - `rco pack --for` outlines the files the `--for` files import (one hop in
   the file import graph, across module boundaries) instead of every file of
   the owning modules, and leaves out the `--for` files' own outlines, which
   the agent opens anyway. Imported files are ranked nearest first and budget
   cuts remove the farthest file first, not the last nodes in path order
-  (card 1340)
+  (#97, card 1340)
 - `rco pack --for` treats `--budget` as a cap, not a target: the budget is
   the smaller of `--budget` and half the estimated tokens of the imported
   files. When the `--for` files import no other file in the repo, or that
   budget is under 128, the pack is one `nothing to add` line and exits 0
-  (card 1341)
+  (#99, card 1341)
 - `rco pack --for` shows only the Forest lines of the owning modules and
   their one-hop modules, not the whole-repo Forest, and cuts those neighbor
   lines before any Tree node; the owners' lines go last. Without `--for`
-  the full Forest stays (card 1342)
+  the full Forest stays (#100, card 1342)
+- README layer 3 drops a stale events-table line and says a pack ran, not that it was read (#103)
 
 ## 0.1.7 - 2026-11-27
 

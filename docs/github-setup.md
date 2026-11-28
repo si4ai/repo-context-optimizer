@@ -1,6 +1,6 @@
 # Configure GitHub for a user repository
 
-This file is optional repository process. To adopt rco the product, `pip install repo-context-optimizer==0.1.7` and `rco init` are enough; see [adopting rco](guide/adopting-rco.md). Use this file only if you also want the repository process around it: checks over rules, report-only checks that show facts rather than hard-blocking a merge, and test selection.
+This file is optional repository process. To adopt rco the product, `pip install repo-context-optimizer==0.1.8` and `rco init` are enough; see [adopting rco](guide/adopting-rco.md). Use this file only if you also want the repository process around it: checks over rules, report-only checks that show facts rather than hard-blocking a merge, and test selection.
 
 The lines below are defaults to adapt, not fixed rules. This project uses an independent Validator that passes and merges pull requests, and by default authors do not merge their own PRs; another repository can pick a different passer.
 
