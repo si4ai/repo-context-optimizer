@@ -17,9 +17,9 @@ skipped pack is a tie.
 | losses (with > without) | 0 |
 | ties (skipped packs) | 6 |
 | median tokens without rco | 153,492 |
-| median tokens with rco | 23,961 |
-| saving (median with against median without) | 84.4% |
-| saving per commit, median | 79.7% (smallest 0.0%, a tie) |
+| median tokens with rco | 23,675 |
+| saving (median with against median without) | 84.6% |
+| saving per commit, median | 79.9% (smallest 0.0%, a tie) |
 | median files in the import hop | 28 |
 | commits where importers were added | 8 (135 changed-name call sites in importers, found in 6 of those commits; the pack does not carry call-site lines yet, card 1360) |
 
@@ -39,8 +39,8 @@ file's own namespace and parents ignored (only `using` directives and
 
 | edges | median without | median with | saving | losses | median import hop |
 |---|---|---|---|---|---|
-| usings and own namespace (shipped) | 153,492 | 23,961 | 84.4% | 0 | 28 |
-| usings only | 87,996 | 18,233 | 79.3% | 0 | 11 |
+| usings and own namespace (shipped) | 153,492 | 23,675 | 84.6% | 0 | 28 |
+| usings only | 87,996 | 17,947 | 79.6% | 0 | 11 |
 
 ## Limits
 
