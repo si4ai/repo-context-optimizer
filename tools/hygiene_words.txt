@@ -811,11 +811,43 @@ nullable
 runnable
 strings
 tagged
+# card 1363
+alias
+alone
+app
+attr
+big
+calc
+deep
+dictionary
+double
+explicit
+func
+globals
+include
+max
+mode
+more
+namespaces
+newtonsoft
+obsolete
+person
+prop
+serializable
+src
+unused
+util
+widget
+wrap
+# card 1363 build files
+bnd
+directory
+dup
+lib
+reader
 # card 1365
 active
-app
 arr
-attr
 batch
 bus
 countable
@@ -825,7 +857,6 @@ foundation
 illuminate
 jsonable
 legacy
-lib
 mine
 models
 notifiable
@@ -834,8 +865,3 @@ quiet
 str
 sub
 support
-unused
-bnd
-directory
-reader
-include

@@ -341,6 +341,8 @@ _DECL = {  # declaration shapes per language; {n} is the name
            r"^[ \t]*(?:(?:static|async|get|set|public|readonly|override)\s+)*{n}\s*[(<]"),
     # modifiers and a return type are space-free tokens: no backtracking on blanked comments
     "java": (r"^[ \t]*(?:(?!return\b|new\b|else\b|throw\b|case\b|yield\b)[^\s(){};=]+[ \t]+)+{n}\s*\(",),
+    "csharp": (r"^[ \t]*(?:(?!return\b|new\b|else\b|throw\b|case\b|yield\b|await\b)[^\s(){};=]+[ \t]+)+"
+               r"{n}\s*[(<]",),
     "php": (r"^[ \t]*(?:[a-z]+[ \t]+)*function[ \t]+&?[ \t]*{n}[ \t]*\(",
             r"^[ \t]*(?:[a-z]+[ \t]+)*(?:class|interface|trait|enum)[ \t]+{n}\b"),
     "go": (r"^func\s*(?:\([^)]*\)\s*)?{n}\s*[\[(]",),

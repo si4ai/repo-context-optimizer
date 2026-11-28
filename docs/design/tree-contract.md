@@ -517,6 +517,24 @@ Applied in 0.2.0 (card 1362):
   annotations, modifiers and brackets are in `rco/extract/brace.py` so the
   other brace languages can share them.
 
+Applied in 0.2.0 (card 1363):
+
+- Applied: a `csharp` extractor (`rco/extract/csharp.py`) on the same scanner
+  (`scan.py`, lang `csharp`: it also masks verbatim `@"..."` strings, `"""`
+  raw strings and preprocessor lines such as `#if`). Namespaces are
+  flattened, both the block form and `namespace X;`; the first one is the
+  SRCMODULE `namespace` attr. Children: CLASS (`kind` is `class`, `struct`,
+  `interface`, `enum`, `record` or `delegate`; a record's parameters are in
+  its sig), METHOD (a constructor is named `constructor`; an operator is
+  named `operator +`), FIELD (properties, events and indexers, an indexer
+  being named `this`; a property's accessors are in its attrs) and CONSTANT
+  (`const`, `static readonly`). Public means: a `public` top-level type; a
+  `public`, `protected` or `protected internal` member (not `private
+  protected`); every member of an interface and every enum member. Explicit
+  interface implementations are left out. Attrs record `abstract`,
+  `sealed`, `static`, `virtual`, `override`, `readonly` and `partial` where
+  present. `[Attr]` lists are skipped by `rco/extract/brace.py`.
+
 Applied in 0.2.0 (card 1365):
 
 - Applied: a `php` extractor (`rco/extract/php.py`) on the same scanner

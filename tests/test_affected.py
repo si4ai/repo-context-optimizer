@@ -225,3 +225,14 @@ def test_a_build_file_in_a_test_directory_that_a_project_file_names_runs_everyth
     assert sel.run_all and not sel.tests
     for p in ("tests/TestUtils/TestUtils.csproj", "test/Directory.Build.props", "tests/pom.xml"):
         assert selection([p], [], [{}]).run_all, p
+
+
+def test_infra_files_under_every_fixture_directory_are_test_data():
+    """A name dropped from _FIXTURE_DIRS would make a fixture project's build file run every test."""
+    from rco.affected import _FIXTURE_DIRS
+    assert _FIXTURE_DIRS == {"fixtures", "testdata", "test_data", "golden", "__tests__"}
+    for d in ("fixtures", "testdata", "test_data", "golden", "__tests__"):
+        for name in ("pom.xml", "App.csproj", "build.gradle.kts", "pyproject.toml", "composer.json"):
+            assert not is_infra(f"x/{d}/app/{name}"), (d, name)
+    for d in ("test", "tests"):
+        assert is_infra(f"x/{d}/app/pom.xml"), d

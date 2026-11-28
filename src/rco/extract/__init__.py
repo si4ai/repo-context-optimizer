@@ -9,6 +9,7 @@ from typing import ClassVar, Protocol
 
 from rco import redact
 from rco.extract.cli import CliExtractor
+from rco.extract.csharp import CSharpExtractor
 from rco.extract.java import JavaExtractor
 from rco.extract.langs import GoExtractor, JsExtractor, RustExtractor, ShellExtractor
 from rco.extract.php import PhpExtractor
@@ -29,6 +30,7 @@ class Extractor(Protocol):
 
 EXTRACTORS: tuple[Extractor, ...] = (
     CliExtractor(),
+    CSharpExtractor(),
     GoExtractor(),
     JavaExtractor(),
     JsExtractor(),
