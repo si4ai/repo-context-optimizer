@@ -397,18 +397,20 @@ untouched. `--help` and `--version` are not runs and write no line.
 | `v` | int | line format version, `1` |
 | `run` | string | random id of this run (32 hex) |
 | `ts` | string | UTC start time, `YYYY-MM-DDTHH:MM:SSZ` |
-| `cmd` | string | the command: `update`, `pack`, `metrics measure`, ... |
+| `cmd` | string or null | the command: `update`, `pack`, `metrics measure`, ...; null when the arguments did not parse (exit 2) |
 | `exit` | int | the exit code the command returned |
 | `store` | string or null | the store's `main` pointer when the run ended |
 | `head` | string or null | `git rev-parse HEAD` when the run ended |
 | `ms` | int | duration in milliseconds |
-| `for` | list or null | `rco pack` only: the `--for` paths (cut to fit the line) |
+| `for` | list or null | `rco pack` only: the `--for` paths as repo paths (cut to fit the line) |
+| `for_cut` | int | only when the `--for` list was cut: how many paths were dropped |
 
 Each line is one `O_APPEND` write of at most 4096 bytes, so concurrent runs on
 a local disk never tear or mix lines; no lock is taken. On a network
 filesystem `O_APPEND` is not guaranteed atomic, so lines may interleave
-there. A failure to write the log is one note on stderr and never changes
-the exit code. Read it with `cat .rco/events.jsonl` or, for example,
+there. A failure to write the log, including a short write, is one note on
+stderr and never changes the exit code. A usage error still writes a line
+(`cmd` null, exit 2). Read it with `cat .rco/events.jsonl` or, for example,
 `jq -c 'select(.cmd == "pack")' .rco/events.jsonl`.
 
 ## Secrets
@@ -586,7 +588,7 @@ A CLI has no daemon, so each run is the whole story. What ships today is one JSO
 - `--help` and `--version` add no line.
 - A `pack` or `check` in a tree with no `.rco/` writes nothing.
 - `rco pack` and `rco check` never create a store, so no `rco.db` appears from either.
-- Each line holds `cmd`, `exit`, `store` (the pointer sha at the end of the run), `head`, `ms`, `ts`, `run`, `v` and, for `pack`, `for`; the [events log](#events-log) section lists every key.
+- Each line holds `cmd`, `exit`, `store` (the pointer sha at the end of the run), `head`, `ms`, `ts`, `run`, `v` and, for `pack`, `for`; the [events log](#events-log) section lists every key, including `for_cut` and a null `cmd` on a usage error.
 - There is no `events` table in the SQLite store.
 - The log shows that a command ran, not that the protocol ran when it should have: it holds no pointer before the run, and nothing yet compares it with the protocol's allowed order.
 

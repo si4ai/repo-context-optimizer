@@ -34,6 +34,9 @@ def _lines(repo: Path) -> list[dict]:
 
 def _check_fields(ev: dict) -> None:
     for k, t in FIELDS.items():
+        if k == "cmd":
+            assert ev[k] is None or isinstance(ev[k], str), (k, ev[k])
+            continue
         assert isinstance(ev[k], t), (k, ev[k])
     assert ev["v"] == 1
     assert re.fullmatch(r"[0-9a-f]{32}", ev["run"])
@@ -41,7 +44,12 @@ def _check_fields(ev: dict) -> None:
     assert ev["store"] is None or isinstance(ev["store"], str)
     assert ev["head"] is None or re.fullmatch(r"[0-9a-f]{40}", ev["head"])
     assert ev["ms"] >= 0
-    assert set(ev) == {*FIELDS, "store", "head", "for"}
+    allowed = {*FIELDS, "store", "head", "for"}
+    if "for_cut" in ev:
+        assert isinstance(ev["for_cut"], int) and ev["for_cut"] > 0
+        assert ev["for"] is not None
+        allowed = {*allowed, "for_cut"}
+    assert set(ev) == allowed
 
 
 def test_one_line_per_run(tmp_path):
@@ -142,6 +150,7 @@ def test_pack_for_field(tmp_path):
     cli.main(["pack", "--repo", str(repo), "--for", "src/app/cli.py", "src/app/core/engine.py"])
     (ev,) = _lines(repo)
     assert ev["for"] == ["src/app/cli.py", "src/app/core/engine.py"]
+    assert "for_cut" not in ev
 
 
 def test_line_cap(tmp_path):
@@ -154,6 +163,8 @@ def test_line_cap(tmp_path):
     (ev,) = _lines(repo)
     assert ev["cmd"] == "pack" and 0 < len(ev["for"]) < len(paths)
     assert ev["for"] == paths[:len(ev["for"])]  # a prefix, in order
+    assert ev["for_cut"] == len(paths) - len(ev["for"])
+    _check_fields(ev)
 
 
 def test_store_pointer_read_does_not_lock(tmp_path):
@@ -172,3 +183,37 @@ def test_store_pointer_read_does_not_lock(tmp_path):
         con.close()
     assert read_pointer(tmp_path / "missing.db", "main") is None
     assert read_pointer(db, "other") is None
+
+
+def test_for_paths_logged_as_repo_paths(tmp_path):
+    repo, _ = _repo(tmp_path)
+    abs_p = repo / "src/app/cli.py"
+    cli.main(["pack", "--repo", str(repo), "--for", "./src/app/cli.py", str(abs_p)])
+    (ev,) = _lines(repo)
+    assert ev["for"] == ["src/app/cli.py", "src/app/cli.py"]
+
+
+def test_short_write_notes_and_keeps_exit(tmp_path, capsys, monkeypatch):
+    repo, _ = _repo(tmp_path)
+    real = os.write
+
+    def short(fd, data):
+        # Only the events line: other writes (git cat-file stdin) must be real.
+        if (isinstance(data, (bytes, bytearray)) and data.startswith(b"{")
+                and data.endswith(b"\n") and b'"run":' in data):
+            return max(0, len(data) - 1)
+        return real(fd, data)
+
+    monkeypatch.setattr(os, "write", short)
+    code = cli.main(["pack", "--repo", str(repo), "--for", "src/app/cli.py"])
+    assert code == Exit.OK
+    assert "events log short write" in capsys.readouterr().err
+
+
+def test_usage_error_logs_null_cmd(tmp_path):
+    repo, _ = _repo(tmp_path)
+    code = cli.main(["pack", "--repo", str(repo), "--bogus"])
+    assert code == 2
+    (ev,) = _lines(repo)
+    assert ev["cmd"] is None and ev["exit"] == 2
+    _check_fields(ev)

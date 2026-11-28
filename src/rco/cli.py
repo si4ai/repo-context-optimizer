@@ -389,6 +389,17 @@ def _event_cmd(args: object | None) -> str | None:
     return f"{cmd} {sub}" if sub else cmd
 
 
+def _repo_from_argv(argv: Sequence[str] | None) -> Path:
+    """--repo from argv when the parser did not return args (a usage error)."""
+    av = list(argv) if argv is not None else sys.argv[1:]
+    for i, a in enumerate(av):
+        if a == "--repo" and i + 1 < len(av):
+            return Path(av[i + 1])
+        if a.startswith("--repo="):
+            return Path(a.split("=", 1)[1])
+    return Path(".")
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     t0 = time.monotonic()
     start_wall = time.time()
@@ -409,8 +420,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"rco: internal error: {type(e).__name__}: {e}", file=sys.stderr)
         code = int(Exit.INTERNAL)
     cmd = _event_cmd(args)
-    if cmd is not None:
+    # a usage error (args is None) still logs, with cmd null, when .rco/ exists.
+    if cmd is not None or args is None:
         from rco import events
-        for_paths = (getattr(args, "for_paths", None) or []) if args.cmd == "pack" else None
-        events.record(Path(getattr(args, "repo", ".")), cmd, code, t0, start_wall, for_paths)
+        if args is not None:
+            repo = Path(getattr(args, "repo", "."))
+            for_paths = (getattr(args, "for_paths", None) or []) if args.cmd == "pack" else None
+        else:
+            repo = _repo_from_argv(argv)
+            for_paths = None
+        events.record(repo, cmd, code, t0, start_wall, for_paths)
     return code
