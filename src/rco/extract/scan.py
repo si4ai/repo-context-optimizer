@@ -112,6 +112,16 @@ def _scan(text: str, lang: str) -> Scan:
             continue
         # strings
         q = ""
+        if lang == "csharp" and text.startswith('"""', i):  # raw string: 3 or more quotes, no escapes
+            k = 3
+            while text.startswith('"', i + k):
+                k += 1
+            e = text.find('"' * k, i + k)
+            e = n if e < 0 else e
+            _blank(code, i + k, e)
+            i = min(e + k, n)
+            last = '"'
+            continue
         if lang in _TRIPLE_LANGS and text.startswith('"""', i):  # text block: no escapes end it
             j, e = i + 3, n
             while j < n:
@@ -126,7 +136,8 @@ def _scan(text: str, lang: str) -> Scan:
             i = min(e + 3, n)
             last = '"'
             continue
-        if lang == "csharp" and c == '"' and i > 0 and text[i - 1] == "@":  # verbatim: "" is a quote
+        if lang == "csharp" and c == '"' and i > 0 and (text[i - 1] == "@" or text[i - 2:i] == "@$"):
+            # verbatim ($@"..." or @$"..."): "" is a quote
             j = i + 1
             while j < n:
                 if text[j] == '"':

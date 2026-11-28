@@ -11,7 +11,7 @@ def _bad(text: str) -> list[str]:
     return [f"{tok} ({len(tok)} digits)" for tok in _HEX.findall(text) if len(tok) not in (12, 40)]
 
 
-def test_pinned_shas_in_baseline_docs_are_exactly_40_hex_digits():
+def test_pinned_shas_in_baseline_docs_are_short_ids_or_full_shas():
     bad = [f"{doc.name}: {b}" for doc in sorted(BASELINE.glob("*.md"))
            for b in _bad(doc.read_text(encoding="utf-8"))]
     assert not bad, bad

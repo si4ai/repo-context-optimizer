@@ -255,3 +255,25 @@ def test_csharp_test_files_are_tests_for_affected():
     for p in ("Src/Json.Tests/A.cs", "Src/X/ThingTests.cs", "Src/X/ThingTest.cs", "tests/a/B.cs"):
         assert is_test(p), p
     assert not is_test("Src/Json/Thing.cs")
+
+
+def test_verbatim_quotes_are_doubled_not_ended_and_w2_strings_are_masked():
+    s = scan('class A { string s = @"x""{""y"; string t = $@"p\\q{r}"; string u = @$"a""b"; }\n', "csharp")
+    body = s.code.replace("class A", "").replace("string", "")
+    assert not any(ch in body for ch in "xypqrab"), body
+    assert s.code.count("{") == 1 and s.code.count("}") == 1
+    multi = scan('class A { string s = @"a""\n { } b"; }\n', "csharp")  # a doubled quote does not end it
+    assert multi.code.count("{") == 1 and multi.code.count("}") == 1
+    raw4 = scan('class A { string s = """"\n a """ { b \\\n """"; int n; }\n', "csharp")
+    assert raw4.code.count("{") == 1 and "b" not in raw4.code and "int n;" in raw4.code
+
+
+def test_a_file_prefers_its_own_project_over_a_nearer_one():
+    g = _edges({
+        "A/A.csproj": '<Project><ProjectReference Include="x/z/Z.csproj"/></Project>',
+        "A/x/z/Z.csproj": "<Project/>",
+        "A/Dup.cs": "namespace N { public class Dup {} }\n",
+        "A/x/z/Dup.cs": "namespace N { public class Dup {} }\n",
+        "A/x/y/Use.cs": "namespace N { class Use { Dup d; } }\n",
+    })
+    assert g["A/x/y/Use.cs"] == ("A/Dup.cs",)
