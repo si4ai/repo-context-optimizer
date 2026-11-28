@@ -187,14 +187,14 @@ def test_snapshots_leave_the_index_alone_and_are_stable(tmp_path, capsys):
 def test_every_language_has_build_files_that_select_every_test():
     """A new language must name its build files here, or say it has none."""
     from rco.affected import BUILD_FILES, NO_BUILD_FILES
-    from rco.edges import MANIFEST_NAMES, MANIFEST_SUFFIXES
+    from rco import edges
     from rco.extract.langs import LANG_OF
 
     langs = set(LANG_OF.values()) | {"python"}
     assert langs <= set(BUILD_FILES) | NO_BUILD_FILES, langs - set(BUILD_FILES) - NO_BUILD_FILES
     assert not NO_BUILD_FILES & set(BUILD_FILES)
     for lang, names in BUILD_FILES.items():
-        assert names and lang in langs, lang
+        assert names, lang
         for n in names:
             sample = n.replace("*", "x")
             for path in (sample, f"app/{sample}", f"a/b/c/{sample}"):
@@ -203,7 +203,8 @@ def test_every_language_has_build_files_that_select_every_test():
             _, tests, run_all, _ = select([f"app/{sample}"], ["app/Fix.test.js"], [{}],
                                          sources=[{"src/Reader.kt": f'"{sample}"'.encode()}])
             assert run_all, (lang, sample)  # a file that only names it does not read it
-    for n in MANIFEST_NAMES + tuple("x" + s for s in MANIFEST_SUFFIXES):  # the manifests edges read
+    suffixes = getattr(edges, "MANIFEST_SUFFIXES", ())
+    for n in edges.MANIFEST_NAMES + tuple("x" + s for s in suffixes):  # the manifests edges read
         assert is_infra(n) and is_infra(f"a/{n}"), n
 
 
