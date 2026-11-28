@@ -36,7 +36,11 @@ run time, and files opened by a computed name or a glob, are not seen.
 
 Test files: Python `test_*.py` and `*_test.py` (pytest's default); Go
 `*_test.go`; JS/TS `*.test.*`, `*.spec.*` or under `__tests__/`; Rust
-`.rs` directly in a `tests/` directory.
+`.rs` directly in a `tests/` directory; Java `*Test.java`, `*Tests.java`,
+`*IT.java`, `*TestCase.java`, `Test*.java` or under `test/` or `tests/`; C#
+`*Test.cs`, `*Tests.cs`, `*TestCase.cs`, `*Fixture.cs` or under `test/`,
+`tests/` or a `*.Tests` directory; PHP `*Test.php`, `*Tests.php`,
+`*TestCase.php` or under `tests/` or `test/`.
 """
 from __future__ import annotations
 

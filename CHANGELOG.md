@@ -22,8 +22,12 @@
   properties, constants and functions, not private) and edges from `use`,
   names in the same namespace and literal `require` paths, resolved
   through composer.json psr-4, so the pack, `rco replay` and `rco metrics
-  measure` see PHP files and their importers. The replay on
+  measure` see PHP files and their importers; `rco affected` treats
+  `composer.json`, `composer.lock` and `phpunit.xml` as build files and
+  `*Test.php` or `tests/` files as tests. The replay on
   laravel/framework is in `docs/baseline/lang-php.md` (#118, card 1365)
+- `rco affected`: an infra file under `test_data/` or `__tests__/` is test
+  data too (as under `fixtures/`, `testdata/` and `golden/`) (#118, card 1365)
 - `rco affected`: a changed build file selects every test for each language
   (`*.csproj`, `*.sln`, `*.props`, `build.gradle(.kts)`, `pom.xml` and the
   like), even when a source file only names it; a test walks every language
