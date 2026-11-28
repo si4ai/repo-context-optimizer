@@ -1,0 +1,23 @@
+# Identifier findings fail this check (card 1353).
+# Not the report-only hygiene_report job in ci.yml: that file is
+# watched by config_tamper, so the gate lives here and calls the same
+# shared si4ai/.github hygiene workflow with strict: true.
+name: hygiene_gate
+
+"on":
+  pull_request:
+  push:
+    branches:
+      - main
+  merge_group:
+
+permissions:
+  contents: read
+
+jobs:
+  hygiene:
+    permissions:
+      contents: read
+    uses: si4ai/.github/.github/workflows/hygiene.yml@23c056780f193d140e042491ac81a59cafb71a14
+    with:
+      strict: true
