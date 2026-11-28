@@ -10,8 +10,7 @@ agent would read for that edit:
   the agent still opens them to edit. The pack outlines only the files the
   changed files import, so each changed file is counted once. When pack
   skips (nothing worth outlining), the agent sends nothing and reads the
-  changed files only: a tie. (metrics.measure counts the pack alone on its
-  "with" side; replay does not reuse it, because that flatters rco.)
+  changed files only: a tie. metrics.measure uses the same definition (card 1351).
 
 Files and the pack are read at the commit itself, as `rco metrics measure`
 reads the head of a pull request. The pack is built from git (no store), so
@@ -38,6 +37,7 @@ from rco.edges import MANIFEST_NAMES
 from rco.diff import changed_paths
 from rco.imports import file_graph
 from rco.metrics import _regular, read_set
+from rco.meter import arms
 from rco.output import Exit, UsageError, timed
 
 SCHEMA = "rco.replay/1"
@@ -196,17 +196,15 @@ def _one(repo: Path, sha: str, parent: str, budget: int,
     p, pack_text, skipped = _pack_at(repo, sha, changed, budget)
     in_pack = {n.path for t in p.trees for n in t.nodes}
     pack_tokens = 0 if skipped else count(pack_text)
-    # a skip (nothing imported, or imports too small) sends nothing: a tie
-    if skipped:
-        with_files, with_tokens = len(reads), changed_tokens + imported_tokens
-    else:
-        with_files, with_tokens = len(changed) + 1, pack_tokens + changed_tokens
+    without, with_ = arms(
+        changed_tokens=changed_tokens, imported_tokens=imported_tokens,
+        pack_tokens=pack_tokens, skipped=skipped,
+        n_changed=len(changed), n_imported=len(imported),
+    )
     return {"sha": sha, "changed": len(changed),
-            "without": {"files": len(reads), "tokens": changed_tokens + imported_tokens,
-                        "imported_files": len(imported), "imported_tokens": imported_tokens},
-            "with": {"files": with_files,
-                     "tokens": with_tokens, "pack_tokens": pack_tokens,
-                     "pack_skipped": skipped, "changed_tokens": changed_tokens},
+            "without": {**without, "imported_files": len(imported),
+                        "imported_tokens": imported_tokens},
+            "with": with_,
             "coverage": {"changed_in_pack": sum(1 for x in changed if x in in_pack),
                          "imported_in_pack": sum(1 for x in imported if x in in_pack),
                          "imported": len(imported)}}

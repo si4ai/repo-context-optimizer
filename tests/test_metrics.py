@@ -48,19 +48,22 @@ def test_measure_counts_changed_files_plus_one_import_hop():
     assert got["without_rco"]["files"] == 2
     assert got["without_rco"]["bytes"] == 60
     assert got["without_rco"]["tokens"] == metrics.estimate("A" * 40 + "B" * 20)
-    assert got["with_rco"]["files"] == 1
-    assert got["with_rco"]["bytes"] == len(pack.encode("utf-8"))
-    assert got["with_rco"]["tokens"] == metrics.estimate(pack)
+    # with = pack plus the changed file (card 1351)
+    assert got["with_rco"]["files"] == 2
+    assert got["with_rco"]["bytes"] == len(pack.encode("utf-8")) + 20
+    assert got["with_rco"]["tokens"] == metrics.estimate(pack) + metrics.estimate("B" * 20)
+    assert got["with_rco"]["pack_skipped"] is False
     assert got["ratio_tokens"] == round(
         got["with_rco"]["tokens"] / got["without_rco"]["tokens"], 4)
 
 
 def test_measure_skips_deleted_paths_and_null_ratio_when_without_is_zero():
     got = metrics.measure(["gone.py"], {}, {}, "", metrics.estimate)
-    assert got == {"changed_files": 0,
-                   "without_rco": {"files": 0, "bytes": 0, "tokens": 0},
-                   "with_rco": {"files": 0, "bytes": 0, "tokens": 0},
-                   "ratio_tokens": None}
+    assert got["changed_files"] == 0
+    assert got["without_rco"] == {"files": 0, "bytes": 0, "tokens": 0}
+    assert got["with_rco"]["files"] == 0 and got["with_rco"]["tokens"] == 0
+    assert got["with_rco"]["pack_skipped"] is True
+    assert got["ratio_tokens"] is None
 
 
 def test_summary_mean_median_totals_and_best_worst(tmp_path, capsys):
@@ -188,7 +191,14 @@ def test_measure_cli_writes_schema_1(tmp_path, capsys):
     assert doc["changed_files"] >= 1
     # b.py imports a.py, so without-rco includes the hop
     assert doc["without_rco"]["files"] >= 2
-    assert doc["with_rco"]["bytes"] == pack.read_bytes().__len__()
+    pack_bytes = pack.read_bytes().__len__()
+    assert isinstance(doc["with_rco"]["pack_skipped"], bool)
+    if doc["with_rco"]["pack_skipped"]:
+        assert doc["with_rco"]["tokens"] == doc["without_rco"]["tokens"]
+        assert doc["ratio_tokens"] == 1.0
+    else:
+        assert doc["with_rco"]["bytes"] >= pack_bytes  # pack plus the changed file
+        assert doc["with_rco"]["tokens"] >= doc["with_rco"]["pack_tokens"]
     assert doc["ratio_tokens"] is not None
 
 
@@ -293,3 +303,46 @@ def test_measure_summary_has_no_warning_when_under_budget(tmp_path, capsys, monk
     assert line in summary.read_text(encoding="utf-8")
     assert "::warning title=rco pack budget::" not in err.err
     assert "over the budget" not in err.err
+
+
+def test_measure_skipped_pack_is_a_tie():
+    graph = {"pkg/a.py": [], "pkg/b.py": ["pkg/a.py"]}
+    blobs = {"pkg/a.py": b"A" * 40, "pkg/b.py": b"B" * 20}
+    from rco.pack import NOOP_NOTES
+    pack = next(iter(NOOP_NOTES))
+    got = metrics.measure(["pkg/b.py"], graph, blobs, pack, metrics.estimate)
+    assert got["with_rco"]["pack_skipped"] is True
+    assert got["with_rco"]["tokens"] == got["without_rco"]["tokens"]
+    assert got["with_rco"]["files"] == got["without_rco"]["files"]
+    assert got["with_rco"]["bytes"] == got["without_rco"]["bytes"]
+    assert got["ratio_tokens"] == 1.0
+
+
+def test_measure_and_replay_agree_on_a_fixture_commit(tmp_path):
+    """Card 1351: both meters use with = pack plus changed files."""
+    from rco import replay as replay_mod
+    repo, _base = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n" + ("# pad\n" * 20),
+        "pkg/b.py": "from pkg.a import X\n\n\ndef run() -> int:\n    return X\n",
+    })
+    fixture.commit(repo, {
+        "pkg/b.py": "from pkg.a import X\n\n\ndef run() -> int:\n    return X + 1\n",
+    })
+    head = fixture.git(repo, "rev-parse", "HEAD").strip()
+    pack = tmp_path / "pack.md"
+    assert cli.main(["pack", head, "--repo", str(repo), "--for", "pkg/b.py",
+                     "--out", str(pack)]) == Exit.OK
+    pack_text = pack.read_text()
+    name, count = metrics.counter()
+    # last=1 would include the initial commit too? last is count of code commits.
+    # Use since=base of the second commit's parent.
+    parent = fixture.git(repo, "rev-parse", "HEAD^").strip()
+    doc = metrics.write_metrics(repo, parent, head, 1, pack_text, 12000, count, name)
+    recs = replay_mod.replay(repo, last=1, budget=12000, max_files=200,
+                             count=count, tokenizer=name)
+    one = recs.to_obj()["commits"][0]
+    assert one["sha"] == head
+    assert doc["without_rco"]["tokens"] == one["without"]["tokens"]
+    assert doc["with_rco"]["tokens"] == one["with"]["tokens"]
+    assert doc["with_rco"]["pack_skipped"] == one["with"]["pack_skipped"]

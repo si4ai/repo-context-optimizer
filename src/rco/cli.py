@@ -354,12 +354,14 @@ def run(args: argparse.Namespace) -> Exit:
             p = pack.empty_pack(args.budget)
             if p.used > p.budget:
                 note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
+            _set_pack_event(p)
             return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
         from rco.config import open_store
         store = open_store(repo, create=False)  # read only: pack never creates a store
         p = pack.pack(repo, sha, args.for_paths, args.budget, store)
         if p.used > p.budget:
             note(f"pack used ~{p.used} tokens, over the budget of {p.budget}")
+        _set_pack_event(p)
         return emit(pack.PackReport(p, " ".join(args.for_paths or ())), args.format, args.out)
     if args.cmd == "replay":
         from rco import metrics, replay
@@ -378,6 +380,24 @@ def run(args: argparse.Namespace) -> Exit:
         sha = gitread.resolve(repo, args.at)
         return emit(pin.drift(repo, files, sha), args.format, args.out)
     raise UsageError(f"unknown command {args.cmd}")
+
+
+_pack_event: dict | None = None
+
+
+def _set_pack_event(p: object) -> None:
+    """Stash pack token fields for the events line (card 1351)."""
+    global _pack_event
+    from rco.pack import NOOP_NOTES
+    notes = getattr(p, "notes", ())
+    used = int(getattr(p, "used"))
+    budget = int(getattr(p, "budget"))
+    _pack_event = {
+        "pack_tokens": used,
+        "pack_budget": budget,
+        "pack_skipped": any(n in notes for n in NOOP_NOTES),
+        "pack_overrun": max(0, used - budget),
+    }
 
 
 def _event_cmd(args: object | None) -> str | None:
@@ -429,5 +449,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         else:
             repo = _repo_from_argv(argv)
             for_paths = None
-        events.record(repo, cmd, code, t0, start_wall, for_paths)
+        global _pack_event
+        pack = _pack_event
+        _pack_event = None
+        events.record(repo, cmd, code, t0, start_wall, for_paths, pack)
     return code

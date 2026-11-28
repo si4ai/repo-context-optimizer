@@ -7,8 +7,10 @@ atomic, so lines from runs at the same instant may interleave there.
 
 The file is written only when .rco/ already exists at the top of the working
 tree (the first `rco update` creates it), so read-only commands in a fresh
-clone still write nothing. A log failure never changes the exit code: any
-failure is one note on stderr.
+clone still write nothing in the tree. A pack run still prints pack token,
+budget, skipped and overrun as one stderr note when `.rco/` is missing
+(card 1351). A log failure never changes the exit code: any failure is one
+note on stderr.
 """
 from __future__ import annotations
 
@@ -17,7 +19,7 @@ import subprocess
 import time
 import uuid
 from pathlib import Path
-from typing import Sequence
+from typing import Mapping, Sequence
 
 from rco.canon import canonical_json
 from rco.modules import for_path
@@ -114,7 +116,7 @@ def log_for_paths(top: Path, for_paths: Sequence[str] | None) -> list[str] | Non
 
 def line_for(cmd: str | None, exit_code: int, t0: float, start_wall: float,
              store: str | None, head: str | None, for_paths: Sequence[str] | None,
-             top: Path | None = None) -> bytes:
+             top: Path | None = None, pack: Mapping[str, object] | None = None) -> bytes:
     paths = log_for_paths(top, for_paths) if top is not None else (
         None if for_paths is None else [str(p) for p in for_paths]
     )
@@ -129,25 +131,45 @@ def line_for(cmd: str | None, exit_code: int, t0: float, start_wall: float,
         "ms": max(0, int((time.monotonic() - t0) * 1000)),
         "for": paths,
     }
+    if pack:
+        obj.update(pack)
     return _fit(obj)
 
 
+def _pack_note(pack: Mapping[str, object]) -> str:
+    """One stderr summary of pack fields when no events file is written."""
+    skipped = pack.get("pack_skipped")
+    return (f"pack tokens={pack.get('pack_tokens')} budget={pack.get('pack_budget')} "
+            f"skipped={'true' if skipped else 'false'} "
+            f"overrun={pack.get('pack_overrun')}")
+
+
 def record(repo: Path, cmd: str | None, exit_code: int, t0: float, start_wall: float | None = None,
-           for_paths: Sequence[str] | None = None) -> None:
-    """One line for this run when .rco/ exists; never raises, never changes the exit."""
+           for_paths: Sequence[str] | None = None,
+           pack: Mapping[str, object] | None = None) -> None:
+    """One line for this run when .rco/ exists; never raises, never changes the exit.
+
+    Pack fields (card 1351) are included when provided. If `.rco/` is missing,
+    a pack run still prints those fields as one stderr note and does not
+    create `.rco/` or write inside the work tree.
+    """
     try:
         from rco.config import worktree_top
-        from rco.output import UsageError
+        from rco.output import UsageError, note
         try:
             top = worktree_top(Path(repo))
         except UsageError:
+            if pack:
+                note(_pack_note(pack))
             return  # not a git repository: nothing to log against
         if not (top / ".rco").is_dir():
+            if pack:
+                note(_pack_note(pack))
             return  # read-only promise: never create .rco/
         if start_wall is None:
             start_wall = time.time() - (time.monotonic() - t0)
         data = line_for(cmd, exit_code, t0, start_wall, _store_pointer(top), _head(top),
-                        for_paths, top)
+                        for_paths, top, pack)
         fd = os.open(top / EVENTS_RELPATH, os.O_WRONLY | os.O_APPEND | os.O_CREAT, 0o644)
         try:
             n = os.write(fd, data)

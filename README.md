@@ -347,7 +347,7 @@ One-step setup. It writes only files that don't exist yet, never overwrites one,
 
 Token-efficiency numbers for one pull request, and a roll-up over many.
 
-- `rco metrics measure --base SHA --head SHA --pr N [--pack pack.md] --out rco-metrics.json --format json` writes one schema-1 file: bytes and tokens an agent would read without rco (changed files at the head, plus the in-repo files those import, one hop) versus the `rco pack --for CHANGED` markdown. The file is the same shape already uploaded by adopters that measure this in CI. `rco metrics check FILE` exits 1 if that file is missing or incomplete, so a CI job can fail instead of uploading nothing.
+- `rco metrics measure --base SHA --head SHA --pr N [--pack pack.md] --out rco-metrics.json --format json` writes one schema-1 file: bytes and tokens an agent would read without rco (changed files at the head, plus the in-repo files those import, one hop) versus the `rco pack --for CHANGED` markdown plus those changed files (the files the agent still opens). A skipped pack is a tie. This is the same with/without definition `rco replay` uses. A recompute of 47 the-mill `rco-report` artifacts under that definition is in [`docs/baseline/pipeline-meter-47.md`](docs/baseline/pipeline-meter-47.md). The file is the same shape already uploaded by adopters that measure this in CI. `rco metrics check FILE` exits 1 if that file is missing or incomplete, so a CI job can fail instead of uploading nothing.
 - `rco metrics summary PATH...` reads those files (a path may be a file or a directory of `rco-metrics.json` files) and prints a count, the mean and median `ratio_tokens`, total bytes and tokens saved, and the best and worst PRs (lowest and highest ratio). `--json` is the same as `--format json`. Files of the same pull request and head SHA are counted once. A lower ratio is more savings.
 - `rco metrics bypass [--base REV | --days N] [--window-min N] [--events FILE] [--strict]` lists code commits (non-merge, at least one code file) that no `rco pack` run preceded. A pack run covers a commit when it exited 0 or 1, ran at a HEAD that is the commit's parent or an ancestor of it, and finished (its start plus its duration) no later than the commit and at most `--window-min` minutes (default 240) before it; both edges count as inside. It reads the [events log](#events-log) from `.rco/events.jsonl` (or `--events FILE`) and git history over `BASE..HEAD`, or the last `--days` days (default 14) when there is no `--base`; giving both is exit 2. The JSON report has the counts, every commit id and its covering run id, and `pack_events` (pack runs only, so a bypass run's own log line never changes the report); the text report lists only the uncovered ids. The same inputs give the same bytes. Exit 0, or 1 with `--strict` when any commit is uncovered; a missing or empty events file is exit 2, because events are per machine and an absent log must not read as every commit bypassed. It shows that a pack ran before the commit, not that the agent read it, and a pack run is not matched to the files the commit edited.
 - `python tools/fetch_rco_metrics.py --repo OWNER/NAME --out DIR` downloads recent GitHub `rco-report` artifacts into DIR using the GitHub CLI already authenticated in the environment (`gh auth` or `GH_TOKEN`). It never takes a token flag and never puts a token in a URL or command line. Then run `rco metrics summary DIR`.
@@ -389,8 +389,10 @@ Exit codes, so agents can script the commands:
 
 Once `.rco/` exists in the checkout (the first `rco update` creates it), every
 rco run appends one JSON line to `.rco/events.jsonl`. Without `.rco/`, nothing
-is written, so read-only commands in a fresh clone still leave the tree
-untouched. `--help` and `--version` are not runs and write no line.
+is written in the tree, so read-only commands in a fresh clone still leave it
+untouched. A `rco pack` run still prints `pack_tokens`, `pack_budget`,
+`pack_skipped` and `pack_overrun` as one note on stderr. `--help` and
+`--version` are not runs and write no line.
 
 | Key | Type | What it holds |
 |---|---|---|
@@ -404,6 +406,10 @@ untouched. `--help` and `--version` are not runs and write no line.
 | `ms` | int | duration in milliseconds |
 | `for` | list or null | `rco pack` only: the `--for` paths as repo paths (cut to fit the line) |
 | `for_cut` | int | only when the `--for` list was cut: how many paths were dropped |
+| `pack_tokens` | int | `rco pack` only: estimated tokens of the pack |
+| `pack_budget` | int | `rco pack` only: the budget used for that run |
+| `pack_skipped` | bool | `rco pack` only: true when the pack was a nothing-to-add skip |
+| `pack_overrun` | int | `rco pack` only: tokens over budget, or 0 |
 
 Each line is one `O_APPEND` write of at most 4096 bytes, so concurrent runs on
 a local disk never tear or mix lines; no lock is taken. On a network

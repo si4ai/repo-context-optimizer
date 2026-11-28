@@ -49,6 +49,14 @@ def _check_fields(ev: dict) -> None:
         assert isinstance(ev["for_cut"], int) and ev["for_cut"] > 0
         assert ev["for"] is not None
         allowed = {*allowed, "for_cut"}
+    pack_keys = {"pack_tokens", "pack_budget", "pack_skipped", "pack_overrun"}
+    if pack_keys & set(ev):
+        assert pack_keys <= set(ev)
+        assert isinstance(ev["pack_tokens"], int) and ev["pack_tokens"] >= 0
+        assert isinstance(ev["pack_budget"], int) and ev["pack_budget"] >= 0
+        assert isinstance(ev["pack_skipped"], bool)
+        assert isinstance(ev["pack_overrun"], int) and ev["pack_overrun"] >= 0
+        allowed = {*allowed, *pack_keys}
     assert set(ev) == allowed
 
 
@@ -217,3 +225,57 @@ def test_usage_error_logs_null_cmd(tmp_path):
     (ev,) = _lines(repo)
     assert ev["cmd"] is None and ev["exit"] == 2
     _check_fields(ev)
+
+
+def test_pack_fields_on_events_line(tmp_path):
+    """Card 1351: a pack run records pack_tokens, budget, skipped, and overrun."""
+    from rco import events
+    repo, _ = fixture.make_repo(tmp_path / "r", {"a.py": "print(1)\n"})
+    (repo / ".rco").mkdir()
+    t0 = __import__("time").monotonic()
+    events.record(repo, "pack", 0, t0, pack={
+        "pack_tokens": 80, "pack_budget": 12000,
+        "pack_skipped": False, "pack_overrun": 0,
+    })
+    rec = json.loads((repo / ".rco" / "events.jsonl").read_text().splitlines()[-1])
+    assert rec["pack_tokens"] == 80
+    assert rec["pack_budget"] == 12000
+    assert rec["pack_skipped"] is False
+    assert rec["pack_overrun"] == 0
+    assert rec["cmd"] == "pack"
+
+
+def test_pack_without_rco_dir_notes_on_stderr(tmp_path, capsys):
+    """No .rco/: pack fields go to stderr and nothing is written in the tree."""
+    from rco import events
+    repo, _ = fixture.make_repo(tmp_path / "r", {"a.py": "print(1)\n"})
+    assert not (repo / ".rco").exists()
+    t0 = __import__("time").monotonic()
+    events.record(repo, "pack", 0, t0, pack={
+        "pack_tokens": 12, "pack_budget": 12000,
+        "pack_skipped": True, "pack_overrun": 0,
+    })
+    err = capsys.readouterr().err
+    assert "pack tokens=12" in err
+    assert "budget=12000" in err
+    assert "skipped=true" in err
+    assert "overrun=0" in err
+    assert not (repo / ".rco").exists()
+    # no events file under the repo
+    assert not list(repo.rglob("events.jsonl"))
+
+
+def test_cli_pack_writes_pack_fields(tmp_path):
+    repo, _ = fixture.make_repo(tmp_path / "r", {
+        "pkg/__init__.py": "",
+        "pkg/a.py": "X = 1\n",
+        "pkg/b.py": "from pkg.a import X\n",
+    })
+    (repo / ".rco").mkdir()
+    assert cli.main(["pack", "--repo", str(repo), "--for", "pkg/b.py"]) == Exit.OK
+    rec = json.loads((repo / ".rco" / "events.jsonl").read_text().splitlines()[-1])
+    assert rec["cmd"] == "pack"
+    assert "pack_tokens" in rec and rec["pack_tokens"] >= 0
+    assert rec["pack_budget"] == 12000 or rec["pack_budget"] > 0
+    assert "pack_skipped" in rec
+    assert rec["pack_overrun"] >= 0
