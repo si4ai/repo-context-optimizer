@@ -36,6 +36,7 @@ from pathlib import Path
 from rco import __version__, gitread
 from rco.canon import canonical_json
 from rco.config import worktree_top
+from rco.forest_model import estimate_tokens, token_method
 from rco.output import Exit, UsageError, write_atomic
 
 SCHEMA_INIT = "rco.init/1"
@@ -213,16 +214,24 @@ class Step:
 @dataclass(frozen=True)
 class InitReport:
     steps: tuple[Step, ...]
+    agents_tokens: int | None = None
+    agents_tokenizer: str | None = None
 
     def to_obj(self) -> dict:
-        return {"schema": SCHEMA_INIT,
-                "steps": [{"path": s.path, "action": s.action, "detail": s.detail}
-                          for s in self.steps]}
+        obj: dict = {"schema": SCHEMA_INIT,
+                     "steps": [{"path": s.path, "action": s.action, "detail": s.detail}
+                               for s in self.steps]}
+        if self.agents_tokens is not None:
+            obj["agents_tokens"] = self.agents_tokens
+            obj["agents_tokenizer"] = self.agents_tokenizer
+        return obj
 
     def to_markdown(self) -> str:
         out = ["# rco init", ""]
         out += [f"- {s.action} `{s.path}`" + (f": {s.detail}" if s.detail else "")
                 for s in self.steps]
+        if self.agents_tokens is not None:
+            out += ["", f"agents block: {self.agents_tokens} tokens ({self.agents_tokenizer})"]
         return "\n".join(out) + "\n"
 
     def exit_code(self) -> Exit:
@@ -386,4 +395,7 @@ def init(repo: Path, config: bool = True, ci: bool = True, hooks: bool = False,
             steps.append(Step(_rel(hook, top), "kept", "not rco's; left alone"))
     if agents:
         steps += _agent_steps(top)
+        return InitReport(tuple(steps),
+                          estimate_tokens(agent_block(AGENT_BLOCK)),
+                          token_method())
     return InitReport(tuple(steps))
