@@ -2,6 +2,10 @@
 
 ## unreleased
 
+### fixed
+
+- identifier findings in the commit range or PR text now fail CI, via `.github/workflows/hygiene_gate.yml` (the report-only job in ci.yml is unchanged; card 1353)
+
 ### changed
 
 - `rco replay` counts each changed file once (the pack no longer outlines
