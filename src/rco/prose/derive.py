@@ -341,6 +341,8 @@ _DECL = {  # declaration shapes per language; {n} is the name
            r"^[ \t]*(?:(?:static|async|get|set|public|readonly|override)\s+)*{n}\s*[(<]"),
     # modifiers and a return type are space-free tokens: no backtracking on blanked comments
     "java": (r"^[ \t]*(?:(?!return\b|new\b|else\b|throw\b|case\b|yield\b)[^\s(){};=]+[ \t]+)+{n}\s*\(",),
+    "kotlin": (r"^[ \t]*(?:[\w@:]+[ \t]+)*fun[ \t]+(?:<[^>\n]*>[ \t]*)?(?:[\w<>?, ]+\.)?{n}\s*[(<]",
+               r"^[ \t]*(?:[\w@:]+[ \t]+)*(?:class|interface|object|typealias|val|var)[ \t]+{n}\b"),
     "go": (r"^func\s*(?:\([^)]*\)\s*)?{n}\s*[\[(]",),
     "rust": (r"\bfn\s+{n}\b",),
     "sh": (r"^[ \t]*function\s+{n}\b", r"^[ \t]*{n}\s*\(\s*\)"),

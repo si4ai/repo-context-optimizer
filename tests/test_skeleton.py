@@ -8,7 +8,7 @@ from rco.output import Exit
 
 def test_registry_sorted_and_complete():
     names = [e.name for e in extract.EXTRACTORS]
-    assert names == sorted(names) == ["cli", "go", "java", "js", "python", "routes", "rust",
+    assert names == sorted(names) == ["cli", "go", "java", "js", "kotlin", "python", "routes", "rust",
                                       "shell", "sql"]
     vers = extract.versions()
     assert vers == tuple(sorted(vers))

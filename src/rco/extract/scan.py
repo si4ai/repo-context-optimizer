@@ -13,6 +13,7 @@ from dataclasses import dataclass
 
 SIG_MAX = 240
 
+# Kotlin (card 1364): own string rules, see _kt_string_end; nested block comments like Rust.
 # brace languages with """ text blocks, single-line "string" and 'c' literals (card 1362);
 # later brace languages join this set as their cards land.
 _TRIPLE_LANGS = ("java",)
@@ -42,7 +43,7 @@ def _blank(chars: list[str], a: int, b: int) -> None:
 
 
 def scan(text: str, lang: str) -> Scan:
-    """lang: "js", "go", "rust", "java" or "sh". A replay run caches it by text (rco.memo)."""
+    """lang: "js", "go", "rust", "java", "kotlin" or "sh". A replay run caches it by text (rco.memo)."""
     from rco import memo
     return memo.cached("scan", (text, lang), lambda: _scan(text, lang))
 
@@ -86,7 +87,7 @@ def _scan(text: str, lang: str) -> Scan:
             i = j
             continue
         if lang != "sh" and c == "/" and nxt == "*":
-            if lang == "rust":  # nested block comments
+            if lang in ("rust", "kotlin"):  # nested block comments
                 d, j = 1, i + 2
                 while j < n and d:
                     if text.startswith("/*", j):
@@ -105,6 +106,21 @@ def _scan(text: str, lang: str) -> Scan:
             continue
         # strings
         q = ""
+        if lang == "kotlin" and c == '"':  # "..." and """...""" with ${...} templates
+            end = _kt_string_end(text, i)
+            body = 3 if text.startswith('"""', i) else 1
+            _blank(code, i + body, max(i + body, end - body))
+            i = end
+            last = '"'
+            continue
+        if lang == "kotlin" and c == "`":  # `a name`: no braces from it, still an identifier
+            j = text.find("`", i + 1)
+            j = n if j < 0 or "\n" in text[i:j] else j
+            for k in range(i + 1, j):
+                code[k] = "_" if code[k] != "\n" else "\n"
+            i = min(j + 1, n)
+            last = "_"
+            continue
         if lang in _TRIPLE_LANGS and text.startswith('"""', i):  # text block: no escapes end it
             j, e = i + 3, n
             while j < n:
@@ -183,7 +199,7 @@ def _scan(text: str, lang: str) -> Scan:
                     continue
                 if ch == q:
                     break
-                if ch == "\n" and q in "\"'" and lang in ("js", "go") + tuple(_TRIPLE_LANGS):
+                if ch == "\n" and q in "\"'" and lang in ("js", "go", "kotlin") + tuple(_TRIPLE_LANGS):
                     break  # unterminated single-line string
                 j += 1
             end = min(j, n)
@@ -204,6 +220,54 @@ def _scan(text: str, lang: str) -> Scan:
         elif ch == "}":
             d = max(0, d - 1)
     return Scan(text, "".join(nc), "".join(code), tuple(comments), tuple(depth))
+
+
+def _kt_string_end(text: str, i: int) -> int:
+    """Index after the Kotlin string that opens at i; `${...}` may hold quotes and braces."""
+    n = len(text)
+    raw = text.startswith('"""', i)
+    j = i + (3 if raw else 1)
+    while j < n:
+        ch = text[j]
+        if raw:
+            if text.startswith('"""', j):
+                while j + 3 < n and text[j + 3] == '"':  # the last three quotes close it
+                    j += 1
+                return j + 3
+        elif ch == "\\":
+            j += 2
+            continue
+        elif ch == '"':
+            return j + 1
+        elif ch == "\n":
+            return j
+        if ch == "$" and text.startswith("${", j):
+            j = _kt_skip_template(text, j + 2)
+            continue
+        j += 1
+    return n
+
+
+def _kt_skip_template(text: str, j: int) -> int:
+    """Index after the `}` that closes a `${` template whose body starts at j."""
+    n, d = len(text), 1
+    while j < n:
+        ch = text[j]
+        if ch == "{":
+            d += 1
+        elif ch == "}":
+            d -= 1
+            if d == 0:
+                return j + 1
+        elif ch == '"':
+            j = _kt_string_end(text, j)
+            continue
+        elif ch == "'":
+            k = text.find("'", j + 2)
+            j = k + 1 if 0 <= k <= j + 5 else j + 1
+            continue
+        j += 1
+    return n
 
 
 def _skip_string(text: str, i: int) -> int:

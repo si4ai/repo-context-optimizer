@@ -811,3 +811,24 @@ nullable
 runnable
 strings
 tagged
+# card 1364
+anywhere
+calc
+companion
+dup
+foo
+four
+fun
+int
+kotlin
+mode
+old
+receiver
+registry
+serializable
+shape
+spare
+spec
+three
+twin
+util

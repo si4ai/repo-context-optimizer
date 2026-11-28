@@ -11,6 +11,13 @@
   their importers. A deterministic scanner, no new dependency. The
   replay on google/guava (85% median saving, 0 losses over 43 commits)
   is in `docs/baseline/lang-java.md` (#115, card 1362)
+- Kotlin: signatures in the Tree (classes, interfaces, objects, enums,
+  annotations, typealiases, functions, extension functions, properties and
+  constants; not private, not internal) and import edges by each file's
+  package line, with Java and Kotlin seeing each other, so the pack,
+  `rco replay` and `rco metrics measure` see Kotlin files and their
+  importers. The replay on square/okhttp is in `docs/baseline/lang-kotlin.md`
+  (card 1364)
 
 ## 0.1.8 - 2026-11-27
 

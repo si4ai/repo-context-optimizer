@@ -517,6 +517,25 @@ Applied in 0.2.0 (card 1362):
   annotations, modifiers and brackets are in `rco/extract/brace.py` so the
   other brace languages can share them.
 
+Applied in 0.2.0 (card 1364):
+
+- Applied: a `kotlin` extractor (`rco/extract/kotlin.py`) on the same scanner
+  (`scan.py`, lang `kotlin`: nested block comments, strings with `${...}`
+  templates, `"""` raw strings, and backtick names). Top-level functions and
+  properties are children of the SRCMODULE (as in Go), whose `package` attr
+  is the file's package line. Children: CLASS (`kind` is `class`,
+  `interface`, `object`, `enum`, `annotation` or `typealias`; a
+  `companion object` is `Companion`), METHOD (a secondary constructor is
+  `constructor`; an extension function is named `Receiver.name`), FIELD
+  (properties, including extension properties and enum entries) and CONSTANT
+  (`const val`). Public means not `private` and not `internal` (Kotlin's
+  default is public); every member of an interface is public. A function or
+  property ends where the next declaration starts, so expression bodies,
+  delegates (`by`) and `get`/`set` accessors on the lines after it work.
+  Attrs record `open`, `abstract`, `sealed`, `data`, `inner`, `value`,
+  `inline`, `const`, `lateinit`, `override`, `suspend`, `operator`, `infix`,
+  `tailrec`, `expect`, `actual` and `var` where present.
+
 Applied in 0.1.2 (modules from manifests and an override file):
 
 - Applied: `module_of(path, layout=None)` and `group(paths, layout=None)`

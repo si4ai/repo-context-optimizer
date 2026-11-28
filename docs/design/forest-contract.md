@@ -240,6 +240,15 @@ step-0 follow-up PR, sent to every open step first.
   stand in for `package util;`; files with no `package` line share the
   default package in every root. Twin files that tie on every rule all
   get an edge.
+  Kotlin (0.2.0, card 1364): the `package` line of every file is indexed,
+  not the folder, with the top-level names it declares (classes, objects,
+  typealiases, functions, properties). `import a.b.C` (also `as`, nested
+  names such as `a.b.C.Inner`, and `a.b.*`) maps to the files declaring that
+  name in package `a.b`; a Java class is found the same way, and a Java file
+  sees Kotlin declarations by its imports and its own package. A file sees
+  the other files of its own package in any source root. Twin declarations
+  (a `commonMain` and a `jvmMain` file, say) that tie on every rule all get
+  an edge.
 - Applied: modules come from the layout in tree-contract section 4
   (amended): `rco.toml`, then manifests, then directories. `rco forest`,
   `rco pack`, `rco update` and `rco check` all use the layout read at the

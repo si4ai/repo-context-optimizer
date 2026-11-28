@@ -10,6 +10,7 @@ from typing import ClassVar, Protocol
 from rco import redact
 from rco.extract.cli import CliExtractor
 from rco.extract.java import JavaExtractor
+from rco.extract.kotlin import KotlinExtractor
 from rco.extract.langs import GoExtractor, JsExtractor, RustExtractor, ShellExtractor
 from rco.extract.python import PythonExtractor
 from rco.extract.routes import RoutesExtractor
@@ -31,6 +32,7 @@ EXTRACTORS: tuple[Extractor, ...] = (
     GoExtractor(),
     JavaExtractor(),
     JsExtractor(),
+    KotlinExtractor(),
     PythonExtractor(),
     RoutesExtractor(),
     RustExtractor(),

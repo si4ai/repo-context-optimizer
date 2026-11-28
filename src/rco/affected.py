@@ -84,6 +84,9 @@ def is_test(path: str) -> bool:
     if lang == "java":  # Maven/Gradle src/test/java, and the usual *Test class names
         return (name.removesuffix(".java").endswith(("Test", "Tests", "IT", "TestCase"))
                 or name.startswith("Test") or "test" in dirs or "tests" in dirs)
+    if lang == "kotlin":  # Gradle src/test, src/jvmTest, src/commonTest, and *Test names
+        return (name.removesuffix(".kt").endswith(("Test", "Tests", "IT", "TestCase", "Spec"))
+                or any(d in ("test", "tests") or (d.endswith("Test") and d != "Test") for d in dirs))
     if lang == "rust":  # cargo integration tests: <crate>/tests/*.rs
         return len(parts) >= 2 and parts[-2] in _TEST_DIRS
     return False
