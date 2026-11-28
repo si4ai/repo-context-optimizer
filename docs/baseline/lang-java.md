@@ -46,5 +46,5 @@ same replay with only edges from `import` statements:
   between its files would show less.
 - Public means `public` or `protected`; package-private types and members
   are not in the Tree (they still count as import edges).
-- One shallow clone and one window (four weeks). The pinned head makes the
-  run repeatable: `git checkout cdb3863e02e9`, then the command above.
+- One shallow clone and one window (since 2026-11-01). The pinned head makes
+  the run repeatable: check out `cdb3863e02e9`, then rerun this replay.

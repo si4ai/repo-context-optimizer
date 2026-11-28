@@ -504,7 +504,7 @@ Applied in 0.1.2 (bundled parsers for other languages):
 Applied in 0.2.0 (card 1362):
 
 - Applied: a `java` extractor (`rco/extract/java.py`) on the same scanner
-  (`scan.py`, lang `java`: it also masks `\"\"\"` text blocks and char
+  (`scan.py`, lang `java`: it also masks `"""` text blocks and char
   literals). Declarations are read in order, so annotations, modifiers and
   one-line declarations work. Children: CLASS (`kind` is `class`,
   `interface`, `enum`, `record` or `annotation`; a record's components are
