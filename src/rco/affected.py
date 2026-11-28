@@ -75,6 +75,7 @@ BUILD_FILES: dict[str, tuple[str, ...]] = {
     "java": ("pom.xml", "build.gradle", "build.gradle.kts", "settings.gradle",
              "settings.gradle.kts", "gradle.properties", "libs.versions.toml", "*.gradle",
              "*.gradle.kts"),
+    "php": ("composer.json", "composer.lock", "phpunit.xml", "phpunit.xml.dist", "phpunit.dist.xml"),
     "csharp": ("*.csproj", "*.sln", "*.slnx", "*.props", "*.targets", "global.json",
                "nuget.config", "NuGet.Config"),
 }
