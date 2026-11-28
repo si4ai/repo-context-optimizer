@@ -246,13 +246,25 @@ def events_runs_append(t: Path):
         after_pack = _events(w)
         rco("check", "forest")
         after_check = _events(w)
-        keys = {"v", "run", "ts", "cmd", "exit", "store", "head", "ms", "for"}
+        required = {"v", "run", "ts", "cmd", "exit", "store", "head", "ms", "for"}
+        optional = {"for_cut"}
+        pack_keys = {"pack_tokens", "pack_budget", "pack_skipped", "pack_overrun"}
         probs = []
         if [e.get("cmd") for e in after_pack] != ["update", "pack"]: probs.append(f"after pack: {[e.get('cmd') for e in after_pack]}")
         elif after_pack[1].get("for") != ["pkg/mod.py"] or after_pack[1].get("exit") != 0: probs.append(f"pack line {after_pack[1]}")
         if len(after_check) != 3 or after_check[-1].get("cmd") != "check": probs.append(f"check did not append: {len(after_check)} lines")
-        if any(set(e) != keys for e in after_check): probs.append("a line has keys other than the documented nine")
-        return ("PASS", "update, pack, check each append one line; nine documented keys") if not probs else ("FAIL", "; ".join(probs))
+        for e in after_check:
+            keys = set(e)
+            missing = required - keys
+            extra = keys - required - optional - pack_keys
+            if missing or extra:
+                probs.append(f"line cmd={e.get('cmd')} keys {sorted(keys)}")
+            elif e.get("cmd") == "pack":
+                if not pack_keys <= keys:
+                    probs.append(f"pack line missing {sorted(pack_keys - keys)}")
+            elif keys & pack_keys:
+                probs.append(f"{e.get('cmd')} line has pack keys")
+        return ("PASS", "update, pack, check each append one line; pack lines include pack token fields") if not probs else ("FAIL", "; ".join(probs))
 
 
 def events_help_version_add_no_line(t: Path):
